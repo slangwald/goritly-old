@@ -1,0 +1,16 @@
+{% extends "layouts/smallbox.html" %}
+
+{%block title%}Sign up{%endblock%}
+
+
+{% block content %}
+{% include "profiles/_signup_form.html" with form=form next_url=next_url%}
+
+{% endblock %}
+
+{%block content_2%}
+	<h2>Notice</h2>
+	<p>
+		<strong>Signup is free!</strong>
+	</p>
+{%endblock%}

@@ -1,0 +1,24 @@
+{% extends "layouts/smallbox.html" %}
+{% load i18n %}
+
+{%block title%}{% trans "Change user name" %}{%endblock%}
+
+{% block content %}
+
+<form action="{% url profiles.views.change_username %}" method="post">
+{% csrf_token %}
+{% if form.username.errors %}
+	<div class="popup_left">
+		<p>		
+		{% for error in form.username.errors %}
+			{{error}} 
+		{% endfor %}
+		</p>
+	</div>
+{% endif %}
+<h3>User name</h3>
+{{form.username}} <br />
+<button class="btn btn-primary" type="submit">{% trans 'Change user name' %}</button>
+</form>
+
+{% endblock %}

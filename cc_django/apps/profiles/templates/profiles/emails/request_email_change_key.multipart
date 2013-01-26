@@ -1,0 +1,19 @@
+{% extends "email.multipart" %}
+{% load i18n %}
+
+{%block subject %}{% blocktrans %}E-Mail Adresse ändern{%endblocktrans%}{%endblock%}
+
+{%block text_content %}Hallo,
+
+jemand (wahrscheinlich Du) hat sich gerade auf www.sozialer-funke.de die Änderung deiner E-Mail Adresse beantragt.
+
+Um deine neue Adresse zu bestätigen klicke bitte auf folgenden Link:
+
+{{server_url}}{% url profiles.views.change_email email_change_key=key.key %}
+
+Falls Du diese Änderung nicht beantragt hast, ignoriere diese Mail einfach.
+
+Andreas vom Team von sozialer-funke.de
+{% endblock %}
+
+{%block html_content %}{% endblock %}

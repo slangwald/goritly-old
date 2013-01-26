@@ -1,0 +1,28 @@
+{% load i18n %}
+
+<form enctype="multipart/form-data" action="{{form_url}}" method="post">
+<fieldset>
+
+{% csrf_token %}
+
+	{% if form.image.errors %}
+		<p class="form_error">
+		Foto: {% for error in form.image.errors %}
+			{{error}} 
+		{% endfor %}
+		</p>
+	{% endif %}
+
+
+<p>
+<input type="file" name="image" id="id_image" accept="image/*"/>
+</p>
+
+<p>
+	Ich versichere, dass dieses Bild nicht gegen die Nutzungsbedingungen verstößt und ich die Rechte zur Nutzung besitze.
+</p>
+
+<button type="submit">Foto hochladen</button>
+
+</fieldset>
+</form>

@@ -1,0 +1,52 @@
+{% load i18n %}
+{% if not blank %}
+<form class="signup" action="{% url profiles.views.signup next_url=next_url %}" method="post">
+<fieldset>
+{%endif%}
+{% csrf_token %}
+	<h3>E-Mail</h3>
+
+	{% if form.email.errors %}
+		<div class="popup_left">
+			<p>
+			{% for error in form.email.errors %}
+				{{error}} 
+			{% endfor %}
+			</p>
+		</div>
+	{% endif %}
+
+	{{form.email}}
+	
+	<h3>Password</h3>
+	
+	{% if form.password.errors %}
+		<div class="popup_left">
+			<p>
+			{% for error in form.password.errors %}
+				{{error}} 
+			{% endfor %}
+			</p>
+		</div>
+	{% endif %}
+
+	<a href="javascript:void(0);" onclick="password_field = document.getElementById('password'); if (password_field.type == 'password'){password_field.type='text';this.text='Passwort verbergen'}else{password_field.type = 'password';this.text='Passwort anzeigen';}return 0;">Show password</a>
+	<br /><input type="password" name="password" id="password" value="{% if form.password.value%}{{form.password.value|escape}}{%endif%}">
+            
+	{% if form.accepted_terms.errors %}
+		<div class="popup_right">
+			<p>
+				Please accept the terms.
+			</p>
+		</div>
+	{% endif %}
+
+	<p>
+		<input type="checkbox" name="accepted_terms" style="width:20px;" {%if form.accepted_terms.value%}checked="checked"{%endif%}/>I accept the <a href="{% url terms%}" target="_blank">terms</a>.
+	</p>
+
+{%if not blank%}
+<button type="submit">Sign up</button>
+</fieldset>
+</form>
+{%endif%}

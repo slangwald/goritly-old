@@ -1,0 +1,24 @@
+<div class="row-fluid">
+        <div class="span4">
+                <img  class="profile_photo"  src="{{user.profile.profile_image_or_placeholder.alternative_versions.small_version.url}}" alt="{{user.profile.screenname}}"/>
+                {%if request.user == user %}
+                   <br /><a href="{% url profiles.views.change_profile_image %}">(change photo)</a>
+                {% endif %}
+        </div>
+        <div class="span8">
+                <p>
+                        {{user.profile.screenname}}
+                        Member since {{user.profile.created_at.date}}.
+                </p>
+                {%if user.responses.all.count %}
+                <p>
+                    Helfer bei <strong>{{user.responses.all.count}}</strong> Aktion{%if user.responses.all.count > 1%}en{%endif%}.
+                </p>
+                {%endif %}
+                {%if user.user_organizations.all.count %}
+                <p>
+                    Unterstützer von <strong>{{user.user_organizations.all.count}}</strong> Initiative{%if user.user_organizations.all.count > 1%}n{%endif%}.
+                </p>
+                {%endif%}
+        </div>
+</div>

@@ -1,0 +1,18 @@
+{% extends "email.multipart" %}
+{% load i18n %}
+
+{%block subject %}{% blocktrans %}Dein Zugangsschlüssel{%endblocktrans%}{%endblock%}
+
+{%block text_content %}Hallo,
+
+Du hast gerade auf www.sozialer-funke.de einen Zugangsschlüssel angefordert.
+
+Um mit dem Schlüssel auf dein Konto zuzugreifen, klicke bitte auf folgenden Link:
+
+{{server_url}}{% url profiles.views.login_with_access_key access_key=key.key %}
+
+Falls Du keinen Zugangsschlüssel angefordert hast, ignoriere diese E-Mail bitte.
+
+Andreas vom Team von sozialer-funke.de{% endblock %}
+
+

@@ -1,0 +1,21 @@
+{% extends "layouts/smallbox.html" %}
+
+{%block title%}Anmelden{%endblock%}
+
+{% block content %}
+
+{% include "profiles/_login_form.html" with form=form next_url=next_url %}
+
+{% endblock %}
+
+{%block content_2 %}
+<h2>Passwort vergessen?</h2>
+<p>Wenn Du dein Passwort vergessen hast, kannst Du es hier zurücksetzen: <a href="{% url profiles.views.request_access_key %}">Passwort zurücksetzen</a></p>
+
+<h2>Noch kein Benutzerkonto?</h2>
+
+<p>
+	Wenn Du noch kein Benutzerkonto hast, kannst Du Dich kostenlos und unverbindlich registrieren: <a href="{% url profiles.views.signup %}">Jetzt registrieren</a>
+</p>
+
+{%endblock content_2 %}

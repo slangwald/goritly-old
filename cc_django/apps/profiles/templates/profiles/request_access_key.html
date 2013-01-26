@@ -1,0 +1,36 @@
+{% extends "layouts/smallbox.html" %}
+
+{%block title%}Zugangsschlüssel anfordern{%endblock%}
+
+{% block content %}
+
+
+<form class="login" action="{% url profiles.views.request_access_key %}" method="post">
+<fieldset>
+{% csrf_token %}
+<h3>Deine E-Mail Adresse</h3>
+
+{% if form.email.errors %}
+	<div class="popup_left">
+		<p>
+		{% for error in form.email.errors %}
+			{{error}} 
+		{% endfor %}
+		</p>
+	</div>
+{% endif %}
+
+<p><input name="email" value="{% if form.email.value%}{{form.email.value|escape}}{%endif%}"></p>
+
+<button type="submit">Zugangsschlüssel anfordern</button>
+</fieldset>
+</form>
+
+{% endblock %}
+
+{%block content_2 %}
+<p>
+	Hier kannst Du per E-Mail einen Zugangsschlüssel anfordern. Diesen kannst Du dann nutzen, um Dich anzumelden. Gib' hierzu bitte die E-Mail Adresse an, mit der Du dich bei uns registiert hast.
+</p>
+
+{%endblock%}

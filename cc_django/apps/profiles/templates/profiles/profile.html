@@ -1,0 +1,10 @@
+{% extends "layouts/smallbox.html" %}
+{% load i18n %}
+
+{%block title%}{{profile_user.profile.screenname}}{%endblock%}
+
+{% block content %}
+
+	{% include "profiles/_profile_summary.html" with user=profile_user %}
+	
+{%endblock%}

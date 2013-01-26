@@ -1,0 +1,25 @@
+{% extends "layouts/smallbox.html" %}
+{% load i18n %}
+
+{%block title%}Willkommen!{%endblock%}
+
+{%block head %}
+    <meta http-equiv="REFRESH" content="5;url={%if next_url %}{{next_url}}{%else%}{% url profiles.views.dashboard %}{%endif%}">
+{%endblock%}
+
+{% block content %}
+<div style="font-size:1.2em">
+<p style="margin-bottom:20px">
+    Geschafft, Du bist jetzt offiziell Mitglied auf sozialer-funke.de!
+</p>
+{%if next_url %}
+<p>
+    Wir leiten Dich in Kürze auf die Seite weiter, auf Du bei deiner Registrierung gelangen wolltest. Falls die Weiterleitung nicht automatisch funktionieren sollte: <a href="{{next_url}}">Hier klicken</a>
+</p>
+{%else%}
+<p>
+    Wir leiten Dich in Kürze auf deine persönliche Startseite weiter, dort erfährst Du alles weitere zur Benutzung unserer Plattform. Falls die Weiterleitung nicht automatisch funktionieren sollte: <a href="{% url profiles.views.dashboard %}">Hier klicken</a>
+</p>
+{%endif%}
+</div>
+{% endblock %}

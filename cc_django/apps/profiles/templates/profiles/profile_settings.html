@@ -1,0 +1,84 @@
+{% extends "layouts/smallbox.html" %}
+{% load i18n %}
+
+{%block title%}{% trans "Einstellungen" %}{%endblock%}
+
+{%block content_menu %}
+	<li><a href="{% url profiles.views.change_password %}">Passwort ändern</a></li>
+	<li><a href="{% url campaigns.views.newsletter_settings %}">Newsletter</a></li>
+	<li><a href="{% url profiles.views.change_profile_image %}">Profilfoto ändern</a></li>
+{%endblock%}
+
+{%block content%}
+<h3>User name</h3>
+<p style="background:#fff; padding:10px; font-size:1.2em;"> {{ user.profile.username}} &rarr; <a href="{% url profiles.views.change_username %}">{% trans "change" %}</a></p>
+
+<h3>Name</h3>
+<p style="background:#fff; padding:10px; font-size:1.2em;"> {{ user.profile.first_name }} {{ user.profile.last_name }} &rarr; <a href="{% url profiles.views.change_name %}">{% trans "change" %}</a></p>
+
+<h3>E-Mail</h3>
+<p style="background:#fff; padding:10px; font-size:1.2em;">{{request.user.email}} {% if request.user.profile.has_verified_email %}(verified){%else%}(not yet verified){%endif %} &rarr; <a href="{% url profiles.views.request_email_change_key %}">change</a></p>	
+
+{%endblock%}
+
+{% block content_2 %}
+
+<form action="{% url profiles.views.profile_settings %}" method="post">
+{% csrf_token %}
+
+{% if form.appearance_on_platform.errors %}
+	<p class="form_error">
+	{% for error in form.appearance_on_platform.errors %}
+		{{error}} 
+	{% endfor %}
+	</p>
+{% endif %}
+<h3>Öffentlich sichtbarer Name</h3>
+<ul style="list-style-type:none; padding-left:0;">
+{% for choice in form.appearance_on_platform.field.choices %}
+  <li style="padding:10px; background:#fff; font-size:1.2em;">
+    <input style="width:auto; margin:4px;" type="radio" name="appearance_on_platform" value="{{choice.0}}"
+      {% if appearance_on_platform == choice.0 %}
+         checked="checked"
+      {% endif %}/>
+    <label for="">{{choice.1}}</label>
+  </li>
+{% endfor %}
+</ul>
+
+<h3>{% trans "Benachrichtigungen" %}</h3>
+
+{% if form.notification_policy.errors %}
+	<p class="form_error">
+	{% for error in form.notification_policy.errors %}
+		{{error}} 
+	{% endfor %}
+	</p>
+{% endif %}
+
+<ul style="list-style-type:none; padding-left:0;">
+{% for choice in form.notification_policy.field.choices %}
+  <li style="padding:10px; background:#fff; font-size:1.2em;">
+    <input style="width:auto; margin:4px;" type="radio" name="notification_policy" value="{{choice.0}}"
+      {% if notification_policy == choice.0 %}
+         checked="checked"
+      {% endif %}/>
+    <label for="">{{choice.1}}</label>
+  </li>
+{% endfor %}
+</ul>
+
+<button type="submit">{% trans 'Einstellungen speichern' %}</button>
+</form>
+
+{% endblock %}
+
+{% block content_3 %}
+<h3>Konto löschen</h3>
+
+<p>
+	<a href="{% url profiles.views.request_account_deletion_key %}">Klicke hier</a> um Dein Benutzerkonto nach Bestätigung komplett zu löschen.
+</p>
+
+
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "layouts/smallbox.html" %}
+
+{%block title%}Please confirm{%endblock%}
+
+{% block content %}
+
+<p style="font-size:1.6em">
+    {{question}}
+    
+</p>
+<p style="font-size:2em;">
+    <a class="btn btn-success btn-large" href="{{yes}}"><i class="icon-ok"></i> {% if yesText %}{{yesText}}{%else%}Yes{%endif%}</a>{% if no %}
+    <a class="btn btn-danger btn-large" href="{{no}}"><i class="icon-minus-sign"></i> {% if noText %}{{noText}}{%else%}No{%endif%}</a>{%endif%}
+</p>
+{% endblock %}

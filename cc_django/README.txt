@@ -1,0 +1,2 @@
+All the code files in this repository (including all subdirectories) are copyright of Andreas Dewes, unless indicated otherwise.
+The code may not be used, reused, modified or copied in any way without written permission of the author.

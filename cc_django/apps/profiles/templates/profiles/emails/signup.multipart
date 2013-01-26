@@ -1,0 +1,11 @@
+{% extends "email.multipart" %}
+{% load i18n %}
+{%autoescape off%}
+{%block subject %}{% blocktrans %}Activate user account{%endblocktrans%}{%endblock%}
+
+{%block text_content %}Hi there,
+
+{{server_url}}{% url profiles.views.activate_account account_activation_key=key.key %}
+
+{% endblock %}
+{%endautoescape%}

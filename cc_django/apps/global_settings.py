@@ -1,0 +1,1 @@
+from cc_django.settings import *

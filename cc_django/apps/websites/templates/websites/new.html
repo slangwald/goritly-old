@@ -1,0 +1,10 @@
+{% extends "layouts/base.html" %}
+
+{%block title%}Create new website{%endblock%}
+
+{% block content %}
+<h2>Create Website Account</h2>
+{% include "websites/_website_form.html" with form=form next_url=next_url%}
+
+{% endblock %}
+

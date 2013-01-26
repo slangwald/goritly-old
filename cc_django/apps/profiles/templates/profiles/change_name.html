@@ -1,0 +1,45 @@
+{% extends "layouts/smallbox.html" %}
+{% load i18n %}
+
+{%block title%}{% trans "Name ändern" %}{%endblock%}
+
+{%block content_menu%}
+<li>
+	<a href="{% url profiles.views.profile_settings %}">Zurück</a>
+</li>
+{%endblock%}
+
+{% block content %}
+<form action="{% url profiles.views.change_name %}" method="post">
+{% csrf_token %}
+{% if form.first_name.errors %}
+	<div class="popup_left">
+		<p>		
+	{% for error in form.first_name.errors %}
+		{{form.first_name.label}}: {{error}} 
+	{% endfor %}
+		</p>
+	</div>
+{% endif %}
+{% if form.last_name.errors %}
+	<div class="popup_right">
+		<p>		
+	{% for error in form.last_name.errors %}
+		{{form.last_name.label}}: {{error}} 
+	{% endfor %}
+		</p>
+	</div>
+{% endif %}
+<div style="float:left; width:49%">
+<h3>{%trans "Vorname" %}</h3>
+{{form.first_name}}
+</div>
+<div style="float:right; width:49%">
+<h3>{%trans "Nachname" %}</h3>
+{{form.last_name}}	
+</div>
+
+<button type="submit">{% trans 'Name ändern' %}</button>
+</form>
+
+{% endblock %}

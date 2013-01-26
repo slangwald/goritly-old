@@ -1,0 +1,80 @@
+{% extends "layouts/smallbox.html" %}
+
+{%block title%}Profilfoto hochladen{%endblock%}
+
+{%block content_menu %}
+<li>
+	<a href="{% url profiles.views.profile_settings %}">Zurück</a>
+</li>
+{%endblock%}
+
+{% block content %}
+
+{% if request.user.profile.profile_image %}
+<h2>Dein aktuelles Profilfoto</h2>
+		
+			<p>
+			{% if request.user.profile.profile_image %}
+				<img style="border:4px solid #aaa; position:relative; margin:0;" height="{{request.user.profile.profile_image.height}}" width="{{request.user.profile.profile_image.width}}" src="{{request.user.profile.profile_image.url}}" />
+			{% endif %}
+			{% if request.user.profile.profile_image_small %}
+				<img style="border:4px solid #aaa; position:relative; margin:0;" height="{{request.user.profile.profile_image_small.height}}" width="{{request.user.profile.profile_image_small.width}}" src="{{request.user.profile.profile_image_small.url}}" />
+			{% endif %}
+			{% if request.user.profile.profile_image_thumbnail %}
+				<img style="border:4px solid #aaa; position:relative; margin:0;" height="{{request.user.profile.profile_image_thumbnail.height}}" width="{{request.user.profile.profile_image_thumbnail.width}}" src="{{request.user.profile.profile_image_thumbnail.url}}" />
+			{% endif %}
+
+			<br />
+			(<a href="{% url profiles.views.remove_profile_image %}">Foto entfernen</a>)
+
+			</p>
+
+<h2>Foto-Ausschnitt wählen</h2>
+
+<p>Hier kannst Du auswählen, welchen Teil deines Fotos wir für dein Profilfoto ausschneiden sollen, falls das Foto nicht die Idealmaße ({{original_image.desired_width}}x{{original_image.desired_height}} Pixel) besitzt.</p>
+
+<form action="{% url profiles.views.change_profile_image_clipping %}" method="post">
+{% csrf_token %}
+<fieldset>
+
+<div style="display:table; text-align:left; width:100%;">
+<div style="display:table-row;">
+<div style="display:table-cell;">
+	<div style=" background:#fff; position:relative; border:4px solid #000; width:{{original_image.desired_width_display}}px; height:{{original_image.desired_height_display}}px; overflow:hidden;">
+		<img width="{{original_image.original_width_display}}" height="{{original_image.original_height_display}}" src="{{request.user.profile.profile_image.base_image.url}}" style="position:relative; overflow:hidden; {{original_image.position_name}}:{{original_image.positions.0}}px;"/>
+	</div>
+	<input type="radio" name="clipping_position" value="1" style="width:20px;" /> {%if original_image.original_width_display > original_image.original_height_display %}Links{%else%}Oben{%endif%}
+</div>
+
+<div style="display:table-cell;">
+	<div style="background:#fff; position:relative; border:4px solid #000; width:{{original_image.desired_width_display}}px; height:{{original_image.desired_height_display}}px; overflow:hidden;">
+		<img width="{{original_image.original_width_display}}" height="{{original_image.original_height_display}}" src="{{request.user.profile.profile_image.base_image.url}}" style="position:relative; overflow:hidden; {{original_image.position_name}}:{{original_image.positions.1}}px; "/>
+	</div>
+	<input type="radio" name="clipping_position" value="2" style="width:20px;"/> Mitte
+</div>
+
+<div style="display:table-cell;">
+	<div style="background:#fff; position:relative; border:4px solid #000; width:{{original_image.desired_width_display}}px; height:{{original_image.desired_height_display}}px; overflow:hidden;">	
+		<img width="{{original_image.original_width_display}}" height="{{original_image.original_height_display}}" src="{{request.user.profile.profile_image.base_image.url}}" style="position:relative; overflow:hidden; {{original_image.position_name}}:{{original_image.positions.2}}px; "/>
+	</div>
+	<input type="radio" name="clipping_position" value="3" style="width:20px;" /> {%if original_image.original_width_display > original_image.original_height_display %}Rechts{%else%}Unten{%endif%}
+</div>
+</div>
+</div>
+
+<button type="submit">Ausschnitt auswählen</button>
+
+</fieldset>
+</form>
+
+{% else %}
+
+<p>Du hast noch kein Foto von Dir hochgeladen.</p>
+
+{% endif %}
+
+<h2>Ein neues Foto hochladen</h2>
+
+{% include "profiles/_image_upload_form.html" with form_url=form_url form=form %}
+
+{% endblock %}

@@ -1,0 +1,35 @@
+{%load i18n%}
+<form class="login" action="{% url profiles.views.login next_url=next_url %}" method="post">
+<fieldset>
+{% csrf_token %}
+<h3><label for="email">E-Mail</label></h3>
+
+	{% if form.email.errors %}
+		<div class="popup_left">
+			<p>
+			{% for error in form.email.errors %}
+				{{error}} 
+			{% endfor %}
+			</p>
+		</div>
+	{% endif %}
+
+{{form.email}}
+<h3><label form="password">Passwort</label></h3>
+
+	{% if form.password.errors %}
+		<div class="popup_left">
+			<p>
+			{% for error in form.password.errors %}
+				{{error}} 
+			{% endfor %}
+			</p>
+		</div>
+	{% endif %}
+
+
+{{form.password}}
+<br />
+<button type="submit">Anmelden</button>
+</fieldset>
+</form>

@@ -1,0 +1,37 @@
+{% load i18n %}
+{% if not blank %}
+<form class="signup" action="{{form_url}}" method="post">
+<fieldset>
+{%endif%}
+{% csrf_token %}
+	<h3>Name</h3>
+
+	{% if form.name.errors %}
+		<div class="popup_left">
+			<p>
+			{% for error in form.name.errors %}
+				{{error}} 
+			{% endfor %}
+			</p>
+		</div>
+	{% endif %}
+
+	{{form.name}}
+	
+	{% if form.accepted_terms.errors %}
+		<div class="popup_right">
+			<p>
+				Please accept the terms.
+			</p>
+		</div>
+	{% endif %}
+
+	<p>
+		<input type="checkbox" name="accepted_terms" style="width:20px;" {%if form.accepted_terms.value%}checked="checked"{%endif%}/>I accept the <a href="{% url terms%}" target="_blank">terms</a>.
+	</p>
+
+{%if not blank%}
+<button type="submit">Create new website account</button>
+</fieldset>
+</form>
+{%endif%}

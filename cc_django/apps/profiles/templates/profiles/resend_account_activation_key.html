@@ -1,0 +1,32 @@
+{% extends "layouts/smallbox.html" %}
+
+{%block title%}Benutzerkonto aktivieren{%endblock%}
+
+{% block content %}
+
+<p>
+	Hier kannst Du einen Schlüssel zur Aktivierung deines Benutzerkontos anfordern, falls Du diesen wider Erwarten nicht erhalten hast.
+</p>
+
+<form action="{% url profiles.views.resend_account_activation_key %}" method="post">
+<fieldset>
+{% csrf_token %}
+<h3>Deine E-Mail Adresse</h3>
+
+
+{% if form.email.errors %}
+	<p class="form_error">
+	{% for error in form.email.errors %}
+		{{error}} 
+	{% endfor %}
+	</p>
+{% endif %}
+
+
+<p><input name="email" value="{% if form.email.value%}{{form.email.value|escape}}{%endif%}"></p>
+
+<button type="submit">Aktivierungsschlüssel anfordern</button>
+</fieldset>
+</form>
+
+{% endblock %}

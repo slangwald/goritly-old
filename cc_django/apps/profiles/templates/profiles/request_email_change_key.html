@@ -1,0 +1,30 @@
+{% extends "layouts/smallbox.html" %}
+
+{%block title%}Change e-mail address{%endblock%}
+
+{% block content %}
+
+<p>
+	<a href="{% url profiles.views.profile_settings %}">Back</a>
+</p>
+
+<form action="{% url profiles.views.request_email_change_key %}" method="post">
+<fieldset>
+{% csrf_token %}
+<h3>Your new e-mail address</h3>
+
+{% if form.email.errors %}
+	<p class="form_error">
+	{% for error in form.email.errors %}
+		{{error}} 
+	{% endfor %}
+	</p>
+{% endif %}
+
+<p><input name="email" value="{% if form.email.value%}{{form.email.value|escape}}{%endif%}"></p>
+
+<button class="btn btn-primary" type="submit">Change address</button>
+</fieldset>
+</form>
+
+{% endblock %}
