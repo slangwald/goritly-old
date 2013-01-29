@@ -3,13 +3,15 @@
 {%block title%}Website Dashboard{%endblock%}
 
 {%block content %}
-<div class="row-fluid">
-  <!-- Main hero unit for a primary marketing message or call to action -->
-  <div class="hero-unit" style="position:relative; background:#888; overflow:hidden; color:#fff;">
-    <h1>Your Websites</h1>
-    <p class="teaser">You do not manage any website accounts. <br /><a class="btn btn-primary" href="{% url websites.views.new %}">&rarr;Create new website</a></p>
-    <p style="position:absolute; top:0px;  right:0px; font-family: entypo; font-size:400px; opacity:0.5;">&#128101;</p>
+<h1>Your Websites</h1>
+<p class="teaser">You do not manage any website accounts. lorem ipsum si dolor this is a very long website text that will not display properly here, or will it???</p> 
+<p><a class="btn btn-primary" href="{% url websites.views.new %}">&rarr;Create new website</a></p>
+{%endblock%}
 
-  </div>
-</div>
+{%block sidebar%}
+<li><a href="#dropdowns"><i class="icon-chevron-right"></i>Overview</a></li>
+<li><a href="#dropdowns"><i class="icon-chevron-right"></i>Marketing Mix</a></li>
+<li><a href="#dropdowns"><i class="icon-chevron-right"></i>Return on Investment</a></li>
+<li><a href="#dropdowns"><i class="icon-chevron-right"></i>Click Chain</a></li>
+<li><a href="#dropdowns"><i class="icon-chevron-right"></i>Attribution</a></li>
 {%endblock%}

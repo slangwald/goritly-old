@@ -116,7 +116,8 @@ TEMPLATE_DIRS = [
 USER_APPS = (
      'profiles',
      'websites',
-     'utils'
+     'utils',
+     'google_analytics'
     )
 
 INSTALLED_APPS = [
