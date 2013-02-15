@@ -8,13 +8,13 @@ from django.db import models
 from oauth2client.django_orm import FlowField
 from oauth2client.django_orm import CredentialsField
 
+from websites.models import Website
 
 class CredentialsModel(models.Model):
-  id = models.ForeignKey(User, primary_key=True)
+  website = models.ForeignKey(Website, unique = True)
   credential = CredentialsField()
-
 
 class CredentialsAdmin(admin.ModelAdmin):
     pass
 
-admin.site.register(CredentialsModel, CredentialsAdmin)
+#admin.site.register(CredentialsModel, CredentialsAdmin)

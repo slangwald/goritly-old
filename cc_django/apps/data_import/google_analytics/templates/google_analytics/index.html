@@ -1,0 +1,15 @@
+{%extends "layouts/base.html" %}
+{%block title%}Data Import - Google Analytics{%endblock%}
+
+{%block content%}
+    <p>
+        You are authenticated as {{accounts.username}} and have {{accounts.items|length}} associated accounts.
+        <ul>
+            {%for account in accounts.items%}
+                <li>
+                    {{account.name}} {{account.id}}
+                </li>
+            {%endfor%}
+        </ul>
+    </p>
+{%endblock%}

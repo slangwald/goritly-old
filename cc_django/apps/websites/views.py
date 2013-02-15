@@ -59,7 +59,7 @@ def dashboard(request):
 def set_active_website(request,website_id = None):
     if not website_id:
         request.session['active_website_id'] = None
-        return redirect(reverse("user_dashboards.views.index"))
+        return redirect(reverse("websites.views.index"))
     try:
         website = models.Website.objects.get(id = website_id)
     except models.Website.DoesNotExist:

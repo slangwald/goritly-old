@@ -117,7 +117,8 @@ USER_APPS = (
      'profiles',
      'websites',
      'utils',
-     'google_analytics'
+     'data_import.google_analytics',
+     'data_import.spreadsheet'
     )
 
 INSTALLED_APPS = [
