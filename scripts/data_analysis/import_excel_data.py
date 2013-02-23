@@ -4,8 +4,11 @@ import datetime
 import argparse
 
 import cc_django.apps.utils.models as models
+import cc_django.settings as settings
 
-models.orm.default_db = models.orm.pymongo.MongoClient()['test_analysis'] 
+from django.core.management import setup_environ
+
+setup_environ(settings)
 
 def marketing_cost_row_mapper(row,type):
     row['type']=type

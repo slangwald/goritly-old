@@ -1,6 +1,10 @@
 from settings_base import *
 
 import os.path
+import mongobean.orm as orm
+
+orm.default_db = orm.pymongo.MongoClient()['test_analysis'] 
+
 
 EMAIL_ACTION_REPEAT_TIME = 20
 EMAIL_INFO_FROM_ADDRESS = 'Andreas Dewes <andreas.dewes@gmail.com>'
