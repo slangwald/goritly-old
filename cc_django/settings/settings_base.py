@@ -117,6 +117,7 @@ USER_APPS = (
      'profiles',
      'websites',
      'utils',
+     'attribution',
      'data_import.google_analytics',
      'data_import.spreadsheet'
     )
