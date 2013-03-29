@@ -153,3 +153,40 @@ class Order(Commons):
 
     currency = models.IntegerField(default = 0)
 
+from websites.models import Website
+
+class SummaryCLV(Commons):
+	
+	"""
+	Represents the CLV information
+	"""
+	website = models.ForeignKey(Website)
+	
+	customer_id = models.CharField(max_length = 255)
+	order_id = models.CharField(max_length = 255)
+	date_click = models.DateTimeField()
+	channel  = models.CharField(max_length = 255, null = True)
+	partner = models.CharField(max_length = 255, null = True)
+	campaign = models.CharField(max_length = 255, null = True)
+	adgroup = models.CharField(max_length = 255,null = True)
+	adtitle = models.CharField(max_length = 255, null = True)
+	keyword = models.CharField(max_length = 255, null = True)
+	match_type = models.CharField(max_length = 255, null = True)
+	date_order = models.DateTimeField()
+	date_customer = models.DateTimeField()
+	date_clv = models.DateTimeField()
+	counter  = models.IntegerField(default = 0)
+	customer_age = models.IntegerField(default = 0)
+	contribution_to_clv = models.FloatField(default = 0.000)
+	marketing_cost = models.FloatField(default = 0.00)
+	revenue_order = models.FloatField(default = 0.00)
+	profit_order = models.FloatField(default = 0.00)
+	profit_order_after_returns = models.FloatField(default = 0.00)
+	revenue = models.FloatField(default = 0.00)
+	revenue_click = models.FloatField(default = 0.00)
+	profit = models.FloatField(default = 0.00)
+	profit_click = models.FloatField(default = 0.00)
+	clv = models.FloatField(default = 0.00)
+	clv_click = models.FloatField(default = 0.00)
+	marketing_cost_click = models.FloatField(default = 0.00)
+	roi = models.FloatField(default = 0.00)

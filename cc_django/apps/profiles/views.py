@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from django.template import Context, loader, RequestContext
-from django.shortcuts import render_to_response
 from django.http import HttpResponse,HttpResponseRedirect
 from django.views.decorators.csrf import csrf_protect
 from django.utils.translation import ugettext as _
@@ -31,6 +30,10 @@ import datetime
 import os.path
 import re
 import PIL.Image
+
+import logging
+logger = logging.getLogger('django')
+
 
 def _delete_user_profile(profile):
     profile.delete()
@@ -339,7 +342,7 @@ def activate_account(request,account_activation_key = None):
 	request.flash["error"] = _(u"The supplied key does not exist.")
 	raise Http404
     if not key.is_valid:
-	return render_to_response('information.html',{'title':_(u"User account already activated"),'text':_(u"It seems that your user account has already been activated.")},csrfContext)
+		return render_to_response('information.html',{'title':_(u"User account already activated"),'text':_(u"It seems that your user account has already been activated.")},csrfContext)
     if User.objects.filter(email = key.email,profile__isnull = False).count():
 	return render_to_response('information.html',{'title':_(u"A user with this e-mail address already exists."),'text':_(u"We are sorry, but the e-mail address you have chosen is already associated to a user account.")},csrfContext)
     else:
@@ -625,7 +628,8 @@ def login(request,email = None,next_url = ''):
 	if request.method == 'POST':
 		form = LoginForm(request.POST)
 		if form.is_valid():
-			email = form.cleaned_data['email']
+			email = form.cleaned_data['email'] 
+			logger.error(email)
 			password = form.cleaned_data['password']
 			users = User.objects.filter(email = email,profile__isnull = False)
 			if users.count():

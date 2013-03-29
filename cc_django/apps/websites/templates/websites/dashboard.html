@@ -2,16 +2,36 @@
 {%load static %}
 {%block title%}Website Dashboard{%endblock%}
 
-{%block content %}
+{%block content1 %}
+
 <h1>Your Websites</h1>
 <p class="teaser">You do not manage any website accounts. lorem ipsum si dolor this is a very long website text that will not display properly here, or will it???</p> 
-<p><a class="btn btn-primary" href="{% url websites.views.new %}">&rarr;Create new website</a></p>
+<p><a class="btn btn-primary" href="{% url websites.views.new %}">&rarr; Create new website</a></p>
+
 {%endblock%}
 
+{%block content %}
+<div id="line-chart"></div>
+
+{%endblock%}
+
+
 {%block sidebar%}
-<li><a href="#dropdowns"><i class="icon-chevron-right"></i>Overview</a></li>
-<li><a href="#dropdowns"><i class="icon-chevron-right"></i>Marketing Mix</a></li>
-<li><a href="#dropdowns"><i class="icon-chevron-right"></i>Return on Investment</a></li>
-<li><a href="#dropdowns"><i class="icon-chevron-right"></i>Click Chain</a></li>
-<li><a href="#dropdowns"><i class="icon-chevron-right"></i>Attribution</a></li>
+<li><h5>All channels and campaigns</h5></li>
+<li><a href="#dropdowns" onclick="$('#fb-campaigns').toggle();"><i class="icon-chevron-down"></i>Facebook</a>
+	<ul id="fb-campaigns" class="nav nav-tabs nav-stacked" style="display:none;">
+		<li><a href="#">Mothersday</a></li>
+		<li><a href="#">Christmas</a></li>
+		<li><a href="#">Chinese New Year</a></li>
+	</ul>
+</li>
+<li><a href="#dropdowns"><i class="icon-chevron-down"></i>SME</a></li>
+<li><a href="#dropdowns"><i class="icon-chevron-down"></i>Display</a></li>
+{%endblock%}
+
+
+{%block head_extra %}
+<link href="/static/styles/charts.css" rel="stylesheet">
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="/static/js/app/src/charts.js"></script>
 {%endblock%}

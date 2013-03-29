@@ -27,7 +27,7 @@ CLIENT_SECRETS = os.path.join(os.path.dirname(__file__), 'client_secrets.json')
 FLOW = flow_from_clientsecrets(
     CLIENT_SECRETS,
     scope='https://www.googleapis.com/auth/analytics.readonly',
-    redirect_uri='http://andreasdewesvmware.com:8000/import/google_analytics/auth_return')
+    redirect_uri='http://gpsfront.cleansy.org:5000/import/google_analytics/auth_return')
 FLOW.params['approval_prompt'] = 'force'
 
 @login_required()
