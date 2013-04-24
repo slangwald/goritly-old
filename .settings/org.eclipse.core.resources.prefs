@@ -1,0 +1,14 @@
+eclipse.preferences.version=1
+encoding//cc_django/apps/attribution/migrations/0001_initial.py=utf-8
+encoding//cc_django/apps/attribution/models.py=utf-8
+encoding//cc_django/apps/profiles/forms.py=utf-8
+encoding//cc_django/apps/profiles/mailer.py=utf-8
+encoding//cc_django/apps/profiles/migrations/0001_initial.py=utf-8
+encoding//cc_django/apps/profiles/migrations/0002_auto__chg_field_confirmationkey_created_by__chg_field_profile_profile_.py=utf-8
+encoding//cc_django/apps/profiles/models.py=utf-8
+encoding//cc_django/apps/profiles/views.py=utf-8
+encoding//cc_django/apps/utils/migrations/0001_initial.py=utf-8
+encoding//cc_django/apps/websites/migrations/0001_initial.py=utf-8
+encoding//cc_django/apps/websites/migrations/0002_initial.py=utf-8
+encoding//cc_django/apps/websites/models.py=utf-8
+encoding//cc_django/apps/websites/views.py=utf-8

@@ -2,16 +2,20 @@
 {%load static %}
 {%block title%}Website Dashboard{%endblock%}
 
-{%block content1 %}
-
-<h1>Your Websites</h1>
-<p class="teaser">You do not manage any website accounts. lorem ipsum si dolor this is a very long website text that will not display properly here, or will it???</p> 
-<p><a class="btn btn-primary" href="{% url websites.views.new %}">&rarr; Create new website</a></p>
-
-{%endblock%}
-
 {%block content %}
-<div id="line-chart"></div>
+
+
+<ul class="nav nav-tabs" id="charts-tabs">
+  <li><a href="#line-chart" data-toggle="tab">Line Chart</a></li>
+  <li><a href="#bubble-chart" data-toggle="tab">Bubble Chart</a></li>
+  <li><a href="#bar-chart" data-toggle="tab">Bar Chart</a></li>
+</ul>
+
+<div class="tab-content">
+  <div class="tab-pane active" id="line-chart"></div>
+  <div class="tab-pane" id="bubble-chart"></div>
+  <div class="tab-pane" id="bar-chart"></div>
+</div>
 
 {%endblock%}
 
@@ -34,4 +38,5 @@
 <link href="/static/styles/charts.css" rel="stylesheet">
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="/static/js/app/src/charts.js"></script>
+<script src="/static/js/app/src/main.js"></script>
 {%endblock%}

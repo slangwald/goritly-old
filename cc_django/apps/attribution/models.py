@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.db import models
 from django.contrib.auth.models import User
+from websites.models import Website
 
 import datetime
 import json
@@ -153,7 +154,7 @@ class Order(Commons):
 
     currency = models.IntegerField(default = 0)
 
-from websites.models import Website
+
 
 class SummaryCLV(Commons):
 	
