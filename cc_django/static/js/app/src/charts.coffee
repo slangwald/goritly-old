@@ -29,6 +29,7 @@ $(document).ready ->
   
   
   if $('#line-chart')
+    alert("dr")
     lineData = [{"date":"2013-03-04","weeks":47,"detail":{"f":16,"d":16,"s":16}},{"date":"2013-03-05","weeks":46,"detail":{"f":15,"d":15,"s":15}},{"date":"2013-03-06","weeks":42,"detail":{"f":14,"d":14,"s":14}},{"date":"2013-03-07","weeks":40,"detail":{"f":13,"d":13,"s":13}},{"date":"2013-03-08","weeks":36,"detail":{"f":12,"d":12,"s":12}},{"date":"2013-03-09","weeks":35,"detail":{"f":12,"d":12,"s":12}},{"date":"2013-03-10","weeks":39,"detail":{"f":13,"d":13,"s":13}},{"date":"2013-03-11","weeks":44,"detail":{"f":15,"d":15,"s":15}},{"date":"2013-03-12","weeks":44,"detail":{"f":15,"d":15,"s":15}},{"date":"2013-03-13","weeks":39,"detail":{"f":13,"d":13,"s":13}},{"date":"2013-03-14","weeks":34,"detail":{"f":11,"d":11,"s":11}},{"date":"2013-03-15","weeks":29,"detail":{"f":10,"d":10,"s":10}},{"date":"2013-03-16","weeks":40,"detail":{"f":13,"d":13,"s":13}},{"date":"2013-03-17","weeks":43,"detail":{"f":14,"d":14,"s":14}},{"date":"2013-03-18","weeks":47,"detail":{"f":16,"d":16,"s":16}},{"date":"2013-03-19","weeks":51,"detail":{"f":17,"d":17,"s":17}},{"date":"2013-03-20","weeks":50,"detail":{"f":17,"d":17,"s":17}},{"date":"2013-03-21","weeks":55,"detail":{"f":18,"d":18,"s":18}},{"date":"2013-03-22","weeks":55,"detail":{"f":18,"d":18,"s":18}},{"date":"2013-03-23","weeks":53,"detail":{"f":18,"d":18,"s":18}},{"date":"2013-03-24","weeks":48,"detail":{"f":16,"d":16,"s":16}},{"date":"2013-03-25","weeks":53,"detail":{"f":18,"d":18,"s":18}}]
     data = lineData
     margin = {top: 20, right: 20, bottom: 30, left: 50}
@@ -246,11 +247,11 @@ $(document).ready ->
         .data(lineData)  
         .enter()
     
-    g.append("svg:circle")  # create a new circle for each value
-      .attr("cy", (d) -> y(+d.clv)) # translate y value to a pixel
-      .attr("cx", (d,i) -> x(+d.cpl)) # translate x value
-      .attr("r", (d) -> scaleLeads(d.leads)) # radius of circle
-      .style("opacity", 0.6) # opacity of circle
+    g.append("svg:circle")                    # create a new circle for each value
+      .attr("cy", (d) -> y(+d.clv))           # translate y value to a pixel
+      .attr("cx", (d,i) -> x(+d.cpl))         # translate x value
+      .attr("r", (d) -> scaleLeads(d.leads))  # radius of circle
+      .style("opacity", 0.6)                  # opacity of circle
     g.append("text")
       .attr("dx", (d,i) -> x(+d.cpl))
       .attr("dy", (d,i) -> y(+d.clv))

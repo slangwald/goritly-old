@@ -63,7 +63,33 @@ class Visitor(Commons):
 
 class Customer(Commons):
     identifier = models.CharField(max_length = 255)
-    pass
+    def clickchain(self, date = None):
+        clicks = Click.objects.all().filter(customer=self)
+        return clicks
+    
+    def orders(self):
+        orders = Order.objects.all().filter(customer=self)
+        return orders
+    
+    def channels(self):
+        """
+        
+        """
+        return
+        
+    def campaigns(self):
+        return
+        
+    def partners(self):
+        return
+    
+    def keywords(self):
+        return
+    def clv(self, date):
+        """
+        the customers CLV (whole lifetime) at a specific date
+        """
+        return
 
 class Order(Commons):
     visitor     = models.ForeignKey(Visitor, null = True)
@@ -79,6 +105,8 @@ class Order(Commons):
     state       = models.CharField(max_length = 50, null = True)
     country     = models.CharField(max_length = 50, null = True)
     
+    def products(self):
+        return OrderProducts.objects.filter(order=self)
 
 class CustomerCLV(Commons):
     customer = models.ForeignKey(Customer)

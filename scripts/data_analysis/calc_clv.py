@@ -13,12 +13,11 @@ setup_environ(settings)
 
 from utils.models import *
 
-orders = Order.objects.all().order_by('ordered_at')
-
 customers = Customer.objects.all()
 for customer in customers:
-    orders = Order.objects.filter(customer_id=customer.id).order_by('ordered_at')
+    orders = customer.orders().order_by('ordered_at')
     clv = 0
+    print len(orders)
     if(len(orders)):
         order_counter = 1
         for order in orders:
@@ -34,6 +33,7 @@ for customer in customers:
             cust_clv.date     = order.ordered_at
             cust_clv.orders   = order_counter
             cust_clv.clv      = clv
-            cust_clv.save()
+            
+            #cust_clv.save()
             
             order_counter += 1

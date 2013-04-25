@@ -4,7 +4,8 @@
     $('#charts-tabs a').click(function(e) {
       return $(this).tab('show');
     });
-    return $('#charts-tabs a:last').tab('show');
+    $('#charts-tabs a:last').tab('show');
+    return $('.chzn-select').chosen();
   });
 
 }).call(this);

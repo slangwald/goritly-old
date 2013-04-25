@@ -29,6 +29,7 @@ import global_settings
 import websites.models as models
 import websites.forms as forms
 from profiles.views import login_required
+import utils.models as util_models
 
 class valid_website_required(object):
 
@@ -53,7 +54,18 @@ def index(request):
 @login_required()
 def dashboard(request):
     context = RequestContext(request,{})
-    return render_to_response('websites/dashboard.html',context)
+    
+    channels = None #map(lambda c: {'id': str(c.id), 'name': c.name}, util_models.Channel.objects.all())
+    campaigns = None #map(lambda c: {'id': str(c.id), 'name': c.name}, util_models.Campaign.objects.all())
+    partners = None #map(lambda p: {'id': str(p.id), 'name': p.name}, util_models.Partner.objects.all())
+    
+    
+    
+    return render_to_response('websites/dashboard.html', {'context'  : context, 
+                                                          'channels' : channels, 
+                                                          'campaigns': campaigns, 
+                                                          'partners' : partners
+                                                          })
 
 @login_required()
 def set_active_website(request,website_id = None):
