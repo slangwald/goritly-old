@@ -2,10 +2,13 @@
 (function() {
   $(document).ready(function() {
     $('#charts-tabs a').click(function(e) {
-      return $(this).tab('show');
+      $(this).tab('show');
+      if ($(this).attr('data-chart') === 'bubble') {
+        return drawBubbleChart();
+      }
     });
-    $('#charts-tabs a:last').tab('show');
-    return $('.chzn-select').chosen();
+    $('.chzn-select').chosen();
+    return drawBubbleChart();
   });
 
 }).call(this);

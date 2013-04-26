@@ -7,20 +7,76 @@
 
 <ul class="nav nav-tabs" id="charts-tabs">
   <li><a href="#line-chart" data-toggle="tab">Line Chart</a></li>
-  <li><a href="#bubble-chart" data-toggle="tab">Bubble Chart</a></li>
+  <li class="active"><a data-chart="bubble" href="#bubble-chart" data-toggle="tab">Bubble Chart</a></li>
   <li><a href="#bar-chart" data-toggle="tab">Bar Chart</a></li>
 </ul>
 
 <div class="tab-content">
-  <div class="tab-pane active" id="line-chart"></div>
-  <div class="tab-pane" id="bubble-chart"></div>
+  <div class="tab-pane" id="line-chart"></div>
+  <div class="tab-pane active" id="bubble-chart">
+      <svg style="height:800px;width:100%"></svg>
+  </div>
   <div class="tab-pane" id="bar-chart">
       <svg style="height:500px;width:100%"></svg>
   </div>
 </div>
 
 <script>
+var json_bubble = {{bubble_json|safe}};
+function drawBubbleChart() { 
+    nv.addGraph(function() {
+        var chart = nv.models.scatterChart()
+                      .showDistX(true)
+                      .showDistY(true)
+                      .showControls(true)
+                      .color(d3.scale.category20().range());
+        
+        chart.xAxis.tickFormat(d3.format('.02f'))
+        chart.yAxis.tickFormat(d3.format('.02f'))
+        
+        d3.select('#bubble-chart svg')
+            .datum(json_bubble)
+          .transition().duration(500)
+            .call(chart);
+        
+        nv.utils.windowResize(chart.update);
+        
+        console.log(randomData(4,40));
+        
+        return chart;
+    });
+    
+    function randomData(groups, points) { //# groups,# points per group
+      var data = [],
+          shapes = ['circle', 'cross', 'triangle-up', 'triangle-down', 'diamond', 'square'],
+          random = d3.random.normal();
+    
+      for (i = 0; i < groups; i++) {
+        data.push({
+          key: 'Group ' + i,
+          values: []
+        });
+    
+        for (j = 0; j < points; j++) {
+          data[i].values.push({
+            x: random()
+          , y: random()
+          , size: Math.random()
+          //, shape: shapes[j % 6]
+          });
+        }
+      }
+    
+      return data;
+    }
 
+}
+
+
+
+
+
+/*
 var testdata = [
   {
     "key" : "Quantity" ,
@@ -60,7 +116,7 @@ function days(num) {
 }
  /**************************************
   * Simple test data generator
-  */
+  * /
 
 function fakeActivityByDate() {
    var lineData = [];
@@ -90,7 +146,7 @@ function fakeActivityByDate() {
        key: 'Facebook',
      }
    ];
- }
+} */
 </script>
 {%endblock%}
 
@@ -131,11 +187,11 @@ function fakeActivityByDate() {
 <link href="/static/chosen/chosen.css" rel="stylesheet">
 <link href="/static/styles/charts.css" rel="stylesheet">
 <script src="/static/chosen/chosen.jquery.js"></script>
-<!--<script src="/static/js/d3.v3.min.js"></script> -->
+<!--<script src="/static/js/d3.v3.min.js"></script>-->
 <script src="/static/js/nv/lib/d3.v2.js"></script>
-<script src="/static/js/nv/nv.d3.js"
+<script src="/static/js/nv/nv.d3.js"></script>
 
-<script src="/static/js/app/src/charts.js"></script>
+<!--<script src="/static/js/app/src/charts.js"></script>-->
 <script src="/static/js/app/src/main.js"></script>
 
 {%endblock%}

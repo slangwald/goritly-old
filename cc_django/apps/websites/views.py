@@ -25,6 +25,9 @@ from django.db import IntegrityError
 from django.http import Http404
 from django.core.exceptions import PermissionDenied
 
+from django.core import serializers
+
+
 import global_settings
 import websites.models as models
 import websites.forms as forms
@@ -59,12 +62,37 @@ def dashboard(request):
     campaigns = None #map(lambda c: {'id': str(c.id), 'name': c.name}, util_models.Campaign.objects.all())
     partners = None #map(lambda p: {'id': str(p.id), 'name': p.name}, util_models.Partner.objects.all())
     
+    bubble_data = util_models.Attributions.objects.raw('SELECT *, SUM(cost) as sum_cost, SUM(`linear`) as sum_linear, SUM(orders) as sum_orders FROM utils_attributions GROUP BY channel_id')
     
+    bubble_chart = []
+    by_channel = {}
+    for bubble in bubble_data:
+        if not bubble.channel.name in by_channel:
+            by_channel[bubble.channel.name] = []
+        
+        realcost = float(bubble.sum_cost) / float(bubble.sum_orders)
+        reallinear = float(bubble.sum_linear) / float(bubble.sum_orders)
+        by_channel[bubble.channel.name].append(
+            {
+             'x': realcost,
+             'y': reallinear,
+             'size': int(bubble.orders)
+             }
+        )
+    for channel in by_channel:
+        bubble_chart.append({
+            'key': channel,
+            'values': by_channel[channel]
+        })
+        
+    
+    json_chart = json.dumps(bubble_chart)
     
     return render_to_response('websites/dashboard.html', {'context'  : context, 
                                                           'channels' : channels, 
                                                           'campaigns': campaigns, 
-                                                          'partners' : partners
+                                                          'partners' : partners,
+                                                          'bubble_json': json_chart
                                                           })
 
 @login_required()

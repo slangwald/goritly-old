@@ -44,7 +44,7 @@ class MatchType(CommonDimensionModel):
     pass
 
 class MarketingCost(Commons):
-    date        = models.DateTimeField()
+    date        = models.DateField()
     channel     = models.ForeignKey(Channel)
     partner     = models.ForeignKey(Partner)
     campaign    = models.ForeignKey(Campaign)
@@ -54,6 +54,18 @@ class MarketingCost(Commons):
     match_type  = models.ForeignKey(MatchType)
     cost        = models.FloatField(default = 0.00)
     clicks      = models.IntegerField(default=0)
+
+class Attributions(Commons):
+    date        = models.DateField()
+    channel     = models.ForeignKey(Channel)
+    campaign    = models.ForeignKey(Campaign)
+    u_shape     = models.FloatField(default = 0.00)
+    linear      = models.FloatField(default = 0.00)
+    first_click = models.FloatField(default = 0.00)
+    last_click  = models.FloatField(default = 0.00)
+    decay       = models.FloatField(default = 0.00)
+    cost        = models.FloatField(default = 0.00)
+    orders      = models.IntegerField(default = 0)
 
 class BrandKeywords(CommonDimensionModel):
     pass
@@ -107,13 +119,23 @@ class Order(Commons):
     
     def products(self):
         return OrderProducts.objects.filter(order=self)
+    def clicks(self):
+        return Click.objects.filter(order=self)
 
 class CustomerCLV(Commons):
-    customer = models.ForeignKey(Customer)
-    date     = models.DateField()
-    orders   = models.IntegerField(default=0)
-    clv      = models.FloatField(default = 0.00)
-    
+    customer    = models.ForeignKey(Customer)
+    date        = models.DateField()
+    days        = models.IntegerField(default=0)
+    orders      = models.IntegerField(default=0)
+    clv         = models.FloatField(default = 0.00)
+    channel     = models.ForeignKey(Channel)
+    campaign    = models.ForeignKey(Campaign)
+    u_shape     = models.FloatField(default = 0.00)
+    linear      = models.FloatField(default = 0.00)
+    first_click = models.FloatField(default = 0.00)
+    last_click  = models.FloatField(default = 0.00)
+    decay       = models.FloatField(default = 0.00)
+    cost        = models.FloatField(default = 0.00)
 
 
 class ProductCategory(CommonDimensionModel):
