@@ -1,4 +1,3 @@
-# Create your views here.
 # -*- coding: utf-8 -*-
 from functools import wraps
 import urllib
@@ -13,7 +12,7 @@ import PIL.Image
 
 from django.template import Context, loader, RequestContext
 from django.http import HttpResponse,HttpResponseRedirect
-from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.utils.translation import ugettext as _
 from django.shortcuts import render_to_response,redirect
 from django.core.urlresolvers import reverse,resolve
@@ -25,8 +24,11 @@ from django.db import IntegrityError
 from django.http import Http404
 from django.core.exceptions import PermissionDenied
 
+from django.core.cache import cache
+
 from django.core import serializers
 
+import logging
 
 import global_settings
 import websites.models as models
@@ -55,14 +57,195 @@ def index(request):
     return render_to_response('websites/index.html',context)
 
 @login_required()
+@csrf_exempt
+def filter(request):
+    """
+    AJAX function is excluded from CSRF protection
+    """
+    request.session['filter-channel'] = []
+    if('filter-channel' in request.POST):
+        request.session['filter-channel'] = request.POST.getlist('filter-channel')
+    
+    request.session['filter-campaign'] = []    
+    if('filter-campaign' in request.POST):
+        request.session['filter-campaign'] = request.POST.getlist('filter-campaign')
+    
+    request.session.modified = True
+    #print request.session['filter-channel']
+    #return HttpResponse('', content_type="text/json")
+    return HttpResponseRedirect('/websites/dashboard')
+
+
+
+@login_required()
 def dashboard(request):
     context = RequestContext(request,{})
     
-    channels = None #map(lambda c: {'id': str(c.id), 'name': c.name}, util_models.Channel.objects.all())
-    campaigns = None #map(lambda c: {'id': str(c.id), 'name': c.name}, util_models.Campaign.objects.all())
-    partners = None #map(lambda p: {'id': str(p.id), 'name': p.name}, util_models.Partner.objects.all())
+    channels  = cache.get('channels')
+    if not channels:
+        channels = get_channels()
+        cache.set('channels', channels, 3600)
     
-    bubble_data = util_models.Attributions.objects.raw('SELECT *, SUM(cost) as sum_cost, SUM(`linear`) as sum_linear, SUM(orders) as sum_orders FROM utils_attributions GROUP BY channel_id')
+    
+    campaigns = cache.get('campaigns')
+    if not campaigns:
+        campaigns = get_campaigns()
+        cache.set('campaigns', campaigns, 3600)
+    
+    partners  = cache.get('partners')
+    if not partners:
+        partners = get_partners()
+        cache.set('partners', partners, 3600)
+    
+    
+    #bubble_json = cache.get('1bubble_json')
+    #if not bubble_json:
+    bubble_json = get_bubble_chart_json(session=request.session)
+    #    cache.set('bubble_json', bubble_json, 3600)
+    
+    #line_json = cache.get('1line_json')
+    #if not line_json: 
+    line_json = get_line_chart_json(session=request.session)
+    #    cache.set('line_json', line_json, 3600)
+    
+    bar_json = get_bar_chart_json(session=request.session)
+    
+    #channels  = None
+    #campaigns = None
+    partners  = None
+    
+    filter = {}
+    if 'filter-channel' in request.session:
+        filter['channel'] = request.session['filter-channel']
+    if 'filter-campaign' in request.session:
+        filter['campaign'] = request.session['filter-campaign']
+    print filter
+    return render_to_response('websites/dashboard.html', {'request': request,
+                                                          'filter': filter,
+                                                          'context'  : context, 
+                                                          'channels' : channels, 
+                                                          'campaigns': campaigns, 
+                                                          'partners' : partners,
+                                                          'bubble_json': bubble_json,
+                                                          'line_json': line_json,
+                                                          'bar_json': bar_json
+                                                          })
+
+def get_partners():
+    partners = map(lambda p: {'id': str(p.id), 'name': p.name}, util_models.Partner.objects.all())
+    return partners
+
+def get_campaigns():
+    campaigns = map(lambda c: {'id': str(c.id), 'name': c.name}, util_models.Campaign.objects.all())
+    return campaigns
+
+def get_channels():
+    channels = map(lambda c: {'id': str(c.id), 'name': c.name}, util_models.Channel.objects.all())
+    return channels
+def get_bar_chart_json(session):
+    
+    filter = ''
+    if 'filter-campaign' in session:
+        if len(session['filter-campaign']):
+            filter =  ' campaign_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-campaign']))
+    if 'filter-channel' in session:
+        if len(session['filter-channel']):
+            if filter != "":
+                filter += " AND "
+            filter += ' channel_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-channel']))
+    
+    if filter != "":
+        filter = ' WHERE ' + filter
+    
+    bar_data = util_models.CustomerCLV.objects.raw('SELECT id, `date`, SUM(`linear`) as sum_linear, channel_id FROM utils_customerclv ' + filter + ' GROUP BY `date`, channel_id ORDER BY `date`')
+    by_channel = {}
+    bar_chart = []
+    dates_available = {}
+    
+
+    for bar in bar_data:
+        date = int(bar.date.strftime('%s000'))
+        if not date in dates_available:
+            dates_available[date] = date
+    
+    for bar in bar_data:
+        date = int(bar.date.strftime('%s000'))
+        if not bar.channel.name in by_channel:
+            by_channel[bar.channel.name] = {}
+            for date_check in dates_available:
+                by_channel[bar.channel.name][date_check] = {
+                                                      'x': date_check,
+                                                      'y': 0
+                                                      }
+        
+        by_channel[bar.channel.name][date] = {
+             'x': date,
+             'y': float(bar.sum_linear),
+             }
+    
+    by_channel_clean = {}
+    for channel in by_channel:
+        for date in by_channel[channel]:
+            if not channel in by_channel_clean:
+                by_channel_clean[channel] = []
+                
+            by_channel_clean[channel].append(by_channel[channel][date])
+    
+    for channel in by_channel_clean:
+        bar_chart.append({
+            'key': channel,
+            'values': by_channel_clean[channel]
+        })
+        
+    
+    
+    return json.dumps(bar_chart)
+
+def get_line_chart_json(session):
+    
+    filter = ''
+    if 'filter-campaign' in session:
+        if len(session['filter-campaign']):
+            filter =  ' AND campaign_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-campaign']))
+    if 'filter-channel' in session:
+        if len(session['filter-channel']):
+            filter += ' AND channel_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-channel']))
+    
+    
+    line_data = util_models.CustomerCLV.objects.raw('select `id`, `date`, AVG(`days`) as avg_days ,`channel_id` FROM utils_customerclv WHERE (`linear`/`cost` * 100) >= 100 ' + filter + ' GROUP BY `date`, `channel_id` ORDER BY `date`')
+    
+    values = []
+    for line in line_data:
+        date = str(line.date)
+        values.append({
+           'x': int(line.date.strftime('%s000')),
+           'y': float(line.avg_days)
+        })
+        
+    line_chart = [{
+        'key': 'days to reach 100% ROI',
+        'values': values
+    }]
+    return json.dumps(line_chart)
+
+def get_bubble_chart_json(session):
+    filter = ''
+    if 'filter-campaign' in session:
+        if len(session['filter-campaign']):
+            filter =  ' campaign_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-campaign']))
+    if 'filter-channel' in session:
+        if len(session['filter-channel']):
+            if filter != "":
+                filter += " AND "
+            filter += ' channel_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-channel']))
+    
+    if filter != "":
+        filter = ' WHERE ' + filter
+    
+    
+    
+    
+    bubble_data = util_models.Attributions.objects.raw('SELECT *, SUM(cost) as sum_cost, SUM(`linear`) as sum_linear, SUM(orders) as sum_orders FROM utils_attributions ' + filter + ' GROUP BY channel_id')
     
     bubble_chart = []
     by_channel = {}
@@ -86,14 +269,7 @@ def dashboard(request):
         })
         
     
-    json_chart = json.dumps(bubble_chart)
-    
-    return render_to_response('websites/dashboard.html', {'context'  : context, 
-                                                          'channels' : channels, 
-                                                          'campaigns': campaigns, 
-                                                          'partners' : partners,
-                                                          'bubble_json': json_chart
-                                                          })
+    return json.dumps(bubble_chart)
 
 @login_required()
 def set_active_website(request,website_id = None):

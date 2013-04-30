@@ -50,13 +50,13 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="/websites/dashboard">Budget GPS</a>
+          <a class="brand" href="/websites/dashboard">DemandMining</a>
           <div class="nav-collapse">
             <ul class="nav">
               {%if request.user.is_authenticated %}
               {%if request.active_website %}
               <li><a href="{%url websites.views.dashboard %}"><i class="icon-th-large"></i> Dashboard</a></li>
-                  <li class="dropdown" id="menu2">
+                  <!--<li class="dropdown" id="menu2">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#menu2">
                       Data
                       <b class="caret"></b>
@@ -65,7 +65,7 @@
                       <li><a href="{%url data_import.google_analytics.views.index %}">Google Analytics</a></li>
                       <li><a href="{%url data_import.spreadsheet.views.index %}">Spreadsheet</a></li>
                     </ul>
-                  </li>
+                  </li>-->
               {%else %}
               <li><a href="{%url websites.views.new %}">Create new website</a></li>
               {% endif %}
@@ -83,16 +83,16 @@
                   <b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu">
-                    {%if request.active_website %}
+                    <!--{%if request.active_website %}
                       <li><a href="">Settings</a></li>
                       <li><a href="">Account</a></li>
                     {%else%}
                       <li><a href="{%url profiles.views.profile_settings %}">Settings</a></li>
                       <li><a href="{%url profiles.views.profile %}">Profile</a></li>
-                    {%endif%}
+                    {%endif%} -->
                   {% if request.user_websites.count %}
                   <li class="divider"></li>
-                  <li><p style="padding-left:20px">Use Conversion Cow as:</p></li>
+                  <li><p style="padding-left:20px">active website:</p></li>
                     {% for website in request.user_websites %}
                     <li><a href="{% url websites.views.set_active_website website.id %}">{{website.name}} {%if request.active_website == website %}<span class="menu_icon">&#10003;</span>{%endif%}</a></li>
                     {%endfor%}

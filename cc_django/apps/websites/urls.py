@@ -8,4 +8,5 @@ urlpatterns = patterns('',
     url(r'^new$',views.new),
     url(r'^dashboard$',views.dashboard),
     url(r'^set_active_website/(\d+)?$',views.set_active_website),
+    url(r'^filter',views.filter),
     )

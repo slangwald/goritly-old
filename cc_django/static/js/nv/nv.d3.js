@@ -4778,8 +4778,8 @@ nv.models.lineWithFocusChart = function() {
   // Public Variables with Default Settings
   //------------------------------------------------------------
 
-  var lines = nv.models.line()
-    , lines2 = nv.models.line()
+  var lines = nv.models.line().interpolate("monotone")
+    , lines2 = nv.models.line().interpolate("monotone")
     , xAxis = nv.models.axis()
     , yAxis = nv.models.axis()
     , x2Axis = nv.models.axis()
@@ -9466,8 +9466,9 @@ nv.models.scatter = function() {
           pointPaths.enter().append('path')
               .attr('class', function(d,i) { return 'nv-path-'+i; });
           pointPaths.exit().remove();
+          
           pointPaths
-              .attr('d', function(d) { return 'M' + d.data.join('L') + 'Z'; });
+              .attr('d', function(d) { return 'M' + d.data.join('L') + 'Z';});
 
           pointPaths
               .on('click', function(d) {
@@ -9903,8 +9904,8 @@ nv.models.scatterChart = function() {
     , tooltips     = true
     , tooltipX     = function(key, x, y) { return '<strong>' + x + '</strong>' }
     , tooltipY     = function(key, x, y) { return '<strong>' + y + '</strong>' }
-    //, tooltip      = function(key, x, y) { return '<h3>' + key + '</h3>' }
-    , tooltip      = null
+    , tooltip      = function(key, x, y) { return '<h3>' + key + '</h3>' }
+    //, tooltip      = null
     , state = {}
     , defaultState = null
     , dispatch     = d3.dispatch('tooltipShow', 'tooltipHide', 'stateChange', 'changeState')

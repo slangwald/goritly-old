@@ -49,10 +49,11 @@ for customer in customers:
                 first_ordered_at = order.ordered_at
             
             order_products = OrderProducts.objects.filter(order_id=order.id)
-            costs = sum(map(lambda op: op.cost_per_unit * op.qty, order_products))
-            #order.value = order.revenue - costs
+            costs_product = sum(map(lambda op: op.cost_per_unit * op.qty, order_products))
+            # costs_returns
+            # order.value = order.revenue - (costs + cost_returns)
             order.value = order.revenue
-            #order.save()
+            # order.save()
             clv               += order.value
             
             clicks = order.clicks()

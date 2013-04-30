@@ -182,25 +182,27 @@ class CsvOrders(CsvImporter):
             return
         
         visitor,  created = Visitor.objects.get_or_create(identifier= 'cust_' + row[3])
-        if created:
-            visitor.save()
         customer, created = Customer.objects.get_or_create(identifier=row[3])
-        if created:
-            customer.save()
+        
         print "%s - %s" % (row[3], customer.id)
+        
         order_date = datetime.datetime.strptime(row[2], '%m/%d/%Y')
         o, created_order = Order.objects.get_or_create(customer_id=customer.id, 
                                                        order_id=row[1],
                                                        ordered_at=order_date)
         
-        o.visitor_id     = visitor.id
-        o.customer_id    = customer.id
-        o.order_id    = row[1]
-        o.ordered_at  = order_date
+        if created_order:
+            o.visitor_id  = visitor.id
+            o.customer_id = customer.id
+            o.order_id    = row[1]
+            o.ordered_at  = order_date
+            o.revenue     = 0
+            o.tax         = 0
+            o.shipping    = 0
+
+        o.revenue     += row[8]
+        o.tax         += row[10]
         
-        o.revenue     = row[8]
-        o.tax         = row[10]
-        o.shipping    = 0
         
         o.city        = None
         o.post_code   = None

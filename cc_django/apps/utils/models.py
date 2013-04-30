@@ -154,8 +154,10 @@ class OrderProducts(Commons):
     price_per_unit = models.FloatField()
     cost_per_unit = models.FloatField()
     
-
-
+class OrderProductsReturns(Commons):
+    order = models.ForeignKey(Order)
+    product = models.ForeignKey(Product)
+    qty = models.FloatField(default = 1)
 
 class CustomerIdMap(Commons):
     visitor = models.ForeignKey(Visitor)

@@ -92,7 +92,25 @@ TEMPLATE_LOADERS = (
 #     'django.template.loaders.eggs.Loader',
 )
 
+# When using unix domain sockets
+# Note: ``LOCATION`` needs to be the same as the ``unixsocket`` setting
+# in your redis.conf
+"""
+CACHES = {
+    'default': {
+        'BACKEND': 'redis_cache.RedisCache',
+        'LOCATION': '/var/run/redis/redis.sock',
+        'OPTIONS': {
+            'DB': 1,
+            'PASSWORD': '',
+            'PARSER_CLASS': 'redis.connection.HiredisParser'
+        },
+    },
+}
+"""
+INTERNAL_IPS = ('127.0.0.1','192.168.56.1')
 MIDDLEWARE_CLASSES = (
+    #'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -123,6 +141,8 @@ USER_APPS = (
     )
 
 INSTALLED_APPS = [
+    #'debug_toolbar',
+    #'redis_cache',
     'south',
     'djcelery',
     'django.contrib.auth',

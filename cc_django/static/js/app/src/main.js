@@ -4,11 +4,17 @@
     $('#charts-tabs a').click(function(e) {
       $(this).tab('show');
       if ($(this).attr('data-chart') === 'bubble') {
-        return drawBubbleChart();
+        drawBubbleChart();
+      }
+      if ($(this).attr('data-chart') === 'line') {
+        drawLineChart();
+      }
+      if ($(this).attr('data-chart') === 'bar') {
+        return drawBarChart();
       }
     });
     $('.chzn-select').chosen();
-    return drawBubbleChart();
+    return drawLineChart();
   });
 
 }).call(this);

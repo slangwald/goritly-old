@@ -26,7 +26,7 @@ This script implements various forms of click attribution, e.g.
 - first click
 - exponential decay
 - u shape (40-20-40)
-- 
+- linear
 """
 
 
