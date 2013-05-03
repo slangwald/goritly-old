@@ -50,8 +50,8 @@ function drawCalendar() {
         var format = d3.time.format("%Y-%m-%d");
         
         
-        var to = format.parse('{{filter.to}}') || new Date();
-        var from = format.parse('{{filter.from}}') || new Date(to.getTime() - 1000 * 60 * 60 * 24 * 14);
+        var to = format.parse($('#filter-date-to').val()) || new Date();
+        var from = format.parse($('#filter-date-from').val()) || new Date(to.getTime() - 1000 * 60 * 60 * 24 * 14);
         
         function pad(n){return n<10 ? '0'+n : n}
         
