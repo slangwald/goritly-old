@@ -81,6 +81,9 @@ def filter(request):
         request.session['filter-date-from'] = request.POST['filter-date-from']
         request.session['filter-date-to']   = request.POST['filter-date-to']
     
+    if 'model' in request.POST:
+        request.session['model'] = request.POST['model']
+    
     request.session.modified = True
     return HttpResponseRedirect('/websites/dashboard')
 
@@ -89,6 +92,9 @@ def filter(request):
 @login_required()
 def dashboard(request):
     context = RequestContext(request,{})
+    
+    if 'model' not in request.session:
+        request.session['model'] = 'linear'
     
     channels  = cache.get('channels')
     if not channels:
@@ -133,8 +139,12 @@ def dashboard(request):
     if('filter-date-from' in request.session and 'filter-date-to' in request.session):
         filter['from'] = request.session['filter-date-from']
         filter['to'] = request.session['filter-date-to']
+    
+    if 'model' in request.session:
+        filter['model'] = request.session['model']
+    
+    models = get_models_available()
 
-    print filter
     return render_to_response('websites/dashboard.html', {'request'    : request,
                                                           'filter'     : filter,
                                                           'context'    : context, 
@@ -143,8 +153,21 @@ def dashboard(request):
                                                           'partners'   : partners,
                                                           'bubble_json': bubble_json,
                                                           'line_json'  : line_json,
-                                                          'bar_json'   : bar_json
+                                                          'bar_json'   : bar_json,
+                                                          'models_available': models
                                                           })
+
+def get_models_available():
+    models = [
+              {'id': 'linear'     , 'label': 'Linear'                },
+              {'id': 'u_shape'    , 'label': 'U-Shape (40-20-40)'    },
+              {'id': 'first_click', 'label': 'First Click'           },
+              {'id': 'last_click' , 'label': 'Last Click'            },
+              {'id': 'decay'      , 'label': 'exponential/time Decay'}
+             ]
+    
+    return models
+    
 
 def get_partners():
     partners = map(lambda p: {'id': str(p.id), 'name': p.name}, util_models.Partner.objects.all())
@@ -185,7 +208,8 @@ def get_bar_chart_json(session):
     if filter != "":
         filter = ' WHERE ' + filter
     
-    bar_data = util_models.CustomerCLV.objects.raw('SELECT id, `first_ordered_at` as `date`, AVG(`linear`) as sum_linear, channel_id FROM utils_customerclv ' + filter + ' GROUP BY `first_ordered_at`, channel_id ORDER BY `date` DESC')
+    model = session['model']
+    bar_data = util_models.CustomerCLV.objects.raw('SELECT id, `first_ordered_at` as `date`, AVG(`' + model + '`) as sum_linear, channel_id FROM utils_customerclv ' + filter + ' GROUP BY `first_ordered_at`, channel_id ORDER BY `date` DESC')
     by_channel = {}
     bar_chart = []
     dates_available = {}
@@ -241,8 +265,8 @@ def get_line_chart_json(session):
         if len(session['filter-partner']):
             filter += ' AND partner_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-partner']))
     
-    
-    line_data = util_models.CustomerCLV.objects.raw('select `id`, `date`, AVG(`days`) as avg_days ,`channel_id` FROM utils_customerclv WHERE (`linear`/`cost` * 100) >= 100 ' + filter + ' GROUP BY `date` ORDER BY `date`')
+    model = session['model']
+    line_data = util_models.CustomerCLV.objects.raw('select `id`, `date`, AVG(`days`) as avg_days ,`channel_id` FROM utils_customerclv WHERE (`' + model + '`/`cost` * 100) >= 100 ' + filter + ' GROUP BY `date` ORDER BY `date`')
     
     values = []
     for line in line_data:
@@ -286,8 +310,8 @@ def get_bubble_chart_json(session):
     
     
     
-    
-    bubble_data = util_models.Attributions.objects.raw('SELECT *, SUM(cost) as sum_cost, SUM(`linear`) as sum_linear, SUM(orders) as sum_orders FROM utils_attributions ' + filter + ' GROUP BY channel_id')
+    model = session['model']
+    bubble_data = util_models.Attributions.objects.raw('SELECT *, SUM(cost) as sum_cost, SUM(`' + model + '`) as sum_linear, SUM(orders) as sum_orders FROM utils_attributions ' + filter + ' GROUP BY channel_id')
     
     bubble_chart = []
     by_channel = {}

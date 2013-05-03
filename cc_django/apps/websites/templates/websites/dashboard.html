@@ -14,7 +14,15 @@
 <div class="tab-content">
   <div class="tab-pane active" id="line-chart">
       <div class="well well-small">
-          How much days did it take <i>in average</i> for customers to reach <strong>100%</strong> Return on Investment?
+          How much days did it take <i>in average</i> for customers to reach 
+          <select name="roi" class="chzn-select" size="2">
+              <option selected="selected" value="100">100%</option>
+              <option value="50">50%</option>
+              <option value="75">75%</option>
+              <option value="125">125%</option>
+              <option value="150">150%</option>
+              <option value="200">200%</option>
+          </select> Return on Investment?
           <br /><small>(Only for customers who joined with the channels and campaigns specified in the filter)</small>
       </div>
       <svg style="height:600px;width:800px"></svg>
@@ -197,6 +205,13 @@ function drawBarChart() {
 <form id="filter-form" action="/websites/filter" method="post">
   <fieldset>
     <legend>Filter</legend>
+<label for="model">Model</label>
+<select name="model" class="chzn-select">
+{% for model in models_available %}
+<option {% if model.id in filter.model %}selected="selected"{% endif %} value="{{model.id}}">{{model.label}}</option>
+{% endfor %}
+</select>
+
 
 <label for="filter-channel">Date</label>
 <input name="filter-date-from" id="filter-date-from" type="hidden"  />
