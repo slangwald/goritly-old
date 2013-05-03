@@ -20,14 +20,100 @@
       <svg style="height:600px;width:800px"></svg>
   </div>
   <div class="tab-pane" id="bubble-chart">
+      <div class="well well-small">
+          How much days did it take <i>in average</i> for customers to reach <strong>100%</strong> Return on Investment?
+          <br /><small>(Only for customers who joined with the channels and campaigns specified in the filter)</small>
+      </div>
       <svg style="height:600px;width:800px"></svg>
   </div>
   <div class="tab-pane" id="bar-chart">
+      <div class="well well-small">
+          How much days did it take <i>in average</i> for customers to reach <strong>100%</strong> Return on Investment?
+          <br /><small>(Only for customers who joined with the channels and campaigns specified in the filter)</small>
+      </div>
       <svg style="height:400px;width:800px"></svg>
   </div>
+  
 </div>
 
 <script>
+
+/* Special date widget */
+       $('document').ready(function(){
+        var format = d3.time.format("%Y-%m-%d");
+        
+        
+        var to = format.parse('{{filter.to}}') || new Date();
+        var from = format.parse('{{filter.from}}') || new Date(to.getTime() - 1000 * 60 * 60 * 24 * 14);
+        
+        function pad(n){return n<10 ? '0'+n : n}
+        
+        $('#filter-date-from').val(from.getFullYear() + '-' + pad(from.getMonth(true)+1) + '-' + pad(from.getDate()));
+        $('#filter-date-to').val(to.getFullYear() + '-' + pad(to.getMonth(true)+1) + '-' + pad(to.getDate()));
+        console.log($('#filter-date-to').val());
+        
+        
+        $('#datepicker-calendar').DatePicker({
+          inline: true,
+          date: [from, to],
+          calendars: 3,
+          mode: 'range',
+          current: new Date(to.getFullYear(), to.getMonth()-1, 1),
+          onChange: function(dates,el) {
+            $('#filter-date-from').val(dates[0].getFullYear() + '-' + pad(dates[0].getMonth(true)+1) + '-' + pad(dates[0].getDate()));
+            $('#filter-date-to').val(dates[1].getFullYear() + '-' + pad(dates[1].getMonth(true)+1) + '-' + pad(dates[1].getDate()));
+            console.log($('#filter-date-to').val());
+            // update the range display
+            $('#date-range-field span').text(dates[0].getDate()+' '+dates[0].getMonthName(true)+', '+dates[0].getFullYear()+' - '+
+                                        dates[1].getDate()+' '+dates[1].getMonthName(true)+', '+dates[1].getFullYear());
+          }
+        });
+        
+        // initialize the special date dropdown field
+        $('#date-range-field span').text(from.getDate()+' '+from.getMonthName(true)+', '+from.getFullYear()+' - '+
+                                        to.getDate()+' '+to.getMonthName(true)+', '+to.getFullYear());
+        
+        // bind a click handler to the date display field, which when clicked
+        // toggles the date picker calendar, flips the up/down indicator arrow,
+        // and keeps the borders looking pretty
+        $('#date-range-field').bind('click', function(){
+          $('#datepicker-calendar').toggle();
+          if($('#date-range-field a').text().charCodeAt(0) == 9660) {
+            // switch to up-arrow
+            $('#date-range-field a').html('&#9650;');
+            $('#date-range-field').css({borderBottomLeftRadius:0, borderBottomRightRadius:0});
+            $('#date-range-field a').css({borderBottomRightRadius:0});
+          } else {
+            // switch to down-arrow
+            $('#date-range-field a').html('&#9660;');
+            $('#date-range-field').css({borderBottomLeftRadius:5, borderBottomRightRadius:5});
+            $('#date-range-field a').css({borderBottomRightRadius:5});
+          }
+          return false;
+        });
+        
+        // global click handler to hide the widget calendar when it's open, and
+        // some other part of the document is clicked.  Note that this works best
+        // defined out here rather than built in to the datepicker core because this
+        // particular example is actually an 'inline' datepicker which is displayed
+        // by an external event, unlike a non-inline datepicker which is automatically
+        // displayed/hidden by clicks within/without the datepicker element and datepicker respectively
+        $('html').click(function() {
+          if($('#datepicker-calendar').is(":visible")) {
+            $('#datepicker-calendar').hide();
+            $('#date-range-field a').html('&#9660;');
+            $('#date-range-field').css({borderBottomLeftRadius:5, borderBottomRightRadius:5});
+            $('#date-range-field a').css({borderBottomRightRadius:5});
+          }
+        });
+        
+        // stop the click propagation when clicking on the calendar element
+        // so that we don't close it
+        $('#datepicker-calendar').click(function(event){
+          event.stopPropagation();
+        });
+      });
+      /* End special page widget */
 
 var jsonBubble = {{bubble_json|safe}};
 function drawBubbleChart() { 
@@ -111,6 +197,19 @@ function drawBarChart() {
 <form id="filter-form" action="/websites/filter" method="post">
   <fieldset>
     <legend>Filter</legend>
+
+<label for="filter-channel">Date</label>
+<input name="filter-date-from" id="filter-date-from" type="hidden"  />
+<input name="filter-date-to" id="filter-date-to" type="hidden"  />
+<div id="date-range">
+    <div id="date-range-field">
+      <span></span>
+      <a href="#">&#9660;</a>
+    </div>
+    <div id="datepicker-calendar"></div>
+</div>
+
+
 <label for="filter-channel">Channel</label>
 <select name="filter-channel" data-placeholder="select one or more channels" multiple="multiple" class="chzn-select">
 <!--<option selected="selected" value="_all">all</option>-->
@@ -124,19 +223,16 @@ function drawBarChart() {
 <select name="filter_campaign" data-placeholder="select one or more campaigns" multiple="multiple" class="chzn-select">
 <!--<option selected="selected" value="_all">all</option>-->
 {% for campaign in campaigns %}
-<option value="{{campaign.id}}">{{campaign.name}}</option>
+<option {% if campaign.id in filter.campaign %}selected="selected"{% endif %} value="{{campaign.id}}">{{campaign.name}}</option>
 {% endfor %}
 </select>
 
-<!--
 <label for="filter-partner">Partner</label>
 <select name="filter-partner" data-placeholder="select one or more partner" multiple="multiple" class="chzn-select">
-<!--<option selected="selected" value="_all">all</option>-- >
 {% for partner in partners %}
-<option value="{{partner.id}}">{{partner.name}}</option>
+<option {% if partner.id in filter.partner %}selected="selected"{% endif %} value="{{partner.id}}">{{partner.name}}</option>
 {% endfor %}
 </select>
--->
  <button type="submit" class="btn" id="btn-filter">Save</button>
  </fieldset>
 </form>
@@ -148,8 +244,15 @@ function drawBarChart() {
 <link href="/static/js/nv/src/nv.d3.css" rel="stylesheet">
 <link href="/static/chosen/chosen.css" rel="stylesheet">
 <link href="/static/styles/charts.css" rel="stylesheet">
+<link rel="stylesheet" media="screen" type="text/css" href="/static/js/datepicker/css/datepicker/base.css" />
+<link rel="stylesheet" media="screen" type="text/css" href="/static/js/datepicker/css/datepicker/clean.css" />
+
 <script src="/static/chosen/chosen.jquery.js"></script>
 <!--<script src="/static/js/d3.v3.min.js"></script>-->
+
+<script type="text/javascript" src="/static/js/datepicker/js/datepicker.js"></script>
+
+
 <script src="/static/js/nv/lib/d3.v2.js"></script>
 <script src="/static/js/nv/nv.d3.js"></script>
 

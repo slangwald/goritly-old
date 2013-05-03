@@ -70,9 +70,18 @@ def filter(request):
     if('filter-campaign' in request.POST):
         request.session['filter-campaign'] = request.POST.getlist('filter-campaign')
     
+    request.session['filter-partner'] = []    
+    if('filter-partner' in request.POST):
+        request.session['filter-partner1'] = request.POST.getlist('filter-partner')
+    
+    
+    request.session['filter-date-from'] = ""
+    request.session['filter-date-to']   = ""
+    if('filter-date-from' in request.POST and 'filter-date-to' in request.POST):
+        request.session['filter-date-from'] = request.POST['filter-date-from']
+        request.session['filter-date-to']   = request.POST['filter-date-to']
+    
     request.session.modified = True
-    #print request.session['filter-channel']
-    #return HttpResponse('', content_type="text/json")
     return HttpResponseRedirect('/websites/dashboard')
 
 
@@ -112,23 +121,29 @@ def dashboard(request):
     
     #channels  = None
     #campaigns = None
-    partners  = None
+    #partners  = None
     
     filter = {}
     if 'filter-channel' in request.session:
         filter['channel'] = request.session['filter-channel']
     if 'filter-campaign' in request.session:
         filter['campaign'] = request.session['filter-campaign']
+    if 'filter-partner' in request.session:
+        filter['partner'] = request.session['filter-partner']
+    if('filter-date-from' in request.session and 'filter-date-to' in request.session):
+        filter['from'] = request.session['filter-date-from']
+        filter['to'] = request.session['filter-date-to']
+
     print filter
-    return render_to_response('websites/dashboard.html', {'request': request,
-                                                          'filter': filter,
-                                                          'context'  : context, 
-                                                          'channels' : channels, 
-                                                          'campaigns': campaigns, 
-                                                          'partners' : partners,
+    return render_to_response('websites/dashboard.html', {'request'    : request,
+                                                          'filter'     : filter,
+                                                          'context'    : context, 
+                                                          'channels'   : channels, 
+                                                          'campaigns'  : campaigns, 
+                                                          'partners'   : partners,
                                                           'bubble_json': bubble_json,
-                                                          'line_json': line_json,
-                                                          'bar_json': bar_json
+                                                          'line_json'  : line_json,
+                                                          'bar_json'   : bar_json
                                                           })
 
 def get_partners():
@@ -145,19 +160,33 @@ def get_channels():
 def get_bar_chart_json(session):
     
     filter = ''
+    
+    if('filter-date-from' in session and 'filter-date-to' in session):
+        #filter += ' `first_ordered_at` BETWEEN "%s" AND "%s" ' % (session['filter-date-from'], session['filter-date-to'])
+        pass
+    
+    
     if 'filter-campaign' in session:
         if len(session['filter-campaign']):
-            filter =  ' campaign_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-campaign']))
+            if filter != "":
+                filter += " AND "
+            filter +=  ' campaign_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-campaign']))
     if 'filter-channel' in session:
         if len(session['filter-channel']):
             if filter != "":
                 filter += " AND "
             filter += ' channel_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-channel']))
+    if 'filter-partner' in session:
+        if len(session['filter-partner']):
+            if filter != "":
+                filter += " AND "
+            filter += ' partner_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-partner']))
+    
     
     if filter != "":
         filter = ' WHERE ' + filter
     
-    bar_data = util_models.CustomerCLV.objects.raw('SELECT id, `date`, SUM(`linear`) as sum_linear, channel_id FROM utils_customerclv ' + filter + ' GROUP BY `date`, channel_id ORDER BY `date`')
+    bar_data = util_models.CustomerCLV.objects.raw('SELECT id, `first_ordered_at` as `date`, AVG(`linear`) as sum_linear, channel_id FROM utils_customerclv ' + filter + ' GROUP BY `first_ordered_at`, channel_id ORDER BY `date` DESC')
     by_channel = {}
     bar_chart = []
     dates_available = {}
@@ -182,7 +211,6 @@ def get_bar_chart_json(session):
              'x': date,
              'y': float(bar.sum_linear),
              }
-    
     by_channel_clean = {}
     for channel in by_channel:
         for date in by_channel[channel]:
@@ -197,22 +225,26 @@ def get_bar_chart_json(session):
             'values': by_channel_clean[channel]
         })
         
-    
-    
     return json.dumps(bar_chart)
 
 def get_line_chart_json(session):
     
     filter = ''
+    if('filter-date-from' in session and 'filter-date-to' in session):
+        #filter += ' AND `date` BETWEEN "%s" AND "%s" ' % (session['filter-date-from'], session['filter-date-to'])
+        pass
     if 'filter-campaign' in session:
         if len(session['filter-campaign']):
-            filter =  ' AND campaign_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-campaign']))
+            filter +=  ' AND campaign_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-campaign']))
     if 'filter-channel' in session:
         if len(session['filter-channel']):
             filter += ' AND channel_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-channel']))
+    if 'filter-partner' in session:
+        if len(session['filter-partner']):
+            filter += ' AND partner_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-partner']))
     
     
-    line_data = util_models.CustomerCLV.objects.raw('select `id`, `date`, AVG(`days`) as avg_days ,`channel_id` FROM utils_customerclv WHERE (`linear`/`cost` * 100) >= 100 ' + filter + ' GROUP BY `date`, `channel_id` ORDER BY `date`')
+    line_data = util_models.CustomerCLV.objects.raw('select `id`, `date`, AVG(`days`) as avg_days ,`channel_id` FROM utils_customerclv WHERE (`linear`/`cost` * 100) >= 100 ' + filter + ' GROUP BY `date` ORDER BY `date`')
     
     values = []
     for line in line_data:
@@ -230,14 +262,27 @@ def get_line_chart_json(session):
 
 def get_bubble_chart_json(session):
     filter = ''
+    
+    if('filter-date-from' in session and 'filter-date-to' in session):
+        #filter += ' `date` BETWEEN "%s" AND "%s" ' % (session['filter-date-from'], session['filter-date-to'])
+        pass
+    
     if 'filter-campaign' in session:
         if len(session['filter-campaign']):
-            filter =  ' campaign_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-campaign']))
+            if filter != "":
+                filter += " AND "
+            filter +=  ' campaign_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-campaign']))
     if 'filter-channel' in session:
         if len(session['filter-channel']):
             if filter != "":
                 filter += " AND "
             filter += ' channel_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-channel']))
+    
+    if 'filter-partner' in session:
+        if len(session['filter-partner']):
+            if filter != "":
+                filter += " AND "
+            filter += ' partner_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-partner']))
     
     if filter != "":
         filter = ' WHERE ' + filter

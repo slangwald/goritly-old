@@ -108,7 +108,8 @@ for customer in customers:
                     cust_clv.clv         = clv
                     days = (first_ordered_at - order.ordered_at).days * -1
                     cust_clv.days        = days
-                    cust_clv.customer    = customer        
+                    cust_clv.customer    = customer
+                    cust_clv.first_ordered_at = first_ordered_at
                     cust_clv.date        = order.ordered_at
                     cust_clv.channel_id  = channel
                     cust_clv.campaign_id = campaign
