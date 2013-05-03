@@ -162,8 +162,7 @@ def get_bar_chart_json(session):
     filter = ''
     
     if('filter-date-from' in session and 'filter-date-to' in session):
-        #filter += ' `first_ordered_at` BETWEEN "%s" AND "%s" ' % (session['filter-date-from'], session['filter-date-to'])
-        pass
+        filter += ' `first_ordered_at` BETWEEN "%s" AND "%s" ' % (session['filter-date-from'], session['filter-date-to'])
     
     
     if 'filter-campaign' in session:
@@ -231,8 +230,7 @@ def get_line_chart_json(session):
     
     filter = ''
     if('filter-date-from' in session and 'filter-date-to' in session):
-        #filter += ' AND `date` BETWEEN "%s" AND "%s" ' % (session['filter-date-from'], session['filter-date-to'])
-        pass
+        filter += ' AND `date` BETWEEN "%s" AND "%s" ' % (session['filter-date-from'], session['filter-date-to'])
     if 'filter-campaign' in session:
         if len(session['filter-campaign']):
             filter +=  ' AND campaign_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-campaign']))
@@ -264,8 +262,7 @@ def get_bubble_chart_json(session):
     filter = ''
     
     if('filter-date-from' in session and 'filter-date-to' in session):
-        #filter += ' `date` BETWEEN "%s" AND "%s" ' % (session['filter-date-from'], session['filter-date-to'])
-        pass
+        filter += ' `date` BETWEEN "%s" AND "%s" ' % (session['filter-date-from'], session['filter-date-to'])
     
     if 'filter-campaign' in session:
         if len(session['filter-campaign']):
