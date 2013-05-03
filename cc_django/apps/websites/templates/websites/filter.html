@@ -1,0 +1,50 @@
+<form id="filter-form" action="/websites/filter" method="post">
+  <fieldset>
+    <legend>Filter</legend>
+<label for="model">Model</label>
+<select name="model" class="chzn-select">
+{% for model in models_available %}
+<option {% if model.id in filter.model %}selected="selected"{% endif %} value="{{model.id}}">{{model.label}}</option>
+{% endfor %}
+</select>
+
+
+<label for="filter-channel">Date</label>
+<input name="filter-date-from" id="filter-date-from" type="hidden"  />
+<input name="filter-date-to" id="filter-date-to" type="hidden"  />
+<div id="date-range">
+    <div id="date-range-field">
+      <span></span>
+      <a href="#">&#9660;</a>
+    </div>
+    <div id="datepicker-calendar"></div>
+</div>
+
+
+<label for="filter-channel">Channel</label>
+<select name="filter-channel" data-placeholder="select one or more channels" multiple="multiple" class="chzn-select">
+<!--<option selected="selected" value="_all">all</option>-->
+{% for channel in channels %}
+<option {% if channel.id in filter.channel %}selected="selected"{% endif %} value="{{channel.id}}">{{channel.name}}</option>
+{% endfor %}
+</select>
+
+
+<label for="filter_campaign">Campaigns</label>
+<select name="filter_campaign" data-placeholder="select one or more campaigns" multiple="multiple" class="chzn-select">
+<!--<option selected="selected" value="_all">all</option>-->
+{% for campaign in campaigns %}
+<option {% if campaign.id in filter.campaign %}selected="selected"{% endif %} value="{{campaign.id}}">{{campaign.name}}</option>
+{% endfor %}
+</select>
+
+<label for="filter-partner">Partner</label>
+<select name="filter-partner" data-placeholder="select one or more partner" multiple="multiple" class="chzn-select">
+{% for partner in partners %}
+<option {% if partner.id in filter.partner %}selected="selected"{% endif %} value="{{partner.id}}">{{partner.name}}</option>
+{% endfor %}
+</select>
+ <button type="submit" class="btn" id="btn-filter">Save</button>
+ </fieldset>
+</form>
+

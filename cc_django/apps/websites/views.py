@@ -88,11 +88,7 @@ def filter(request):
     return HttpResponseRedirect('/websites/dashboard')
 
 
-
-@login_required()
-def dashboard(request):
-    context = RequestContext(request,{})
-    
+def get_sidebar(request):
     if 'model' not in request.session:
         request.session['model'] = 'linear'
     
@@ -111,24 +107,7 @@ def dashboard(request):
     if not partners:
         partners = get_partners()
         cache.set('partners', partners, 3600)
-    
-    
-    #bubble_json = cache.get('1bubble_json')
-    #if not bubble_json:
-    bubble_json = get_bubble_chart_json(session=request.session)
-    #    cache.set('bubble_json', bubble_json, 3600)
-    
-    #line_json = cache.get('1line_json')
-    #if not line_json: 
-    line_json = get_line_chart_json(session=request.session)
-    #    cache.set('line_json', line_json, 3600)
-    
-    bar_json = get_bar_chart_json(session=request.session)
-    
-    #channels  = None
-    #campaigns = None
-    #partners  = None
-    
+        
     filter = {}
     if 'filter-channel' in request.session:
         filter['channel'] = request.session['filter-channel']
@@ -144,16 +123,51 @@ def dashboard(request):
         filter['model'] = request.session['model']
     
     models = get_models_available()
-
-    return render_to_response('websites/dashboard.html', {'request'    : request,
+    
+    return render_to_response('websites/filter.html',    {'request'    : request,
                                                           'filter'     : filter,
+                                                          #'channels'   : channels, 
+                                                          #'campaigns'  : campaigns, 
+                                                          #'partners'   : partners,
+                                                          #'bubble_json': bubble_json,
+                                                          #'line_json'  : line_json,
+                                                          #'bar_json'   : bar_json,
+                                                          'models_available': models
+                                                          })
+
+
+@login_required()
+def dashboard(request):
+    context = RequestContext(request,{})
+    
+    
+    
+    
+    #bubble_json = cache.get('1bubble_json')
+    #if not bubble_json:
+    #bubble_json = get_bubble_chart_json(session=request.session)
+    #    cache.set('bubble_json', bubble_json, 3600)
+    
+    #line_json = cache.get('1line_json')
+    #if not line_json: 
+    #line_json = get_line_chart_json(session=request.session)
+    #    cache.set('line_json', line_json, 3600)
+    
+    #bar_json = get_bar_chart_json(session=request.session)
+    
+    #channels  = None
+    #campaigns = None
+    #partners  = None
+    
+    return render_to_response('websites/dashboard.html', {'request'    : request,
+                                                          #'filter'     : filter,
                                                           'context'    : context, 
-                                                          'channels'   : channels, 
-                                                          'campaigns'  : campaigns, 
-                                                          'partners'   : partners,
-                                                          'bubble_json': bubble_json,
-                                                          'line_json'  : line_json,
-                                                          'bar_json'   : bar_json,
+                                                          #'channels'   : channels, 
+                                                          #'campaigns'  : campaigns, 
+                                                          #'partners'   : partners,
+                                                          #'bubble_json': bubble_json,
+                                                          #'line_json'  : line_json,
+                                                          #'bar_json'   : bar_json,
                                                           'models_available': models
                                                           })
 
@@ -180,7 +194,8 @@ def get_campaigns():
 def get_channels():
     channels = map(lambda c: {'id': str(c.id), 'name': c.name}, util_models.Channel.objects.all())
     return channels
-def get_bar_chart_json(session):
+def get_bar_chart_json(request):
+    session = request.session
     
     filter = ''
     
@@ -248,10 +263,10 @@ def get_bar_chart_json(session):
             'values': by_channel_clean[channel]
         })
         
-    return json.dumps(bar_chart)
+    return HttpResponse(json.dumps(bar_chart), content_type="application/json")
 
-def get_line_chart_json(session):
-    
+def get_line_chart_json(request):
+    session = request.session
     filter = ''
     if('filter-date-from' in session and 'filter-date-to' in session):
         filter += ' AND `date` BETWEEN "%s" AND "%s" ' % (session['filter-date-from'], session['filter-date-to'])
@@ -280,9 +295,10 @@ def get_line_chart_json(session):
         'key': 'days to reach 100% ROI',
         'values': values
     }]
-    return json.dumps(line_chart)
+    return HttpResponse(json.dumps(line_chart), content_type="application/json")
 
-def get_bubble_chart_json(session):
+def get_bubble_chart_json(request):
+    session = request.session
     filter = ''
     
     if('filter-date-from' in session and 'filter-date-to' in session):
@@ -335,7 +351,7 @@ def get_bubble_chart_json(session):
         })
         
     
-    return json.dumps(bubble_chart)
+    return HttpResponse(json.dumps(bubble_chart), content_type="application/json")
 
 @login_required()
 def set_active_website(request,website_id = None):

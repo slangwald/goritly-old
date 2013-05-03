@@ -9,4 +9,8 @@ urlpatterns = patterns('',
     url(r'^dashboard$',views.dashboard),
     url(r'^set_active_website/(\d+)?$',views.set_active_website),
     url(r'^filter',views.filter),
+    url(r'^bubble',views.get_bubble_chart_json),
+    url(r'^line',views.get_line_chart_json),
+    url(r'^bar',views.get_bar_chart_json),
+    url(r'^sidebar',views.get_sidebar),
     )

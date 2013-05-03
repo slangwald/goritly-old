@@ -9,6 +9,7 @@ $(document).ready ->
   $('#charts-tabs a').click (e) ->     
     $(@).tab('show')
     
+    
     if $(@).attr('data-chart') == 'bubble'
       drawBubbleChart()
      
@@ -20,6 +21,12 @@ $(document).ready ->
     
     
   #$('#charts-tabs a:last').tab('show')
+  
+  $('#sidebar').load('/websites/sidebar', () -> 
+    drawCalendar()
+    $('.chzn-select').chosen()
+  )
   $('.chzn-select').chosen()
-  #drawBubbleChart()
   drawLineChart()
+  #drawBubbleChart()
+  #drawBarChart()

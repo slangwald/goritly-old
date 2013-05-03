@@ -13,6 +13,10 @@
         return drawBarChart();
       }
     });
+    $('#sidebar').load('/websites/sidebar', function() {
+      drawCalendar();
+      return $('.chzn-select').chosen();
+    });
     $('.chzn-select').chosen();
     return drawLineChart();
   });

@@ -45,9 +45,8 @@
 </div>
 
 <script>
-
+function drawCalendar() {
 /* Special date widget */
-       $('document').ready(function(){
         var format = d3.time.format("%Y-%m-%d");
         
         
@@ -120,62 +119,62 @@
         $('#datepicker-calendar').click(function(event){
           event.stopPropagation();
         });
-      });
       /* End special page widget */
-
-var jsonBubble = {{bubble_json|safe}};
+}
 function drawBubbleChart() { 
-    nv.addGraph(function() {
-        var chart = nv.models.scatterChart()
-                      .showDistX(true)
-                      .showDistY(true)
-                      .showControls(false)
-                      .color(d3.scale.category20().range());
-        
-        chart.xAxis.tickFormat(d3.format('.02f'))
-        chart.yAxis.tickFormat(d3.format('.02f'))
-        
-        d3.select('#bubble-chart svg')
-            .datum(jsonBubble)
-          .transition().duration(500)
-            .call(chart);
-        
-        nv.utils.windowResize(chart.update);
-        return chart;
+    d3.json("/websites/bubble", function(jsonBubble) {
+        nv.addGraph(function() {
+            var chart = nv.models.scatterChart()
+                          .showDistX(true)
+                          .showDistY(true)
+                          .showControls(false)
+                          .color(d3.scale.category20().range());
+            
+            chart.xAxis.tickFormat(d3.format('.02f'))
+            chart.yAxis.tickFormat(d3.format('.02f'))
+            
+            d3.select('#bubble-chart svg')
+                .datum(jsonBubble)
+              .transition().duration(500)
+                .call(chart);
+            
+            nv.utils.windowResize(chart.update);
+            return chart;
+        });
     });
 }
 
-var jsonLine = {{line_json|safe}};
 function drawLineChart() {
-    nv.addGraph(function() {
-        var chart = nv.models.lineWithFocusChart();
-        chart.xAxis
-           .tickFormat(function(d) { return d3.time.format('%b %d')(new Date(d)); });
-           
-        chart.x2Axis
-             .tickFormat(function(d) { return d3.time.format('%b %d')(new Date(d)); });
-        chart.yAxis
-             .tickFormat(d3.format('.f'));
+    d3.json("/websites/line", function(jsonLine) {
+        nv.addGraph(function() {
+            var chart = nv.models.lineWithFocusChart();
+            chart.xAxis
+               .tickFormat(function(d) { return d3.time.format('%b %d')(new Date(d)); });
+               
+            chart.x2Axis
+                 .tickFormat(function(d) { return d3.time.format('%b %d')(new Date(d)); });
+            chart.yAxis
+                 .tickFormat(d3.format('.f'));
+            
+            chart.y2Axis
+                 .tickFormat(d3.format('.f'));
         
-        chart.y2Axis
-             .tickFormat(d3.format('.f'));
-    
-      d3.select('#line-chart svg')
-          .datum(jsonLine)
-        .transition().duration(500)
-          .call(chart);
-    
-      nv.utils.windowResize(chart.update);
-    
-      return chart;
-    });
+          d3.select('#line-chart svg')
+              .datum(jsonLine)
+            .transition().duration(500)
+              .call(chart);
+        
+          nv.utils.windowResize(chart.update);
+        
+          return chart;
+        });
+  });
 }
 
 
-var jsonBar = {{bar_json|safe}};
 function drawBarChart() {
+    d3.json("/websites/bar", function(jsonBar) {
     nv.addGraph(function() {
-        console.log(jsonBar);
         var chart = nv.models.multiBarChart()
                     .stacked(true)
                     .color(d3.scale.category20().range())
@@ -195,6 +194,7 @@ function drawBarChart() {
     
         return chart;
     });
+    });
 }
 
 </script>
@@ -202,56 +202,7 @@ function drawBarChart() {
 
 
 {%block sidebar%}
-<form id="filter-form" action="/websites/filter" method="post">
-  <fieldset>
-    <legend>Filter</legend>
-<label for="model">Model</label>
-<select name="model" class="chzn-select">
-{% for model in models_available %}
-<option {% if model.id in filter.model %}selected="selected"{% endif %} value="{{model.id}}">{{model.label}}</option>
-{% endfor %}
-</select>
-
-
-<label for="filter-channel">Date</label>
-<input name="filter-date-from" id="filter-date-from" type="hidden"  />
-<input name="filter-date-to" id="filter-date-to" type="hidden"  />
-<div id="date-range">
-    <div id="date-range-field">
-      <span></span>
-      <a href="#">&#9660;</a>
-    </div>
-    <div id="datepicker-calendar"></div>
-</div>
-
-
-<label for="filter-channel">Channel</label>
-<select name="filter-channel" data-placeholder="select one or more channels" multiple="multiple" class="chzn-select">
-<!--<option selected="selected" value="_all">all</option>-->
-{% for channel in channels %}
-<option {% if channel.id in filter.channel %}selected="selected"{% endif %} value="{{channel.id}}">{{channel.name}}</option>
-{% endfor %}
-</select>
-
-
-<label for="filter_campaign">Campaigns</label>
-<select name="filter_campaign" data-placeholder="select one or more campaigns" multiple="multiple" class="chzn-select">
-<!--<option selected="selected" value="_all">all</option>-->
-{% for campaign in campaigns %}
-<option {% if campaign.id in filter.campaign %}selected="selected"{% endif %} value="{{campaign.id}}">{{campaign.name}}</option>
-{% endfor %}
-</select>
-
-<label for="filter-partner">Partner</label>
-<select name="filter-partner" data-placeholder="select one or more partner" multiple="multiple" class="chzn-select">
-{% for partner in partners %}
-<option {% if partner.id in filter.partner %}selected="selected"{% endif %} value="{{partner.id}}">{{partner.name}}</option>
-{% endfor %}
-</select>
- <button type="submit" class="btn" id="btn-filter">Save</button>
- </fieldset>
-</form>
-
+<div id="sidebar">Loading..</div>
 {%endblock%}
 
 
