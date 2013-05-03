@@ -126,9 +126,9 @@ def get_sidebar(request):
     
     return render_to_response('websites/filter.html',    {'request'    : request,
                                                           'filter'     : filter,
-                                                          #'channels'   : channels, 
-                                                          #'campaigns'  : campaigns, 
-                                                          #'partners'   : partners,
+                                                          'channels'   : channels, 
+                                                          'campaigns'  : campaigns, 
+                                                          'partners'   : partners,
                                                           #'bubble_json': bubble_json,
                                                           #'line_json'  : line_json,
                                                           #'bar_json'   : bar_json,
