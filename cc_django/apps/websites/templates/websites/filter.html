@@ -38,13 +38,20 @@
 {% endfor %}
 </select>
 
+<div class="control-group">
+    <div class="controls">
 <label for="filter-partner">Partner</label>
 <select name="filter-partner" data-placeholder="select one or more partner" multiple="multiple" class="chzn-select">
 {% for partner in partners %}
 <option {% if partner.id in filter.partner %}selected="selected"{% endif %} value="{{partner.id}}">{{partner.name}}</option>
 {% endfor %}
 </select>
- <button type="submit" class="btn" id="btn-filter">Save</button>
+</div></div>
+<div class="control-group">
+    <div class="controls">
+        <button type="submit" class="btn btn-success pull-right" id="btn-filter">Save filter</button>
+    </div>
+</div>
  </fieldset>
 </form>
 

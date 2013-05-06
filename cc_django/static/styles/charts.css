@@ -1,4 +1,6 @@
-
+.chzn-select {
+    width: 100%;
+}
 .axis path,
 .axis line {
   fill: none;
