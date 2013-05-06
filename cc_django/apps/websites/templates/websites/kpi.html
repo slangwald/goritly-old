@@ -1,17 +1,21 @@
-<div class="well well-small">Compare to..</div>
-<h3>Facebook</h3>
+<div class="well well-small">Compare to.. 
+</div>
+
+{% for channel in kpis %}
+
+<h3>{{channel.name}}</h3>
 <div>
 <div class="span4">
     <div class="tile large positive">
-        <h4>ROI <small>on facebook</small>
+        <h4>ROI <small>on {{channel.name}}</small>
         <div class="badge">
             ?
         </div></h4>
         <p class="content">
-            700%
+            {{channel.roi}}%
         </p>
         <div class="change">
-            +5000%
+            {{channel.roi_change}}%
         </div>
     </div>
 </div>
@@ -22,120 +26,24 @@
                 ?
             </div></h4>
             <p class="content">
-                500&euro;
+                {{channel.clv_per_customer}}&euro;
             </p>
             <div class="change">
-                +30%
-            </div>
-        </div>
-</div>
-<div class="span4">
-        <div class="tile negative">
-            <h4>CLV <small>per avg. user</small>
-            <div class="badge">
-                ?
-            </div></h4>
-            <p class="content">
-                500&euro;
-            </p>
-            <div class="change">
-                -30%
-            </div>
-    </div>
-</div>
-</div>
-
-<div>
-<div class="span4">
-        <div class="tile positive">
-            <h4>CLV <small>per avg. user</small>
-            <div class="badge">
-                ?
-            </div></h4>
-            <p class="content">
-                500&euro;
-            </p>
-            <div class="change">
-                +30%
+                {{channel.clv_per_customer_change}}%
             </div>
         </div>
 </div>
 <div class="span4">
         <div class="tile positive">
-            <h4>CLV <small>per avg. user</small>
+            <h4>No. of customers <small></small>
             <div class="badge">
                 ?
             </div></h4>
             <p class="content">
-                500&euro;
+                {{channel.customer_count}}
             </p>
             <div class="change">
-                +30%
-            </div>
-        </div>
-</div>
-<div class="span4">
-        <div class="tile positive">
-            <h4>CLV <small>per avg. user</small>
-            <div class="badge">
-                ?
-            </div></h4>
-            <p class="content">
-                500&euro;
-            </p>
-            <div class="change">
-                +30%
-            </div>
-    </div>
-</div>
-</div>
-
-
-
-
-
-
-<h3>Facebook</h3>
-<div>
-<div class="span4">
-    <div class="tile large positive">
-        <h4>ROI <small>on facebook</small>
-        <div class="badge">
-            ?
-        </div></h4>
-        <p class="content">
-            700%
-        </p>
-        <div class="change">
-            +5000%
-        </div>
-    </div>
-</div>
-<div class="span4">
-        <div class="tile positive">
-            <h4>CLV <small>per avg. user</small>
-            <div class="badge">
-                ?
-            </div></h4>
-            <p class="content">
-                500&euro;
-            </p>
-            <div class="change">
-                +30%
-            </div>
-        </div>
-</div>
-<div class="span4">
-        <div class="tile positive">
-            <h4>CLV <small>per avg. user</small>
-            <div class="badge">
-                ?
-            </div></h4>
-            <p class="content">
-                500&euro;
-            </p>
-            <div class="change">
-                +30%
+                {{channel.customer_count_change}}%
             </div>
     </div>
 </div>
@@ -144,45 +52,80 @@
 <div>
 <div class="span4">
         <div class="tile positive">
-            <h4>CLV <small>per avg. user</small>
+            <h4>Total CLV 
             <div class="badge">
                 ?
             </div></h4>
             <p class="content">
-                500&euro;
+                {{channel.clv_total}}
             </p>
             <div class="change">
-                +30%
+                {{channel.clv_total_change}}
             </div>
         </div>
 </div>
 <div class="span4">
         <div class="tile positive">
-            <h4>CLV <small>per avg. user</small>
+            <h4>Total CAC <small>customer acquesition cost</small>
             <div class="badge">
                 ?
             </div></h4>
             <p class="content">
-                500&euro;
+                {{channel.cac_total}}
             </p>
             <div class="change">
-                +30%
+                {{channel.cac_total_change}}
             </div>
         </div>
 </div>
 <div class="span4">
         <div class="tile positive">
-            <h4>CLV <small>per avg. user</small>
+            <h4>Total Revenue <small></small>
             <div class="badge">
                 ?
             </div></h4>
             <p class="content">
-                500&euro;
+                {{channel.revenue_total}}
             </p>
             <div class="change">
-                +30%
+                {{channel.revenue_total_change}}
             </div>
-    </div>
+        </div>
 </div>
+
+<div>
+<div class="span4">
+        <div class="tile positive">
+            <h4>Revenue per cust.
+            <div class="badge">
+                ?
+            </div></h4>
+            <p class="content">
+                {{channel.revenue_per_customer}}
+            </p>
+            <div class="change">
+                {{channel.revenue_per_customer_change}}
+            </div>
+        </div>
 </div>
+
+<div class="span4">
+        <div class="tile positive">
+            <h4>CAC per customer
+            <div class="badge">
+                ?
+            </div></h4>
+            <p class="content">
+                {{channel.cac_avg}}
+            </p>
+            <div class="change">
+                {{channel.cac_avg_change}}
+            </div>
+        </div>
+</div>
+
+
+</div>
+<div class="clearfix"></div>
+{% endfor %}
 

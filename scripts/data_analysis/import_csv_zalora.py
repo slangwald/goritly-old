@@ -158,23 +158,24 @@ class CsvOrders(CsvImporter):
     skip_first_row = True
     def save_row(self, row):
         
-        ['country',            # 0
-         'order_id',           # 1
-         'order_date',         # 2
-         'customer_id',        # 3
-         'order_item_id',      # 4
-         'sku',                # 5
-         'sku_config',         # 6
-         'unit_price',         # 7
-         'paid_price',         # 8
-         'coupon_amount',      # 9
-         'tax_amount',         # 10
-         'original_unit_price',# 11
-         'cost',               # 12
-         'category',           # 13
-         'cart_rule_discount', # 14
-         'cart_rule_name',     # 15
-         'voucher code']       # 16
+        ['country',            # 0    SG,
+         'order_id',           # 1            200937936,
+         'order_date',         # 2            3/31/2013,
+         'customer_id',        # 3            106277,
+         'order_item_id',      # 4            296152,
+         'sku',                # 5            BU871SH96TRN-266332,
+         'sku_config',         # 6            BU871SH96TRN,
+         'unit_price',         # 7            10,
+         'paid_price',         # 8            10,
+         'coupon_amount',      # 9            0,
+         'tax_amount',         # 10           0.65,
+         'original_unit_price',# 11           22.9,
+         'cost',               # 12           6.07,
+         'category',           # 13           Female Footwear,
+         'cart_rule_discount', # 14           0,
+         'cart_rule_name',     # 15           ,
+         'voucher code']       # 16           ,
+                               #               canceled
         
         country = row[0]
         

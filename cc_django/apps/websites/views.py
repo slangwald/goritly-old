@@ -87,32 +87,125 @@ def filter(request):
     request.session.modified = True
     return HttpResponseRedirect('/websites/dashboard')
 
+kpi_data = {}
+def add_to_kpi(channel, key, value):
+    if value == None:
+        return
+
+    if channel not in kpi_data:
+        kpi_data[channel] = {
+                             'name': channel,
+                             'roi': 0,
+                             'roi_change': 0,
+                             'clv_per_customer': 0,
+                             'clv_per_customer_change': 0,
+                             'customer_count': 0,
+                             'customer_count_change': 0,
+                             'clv_total': 0,
+                             'clv_total_change': 0,
+                             'cac_total': 0,
+                             'cac_total_change': 0,
+                             'revenue_total': 0,
+                             'revenue_total_change': 0,
+                             'revenue_per_customer': 0,
+                             'revenue_per_customer_change': 0,
+                             'cac_avg': 0,
+                             }
+    kpi_data[channel][key] = float(value)
+
 @login_required()
 def get_kpi_board(request):
+    model = request.session['model']
+    session = request.session
+    filter = ''
+    if('filter-date-from' in session and 'filter-date-to' in session):
+        filter += ' `date` BETWEEN "%s" AND "%s" ' % (session['filter-date-from'], session['filter-date-to'])
+    if 'filter-campaign' in session:
+        if len(session['filter-campaign']):
+            if filter != "":
+                filter += " AND "
+            filter +=  ' campaign_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-campaign']))
+    if 'filter-channel' in session:
+        if len(session['filter-channel']):
+            if filter != "":
+                filter += " AND "
+            filter += ' channel_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-channel']))
+    
+    if filter != "":
+        filter = ' WHERE ' + filter
     
     #ROI
-    #SELECT id, channel_id, AVG(`linear`/cost)*100 as roi FROM utils_customerclv GROUP BY channel_id 
+    sql = util_models.CustomerCLV.objects.raw("""
+       SELECT id, channel_id, AVG(`""" + model + """`/cost)*100 as roi FROM utils_customerclv """ + filter + """ GROUP BY channel_id
+    """)
+    for line in sql:
+        add_to_kpi(line.channel.name, 'roi', line.roi)
     
     #CLV (per customer)
-    #SELECT id, channel_id, SUM(`linear`)/count(`customer_id`) FROM utils_customerclv GROUP BY channel_id
+    sql = util_models.CustomerCLV.objects.raw("""
+        SELECT id, channel_id, SUM(`""" + model + """`)/count(DISTINCT `customer_id`) as clv_cust FROM utils_customerclv """ + filter + """ GROUP BY channel_id
+    """)
+    
+    for line in sql:
+        add_to_kpi(line.channel.name, 'clv_per_customer', line.clv_cust)
     
     #Number of Customers
-    #SELECT id, channel_id, count(`customer_id`) FROM utils_customerclv GROUP BY channel_id
+    sql = util_models.CustomerCLV.objects.raw("""
+        SELECT id, channel_id, count(DISTINCT `customer_id`) as customer_count FROM utils_customerclv """ + filter + """ GROUP BY channel_id
+    """)
+    channel_customer_count = {}
+    for line in sql:
+        add_to_kpi(line.channel.name, 'customer_count', line.customer_count)
+        channel_customer_count[line.channel.name] = line.customer_count
     
     #Total CLV
     #Total CAC
-    #SELECT id, channel_id, SUM(`linear`) as total_clv, SUM(`cost`) as total_cost FROM utils_customerclv GROUP BY channel_id
+    sql = util_models.CustomerCLV.objects.raw("""
+        SELECT id, channel_id, SUM(`""" + model + """`) as total_clv, SUM(`cost`) as total_cost FROM utils_customerclv """ + filter + """ GROUP BY channel_id
+    """)
+    for line in sql:
+        add_to_kpi(line.channel.name, 'clv_total', line.total_clv)
+        add_to_kpi(line.channel.name, 'cac_total', line.total_cost)
+        add_to_kpi(line.channel.name, 'cac_avg', line.total_cost/channel_customer_count[line.channel.name])
+    
+    # Total Revenue
+    sql = util_models.Attributions.objects.raw("""
+        SELECT id, channel_id, SUM(`""" + model + """`) as total_revenue FROM utils_attributions """ + filter + """ GROUP BY channel_id
+    """)
+    for line in sql:
+        add_to_kpi(line.channel.name, 'revenue_total', line.total_revenue)
+        add_to_kpi(line.channel.name, 'revenue_per_customer', (line.total_revenue/channel_customer_count[line.channel.name]))
+    
     
     """
     MISSING:
-    - Total Revenue
-    - Revenue (per customer)
     - CAC (ie cost of customer acquisition)
     """
-
     
+    kpi_view = []
+    for channel in kpi_data:
+        kpi_view.append({
+            'name'                     :          kpi_data[channel]['name'                   ],
+            'roi'                      : "%.1f" % kpi_data[channel]['roi'                    ],
+            'roi_change'               : "%.2f" % kpi_data[channel]['roi_change'             ],
+            'clv_per_customer'         : "%.2f" % kpi_data[channel]['clv_per_customer'       ],
+            'clv_per_customer_change'  : "%.2f" % kpi_data[channel]['clv_per_customer_change'],
+            'customer_count'           : "%.0f" % kpi_data[channel]['customer_count'         ],
+            'customer_count_change'    : "%.2f" % kpi_data[channel]['customer_count_change'  ],
+            'clv_total'                : "%.2f" % kpi_data[channel]['clv_total'              ],
+            'clv_total_change'         : "%.2f" % kpi_data[channel]['clv_total_change'       ],
+            'cac_total'                : "%.2f" % kpi_data[channel]['cac_total'              ],
+            'cac_total_change'         : "%.2f" % kpi_data[channel]['cac_total_change'       ],
+            'revenue_total'            : "%.2f" % kpi_data[channel]['revenue_total'          ],
+            'revenue_total_change'     : "%.2f" % kpi_data[channel]['revenue_total_change'   ],
+            'revenue_per_customer'     : "%.2f" % kpi_data[channel]['revenue_per_customer'   ],
+            'revenue_per_customer_change': "%.2f" % kpi_data[channel]['revenue_per_customer_change'],
+            'cac_avg': "%.2f" % kpi_data[channel]['cac_avg'],
+            
+        })
+        
     
-    return render_to_response('websites/kpi.html')
+    return render_to_response('websites/kpi.html', {'kpis': kpi_view})
 
 @login_required()
 def get_sidebar(request):
@@ -151,16 +244,13 @@ def get_sidebar(request):
     
     models = get_models_available()
     
-    return render_to_response('websites/filter.html',    {'request'    : request,
-                                                          'filter'     : filter,
-                                                          'channels'   : channels, 
-                                                          'campaigns'  : campaigns, 
-                                                          'partners'   : partners,
-                                                          #'bubble_json': bubble_json,
-                                                          #'line_json'  : line_json,
-                                                          #'bar_json'   : bar_json,
-                                                          'models_available': models
-                                                          })
+    return render_to_response('websites/filter.html', {'request'    : request,
+                                                       'filter'     : filter,
+                                                       'channels'   : channels, 
+                                                       'campaigns'  : campaigns, 
+                                                       'partners'   : partners,
+                                                       'models_available': models
+                                                      })
 
 
 @login_required()
@@ -264,6 +354,8 @@ def get_bar_chart_json(request):
         })
         
     return HttpResponse(json.dumps(bar_chart), content_type="application/json")
+
+
 @login_required()
 def get_line_chart_json(request):
     session = request.session
