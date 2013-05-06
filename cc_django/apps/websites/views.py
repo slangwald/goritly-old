@@ -87,7 +87,34 @@ def filter(request):
     request.session.modified = True
     return HttpResponseRedirect('/websites/dashboard')
 
+@login_required()
+def get_kpi_board(request):
+    
+    #ROI
+    #SELECT id, channel_id, AVG(`linear`/cost)*100 as roi FROM utils_customerclv GROUP BY channel_id 
+    
+    #CLV (per customer)
+    #SELECT id, channel_id, SUM(`linear`)/count(`customer_id`) FROM utils_customerclv GROUP BY channel_id
+    
+    #Number of Customers
+    #SELECT id, channel_id, count(`customer_id`) FROM utils_customerclv GROUP BY channel_id
+    
+    #Total CLV
+    #Total CAC
+    #SELECT id, channel_id, SUM(`linear`) as total_clv, SUM(`cost`) as total_cost FROM utils_customerclv GROUP BY channel_id
+    
+    """
+    MISSING:
+    - Total Revenue
+    - Revenue (per customer)
+    - CAC (ie cost of customer acquisition)
+    """
 
+    
+    
+    return render_to_response('websites/kpi.html')
+
+@login_required()
 def get_sidebar(request):
     if 'model' not in request.session:
         request.session['model'] = 'linear'
@@ -139,36 +166,8 @@ def get_sidebar(request):
 @login_required()
 def dashboard(request):
     context = RequestContext(request,{})
-    
-    
-    
-    
-    #bubble_json = cache.get('1bubble_json')
-    #if not bubble_json:
-    #bubble_json = get_bubble_chart_json(session=request.session)
-    #    cache.set('bubble_json', bubble_json, 3600)
-    
-    #line_json = cache.get('1line_json')
-    #if not line_json: 
-    #line_json = get_line_chart_json(session=request.session)
-    #    cache.set('line_json', line_json, 3600)
-    
-    #bar_json = get_bar_chart_json(session=request.session)
-    
-    #channels  = None
-    #campaigns = None
-    #partners  = None
-    
     return render_to_response('websites/dashboard.html', {'request'    : request,
-                                                          #'filter'     : filter,
                                                           'context'    : context, 
-                                                          #'channels'   : channels, 
-                                                          #'campaigns'  : campaigns, 
-                                                          #'partners'   : partners,
-                                                          #'bubble_json': bubble_json,
-                                                          #'line_json'  : line_json,
-                                                          #'bar_json'   : bar_json,
-                                                          'models_available': models
                                                           })
 
 def get_models_available():
@@ -194,6 +193,7 @@ def get_campaigns():
 def get_channels():
     channels = map(lambda c: {'id': str(c.id), 'name': c.name}, util_models.Channel.objects.all())
     return channels
+@login_required()
 def get_bar_chart_json(request):
     session = request.session
     
@@ -264,7 +264,7 @@ def get_bar_chart_json(request):
         })
         
     return HttpResponse(json.dumps(bar_chart), content_type="application/json")
-
+@login_required()
 def get_line_chart_json(request):
     session = request.session
     filter = ''
@@ -281,7 +281,7 @@ def get_line_chart_json(request):
             filter += ' AND partner_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-partner']))
     
     model = session['model']
-    line_data = util_models.CustomerCLV.objects.raw('select `id`, `date`, AVG(`days`) as avg_days ,`channel_id` FROM utils_customerclv WHERE (`' + model + '`/`cost` * 100) >= 100 ' + filter + ' GROUP BY `date` ORDER BY `date`')
+    line_data = util_models.CustomerCLV.objects.raw('select `id`, `date`, AVG(`days`) as avg_days ,`channel_id` FROM utils_customerclv WHERE (`' + model + '`/`cost` * 100) BETWEEN 100 AND 125 ' + filter + ' GROUP BY `date` ORDER BY `date`')
     
     values = []
     for line in line_data:
@@ -296,7 +296,7 @@ def get_line_chart_json(request):
         'values': values
     }]
     return HttpResponse(json.dumps(line_chart), content_type="application/json")
-
+@login_required()
 def get_bubble_chart_json(request):
     session = request.session
     filter = ''

@@ -131,7 +131,6 @@ class CustomerCLV(Commons):
     clv         = models.FloatField(default = 0.00)
     channel     = models.ForeignKey(Channel)
     campaign    = models.ForeignKey(Campaign)
-    campaign    = models.ForeignKey(Partner)
     u_shape     = models.FloatField(default = 0.00)
     linear      = models.FloatField(default = 0.00)
     first_click = models.FloatField(default = 0.00)

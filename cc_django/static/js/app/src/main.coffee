@@ -21,12 +21,12 @@ $(document).ready ->
     
     
   #$('#charts-tabs a:last').tab('show')
-  
+  #drawLineChart()
   $('#sidebar').load('/websites/sidebar', () -> 
     drawCalendar()
     $('.chzn-select').chosen()
   )
   $('.chzn-select').chosen()
-  drawLineChart()
   #drawBubbleChart()
   #drawBarChart()
+  $('#kpi-board').load('/websites/kpi')

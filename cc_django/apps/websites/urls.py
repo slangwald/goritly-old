@@ -13,4 +13,5 @@ urlpatterns = patterns('',
     url(r'^line',views.get_line_chart_json),
     url(r'^bar',views.get_bar_chart_json),
     url(r'^sidebar',views.get_sidebar),
+    url(r'^kpi',views.get_kpi_board),
     )

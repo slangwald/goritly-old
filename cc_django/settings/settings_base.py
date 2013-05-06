@@ -95,6 +95,7 @@ TEMPLATE_LOADERS = (
 # When using unix domain sockets
 # Note: ``LOCATION`` needs to be the same as the ``unixsocket`` setting
 # in your redis.conf
+"""
 CACHES = {
     'default': {
         'BACKEND': 'redis_cache.RedisCache',
@@ -106,6 +107,7 @@ CACHES = {
         },
     },
 }
+"""
 INTERNAL_IPS = ('127.0.0.1','192.168.56.1')
 MIDDLEWARE_CLASSES = (
     #'debug_toolbar.middleware.DebugToolbarMiddleware',
@@ -140,7 +142,7 @@ USER_APPS = (
 
 INSTALLED_APPS = [
     #'debug_toolbar',
-    'redis_cache',
+    #'redis_cache',
     'south',
     'djcelery',
     'django.contrib.auth',

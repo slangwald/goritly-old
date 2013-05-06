@@ -38,3 +38,56 @@ div.tooltipD3 {
 	padding: 2px;
 	font: 12px sans-serif; background: lightsteelblue; border: 0px; border-radius: 8px; pointer-events: none;
 }
+
+
+/**
+* TILES
+*/
+.tile {
+    padding-bottom: 10px;
+}
+
+.tile.positive {
+    background-color: #F0F6EB;
+    color: darkgreen;
+}
+.tile.negative {
+    background-color: #FDEEEE;
+    color: darkred;
+}
+.tile > p {
+    font-size: 49px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 100px;
+    vertical-align: middle;
+    height: 100px;
+}
+.tile > h4 > .badge {
+    margin-left: auto;
+    margin-right: 0;
+}
+.tile > .change {
+    -moz-border-radius: 15px;
+    border-radius: 15px;
+    background-color: #F8f8f8;
+    margin-left: 30px;
+    margin-right: 30px;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 50px;
+    height: 50px;
+    font-size: 23px;
+}
+.tile > h4 {
+    background-color: #F8F8F8;
+    padding-top: 10px;
+    padding-left: 10px;
+    color: #4B565F;
+    height: 33px;
+    font-size: 23px;
+}
+.tile > h4 > small {
+    color: #DEDADB;
+    font-size: 13px;
+}

@@ -32,10 +32,10 @@ class CsvImporter():
                     continue
                 row = self.cleanup_row(row)
                 #print "saving row %d" % (rowcount)
-                errors += self.save_row(row)
-                rate = errors*100/rowcount
-                print rate
-                print "%d errors on %d rows (ratio: %f %%)" % (errors, rowcount, rate)   
+                self.save_row(row)
+                #rate = errors*100/rowcount
+                #print rate
+                #print "%d errors on %d rows (ratio: %f %%)" % (errors, rowcount, rate)   
 
     def validate_row(self, row):
         pass
@@ -199,9 +199,9 @@ class CsvOrders(CsvImporter):
             o.revenue     = 0
             o.tax         = 0
             o.shipping    = 0
-
-        o.revenue     += row[8]
-        o.tax         += row[10]
+        
+        o.revenue     += float(row[8])
+        o.tax         += float(row[10])
         
         
         o.city        = None

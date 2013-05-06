@@ -18,7 +18,7 @@
       return $('.chzn-select').chosen();
     });
     $('.chzn-select').chosen();
-    return drawLineChart();
+    return $('#kpi-board').load('/websites/kpi');
   });
 
 }).call(this);
