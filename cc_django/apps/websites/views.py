@@ -266,7 +266,7 @@ def get_models_available():
               {'id': 'u_shape'    , 'label': 'U-Shape (40-20-40)'    },
               {'id': 'first_click', 'label': 'First Click'           },
               {'id': 'last_click' , 'label': 'Last Click'            },
-              {'id': 'decay'      , 'label': 'exponential/time Decay'}
+              {'id': 'decay'      , 'label': 'Time Decay'}
              ]
     
     return models
@@ -420,7 +420,6 @@ def get_bubble_chart_json(request):
     
     model = session['model']
     bubble_data = util_models.Attributions.objects.raw('SELECT *, SUM(cost) as sum_cost, SUM(`' + model + '`) as sum_linear, SUM(orders) as sum_orders FROM utils_attributions ' + filter + ' GROUP BY channel_id')
-    
     bubble_chart = []
     by_channel = {}
     for bubble in bubble_data:

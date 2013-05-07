@@ -2,14 +2,14 @@
 
 
 {% block left_content %}
-	<h2 class="subtitle">Anmelden...</h2>
+	<h2 class="subtitle">Login</h2>
 	<div class="box">
 		<div class="inner_content">
 			{% include "profiles/_login_form.html" with form=login_form next_url=next_url %}
 		</div>
 	</div>
 {%endblock%}
-{% block right_content %}
+{% block right_content1 %}
 	<h2 class="subtitle">...or register</h2>
 	<div class="box">
 		<div class="inner_content">

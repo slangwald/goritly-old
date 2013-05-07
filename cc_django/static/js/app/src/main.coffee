@@ -1,15 +1,9 @@
 $(document).ready ->
   
-  #$('#btn-filter').click (e) ->
-    #e.preventDefault()
-    #$.post("/websites/filter", $("#filter-form").serialize()).done((data) ->
-    #  alert(data)  
-    #)
-  
   $('#charts-tabs a').click (e) ->     
     $(@).tab('show')
     
-    
+    window.location.hash = '#!' + @.hash
     if $(@).attr('data-chart') == 'bubble'
       drawBubbleChart()
      
@@ -22,11 +16,24 @@ $(document).ready ->
     
   #$('#charts-tabs a:last').tab('show')
   #drawLineChart()
-  $('#sidebar').load('/websites/sidebar', () -> 
-    drawCalendar()
-    $('.chzn-select').chosen()
-  )
+  loadSideBar = () ->
+    $('#sidebar').load('/websites/sidebar', () -> 
+      drawCalendar()
+      $('.chzn-select').chosen()
+      $('#btn-filter').click (e) ->
+        e.preventDefault()
+        $.post("/websites/filter", $("#filter-form").serialize()).done((data) ->
+            
+            $('#kpi-board').load('/websites/kpi')
+            drawBubbleChart()
+            drawLineChart()
+            drawBarChart()
+        )
+    )
+  loadSideBar()  
   $('.chzn-select').chosen()
   #drawBubbleChart()
   #drawBarChart()
   $('#kpi-board').load('/websites/kpi')
+  
+    

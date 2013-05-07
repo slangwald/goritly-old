@@ -1,7 +1,7 @@
 <form id="filter-form" action="/websites/filter" method="post">
   <fieldset>
     <legend>Filter</legend>
-<label for="model">Model</label>
+<label for="model">Attribution model</label>
 <select name="model" class="chzn-select">
 {% for model in models_available %}
 <option {% if model.id in filter.model %}selected="selected"{% endif %} value="{{model.id}}">{{model.label}}</option>
@@ -20,8 +20,13 @@
     <div id="datepicker-calendar"></div>
 </div>
 
-
-<label for="filter-channel">Channel</label>
+<label for="filter-partner">Partners</label>
+<select name="filter-partner" data-placeholder="... more partners" multiple="multiple" class="chzn-select">
+{% for partner in partners %}
+<option {% if partner.id in filter.partner %}selected="selected"{% endif %} value="{{partner.id}}">{{partner.name}}</option>
+{% endfor %}
+</select>
+<label for="filter-channel">Channels</label>
 <select name="filter-channel" data-placeholder="select one or more channels" multiple="multiple" class="chzn-select">
 <!--<option selected="selected" value="_all">all</option>-->
 {% for channel in channels %}
@@ -38,15 +43,7 @@
 {% endfor %}
 </select>
 
-<div class="control-group">
-    <div class="controls">
-<label for="filter-partner">Partner</label>
-<select name="filter-partner" data-placeholder="select one or more partner" multiple="multiple" class="chzn-select">
-{% for partner in partners %}
-<option {% if partner.id in filter.partner %}selected="selected"{% endif %} value="{{partner.id}}">{{partner.name}}</option>
-{% endfor %}
-</select>
-</div></div>
+<br /><br />
 <div class="control-group">
     <div class="controls">
         <button type="submit" class="btn btn-success pull-right" id="btn-filter">Save filter</button>

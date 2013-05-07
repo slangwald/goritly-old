@@ -2,7 +2,9 @@
 <form class="login" action="{% url profiles.views.login next_url=next_url %}" method="post">
 <fieldset>
 {% csrf_token %}
-<h3><label for="email">E-Mail</label></h3>
+<div class="control-group">
+    <div class="controls">
+<h3><label for="email">Email</label></h3>
 
 	{% if form.email.errors %}
 		<div class="popup_left">
@@ -29,7 +31,9 @@
 
 
 {{form.password}}
-<br />
-<button type="submit" class="btn btn-primary">Login</button>
+
+</div>
+</div>
+<button type="submit" class="btn btn-primary right">Login</button>
 </fieldset>
 </form>

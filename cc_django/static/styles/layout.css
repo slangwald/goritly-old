@@ -278,3 +278,8 @@ span.menu_icon
     margin-bottom: 9px;
   }
 }
+
+.navbar .brand {
+    padding: 2px 20px 2px;
+}
+
