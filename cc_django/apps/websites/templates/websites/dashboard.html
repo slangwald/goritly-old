@@ -19,30 +19,25 @@
   
   <div class="tab-pane" id="line-chart">
       <div class="well well-small">
-          How much days did it take <i>in average</i> for customers to reach 
-          <select name="roi" class="chzn-select" size="2">
-              <option selected="selected" value="100">100%</option>
-              <option value="50">50%</option>
-              <option value="75">75%</option>
-              <option value="125">125%</option>
-              <option value="150">150%</option>
-              <option value="200">200%</option>
+          How long did it take customers joining between <b>{{filter.from}}</b> and <b>{{filter.to}}</b> to reach 
+          <select id="mark" name="mark" class="chzn-select" size="2">
+              {% for mark in marks %}
+              {{filter.mark}}
+              <option {% if mark == filter.mark %} selected="selected" {% endif %} value="{{mark}}">{{mark}}%</option>
+              {% endfor %}
           </select> Return on Investment?
-          <br /><small>(Only for customers who joined with the channels and campaigns specified in the filter)</small>
       </div>
       <svg style="height:600px;width:800px"></svg>
   </div>
   <div class="tab-pane" id="bubble-chart">
       <div class="well well-small">
-          How much days did it take <i>in average</i> for customers to reach <strong>100%</strong> Return on Investment?
-          <br /><small>(Only for customers who joined with the channels and campaigns specified in the filter)</small>
+           What is the CLV, CAC and Number of Customers of Customers from <b>{{filter.from}}</b> to <b>{{filter.to}}</b>
       </div>
       <svg style="height:600px;width:800px"></svg>
   </div>
   <div class="tab-pane" id="bar-chart">
       <div class="well well-small">
-          How much days did it take <i>in average</i> for customers to reach <strong>100%</strong> Return on Investment?
-          <br /><small>(Only for customers who joined with the channels and campaigns specified in the filter)</small>
+          What is today’s total CLV of customers joining between <b>{{filter.from}}</b> and <b>{{filter.to}}</b>
       </div>
       <svg style="height:400px;width:800px"></svg>
   </div>
@@ -52,78 +47,78 @@
 <script>
 function drawCalendar() {
 /* Special date widget */
-        var format = d3.time.format("%Y-%m-%d");
-        
-        
-        var to = format.parse($('#filter-date-to').val()) || new Date();
-        var from = format.parse($('#filter-date-from').val()) || new Date(to.getTime() - 1000 * 60 * 60 * 24 * 14);
-        
-        function pad(n){return n<10 ? '0'+n : n}
-        
-        $('#filter-date-from').val(from.getFullYear() + '-' + pad(from.getMonth(true)+1) + '-' + pad(from.getDate()));
-        $('#filter-date-to').val(to.getFullYear() + '-' + pad(to.getMonth(true)+1) + '-' + pad(to.getDate()));
+    var format = d3.time.format("%Y-%m-%d");
+    
+    
+    var to = format.parse($('#filter-date-to').val()) || new Date();
+    var from = format.parse($('#filter-date-from').val()) || new Date(to.getTime() - 1000 * 60 * 60 * 24 * 14);
+    
+    function pad(n){ return n < 10 ? '0' + n : n }
+    
+    $('#filter-date-from').val(from.getFullYear() + '-' + pad(from.getMonth(true)+1) + '-' + pad(from.getDate()));
+    $('#filter-date-to').val(to.getFullYear() + '-' + pad(to.getMonth(true)+1) + '-' + pad(to.getDate()));
+    console.log($('#filter-date-to').val());
+    
+    
+    $('#datepicker-calendar').DatePicker({
+      inline: true,
+      date: [from, to],
+      calendars: 3,
+      mode: 'range',
+      current: new Date(to.getFullYear(), to.getMonth()-1, 1),
+      onChange: function(dates,el) {
+        $('#filter-date-from').val(dates[0].getFullYear() + '-' + pad(dates[0].getMonth(true)+1) + '-' + pad(dates[0].getDate()));
+        $('#filter-date-to').val(dates[1].getFullYear() + '-' + pad(dates[1].getMonth(true)+1) + '-' + pad(dates[1].getDate()));
         console.log($('#filter-date-to').val());
-        
-        
-        $('#datepicker-calendar').DatePicker({
-          inline: true,
-          date: [from, to],
-          calendars: 3,
-          mode: 'range',
-          current: new Date(to.getFullYear(), to.getMonth()-1, 1),
-          onChange: function(dates,el) {
-            $('#filter-date-from').val(dates[0].getFullYear() + '-' + pad(dates[0].getMonth(true)+1) + '-' + pad(dates[0].getDate()));
-            $('#filter-date-to').val(dates[1].getFullYear() + '-' + pad(dates[1].getMonth(true)+1) + '-' + pad(dates[1].getDate()));
-            console.log($('#filter-date-to').val());
-            // update the range display
-            $('#date-range-field span').text(dates[0].getDate()+' '+dates[0].getMonthName(true)+', '+dates[0].getFullYear()+' - '+
-                                        dates[1].getDate()+' '+dates[1].getMonthName(true)+', '+dates[1].getFullYear());
-          }
-        });
-        
-        // initialize the special date dropdown field
-        $('#date-range-field span').text(from.getDate()+' '+from.getMonthName(true)+', '+from.getFullYear()+' - '+
-                                        to.getDate()+' '+to.getMonthName(true)+', '+to.getFullYear());
-        
-        // bind a click handler to the date display field, which when clicked
-        // toggles the date picker calendar, flips the up/down indicator arrow,
-        // and keeps the borders looking pretty
-        $('#date-range-field').bind('click', function(){
-          $('#datepicker-calendar').toggle();
-          if($('#date-range-field a').text().charCodeAt(0) == 9660) {
-            // switch to up-arrow
-            $('#date-range-field a').html('&#9650;');
-            $('#date-range-field').css({borderBottomLeftRadius:0, borderBottomRightRadius:0});
-            $('#date-range-field a').css({borderBottomRightRadius:0});
-          } else {
-            // switch to down-arrow
-            $('#date-range-field a').html('&#9660;');
-            $('#date-range-field').css({borderBottomLeftRadius:5, borderBottomRightRadius:5});
-            $('#date-range-field a').css({borderBottomRightRadius:5});
-          }
-          return false;
-        });
-        
-        // global click handler to hide the widget calendar when it's open, and
-        // some other part of the document is clicked.  Note that this works best
-        // defined out here rather than built in to the datepicker core because this
-        // particular example is actually an 'inline' datepicker which is displayed
-        // by an external event, unlike a non-inline datepicker which is automatically
-        // displayed/hidden by clicks within/without the datepicker element and datepicker respectively
-        $('html').click(function() {
-          if($('#datepicker-calendar').is(":visible")) {
-            $('#datepicker-calendar').hide();
-            $('#date-range-field a').html('&#9660;');
-            $('#date-range-field').css({borderBottomLeftRadius:5, borderBottomRightRadius:5});
-            $('#date-range-field a').css({borderBottomRightRadius:5});
-          }
-        });
-        
-        // stop the click propagation when clicking on the calendar element
-        // so that we don't close it
-        $('#datepicker-calendar').click(function(event){
-          event.stopPropagation();
-        });
+        // update the range display
+        $('#date-range-field span').text(dates[0].getDate()+' '+dates[0].getMonthName(true)+', '+dates[0].getFullYear()+' - '+
+                                    dates[1].getDate()+' '+dates[1].getMonthName(true)+', '+dates[1].getFullYear());
+      }
+    });
+    
+    // initialize the special date dropdown field
+    $('#date-range-field span').text(from.getDate()+' '+from.getMonthName(true)+', '+from.getFullYear()+' - '+
+                                    to.getDate()+' '+to.getMonthName(true)+', '+to.getFullYear());
+    
+    // bind a click handler to the date display field, which when clicked
+    // toggles the date picker calendar, flips the up/down indicator arrow,
+    // and keeps the borders looking pretty
+    $('#date-range-field').bind('click', function(){
+      $('#datepicker-calendar').toggle();
+      if($('#date-range-field a').text().charCodeAt(0) == 9660) {
+        // switch to up-arrow
+        $('#date-range-field a').html('&#9650;');
+        $('#date-range-field').css({borderBottomLeftRadius:0, borderBottomRightRadius:0});
+        $('#date-range-field a').css({borderBottomRightRadius:0});
+      } else {
+        // switch to down-arrow
+        $('#date-range-field a').html('&#9660;');
+        $('#date-range-field').css({borderBottomLeftRadius:5, borderBottomRightRadius:5});
+        $('#date-range-field a').css({borderBottomRightRadius:5});
+      }
+      return false;
+    });
+    
+    // global click handler to hide the widget calendar when it's open, and
+    // some other part of the document is clicked.  Note that this works best
+    // defined out here rather than built in to the datepicker core because this
+    // particular example is actually an 'inline' datepicker which is displayed
+    // by an external event, unlike a non-inline datepicker which is automatically
+    // displayed/hidden by clicks within/without the datepicker element and datepicker respectively
+    $('html').click(function() {
+      if($('#datepicker-calendar').is(":visible")) {
+        $('#datepicker-calendar').hide();
+        $('#date-range-field a').html('&#9660;');
+        $('#date-range-field').css({borderBottomLeftRadius:5, borderBottomRightRadius:5});
+        $('#date-range-field a').css({borderBottomRightRadius:5});
+      }
+    });
+    
+    // stop the click propagation when clicking on the calendar element
+    // so that we don't close it
+    $('#datepicker-calendar').click(function(event){
+      event.stopPropagation();
+    });
       /* End special page widget */
 }
 function drawBubbleChart() { 
@@ -135,8 +130,12 @@ function drawBubbleChart() {
                           .showControls(false)
                           .color(d3.scale.category20().range());
             
-            chart.xAxis.tickFormat(d3.format('.02f'))
-            chart.yAxis.tickFormat(d3.format('.02f'))
+            chart.xAxis
+                .axisLabel('Customer Acquisition Cost')
+                .tickFormat(d3.format('.02f'))
+            chart.yAxis
+                .axisLabel('Customer Lifetime Value')
+                .tickFormat(d3.format('.02f'))
             
             d3.select('#bubble-chart svg')
                 .datum(jsonBubble)
@@ -179,26 +178,26 @@ function drawLineChart() {
 
 function drawBarChart() {
     d3.json("/websites/bar", function(jsonBar) {
-    nv.addGraph(function() {
-        var chart = nv.models.multiBarChart()
-                    .stacked(true)
-                    .color(d3.scale.category20().range())
-                    .showControls(false);
-    
-        chart.xAxis
-            .tickFormat(function(d) { return d3.time.format('%b %d')(new Date(d)); });
-    
-        chart.yAxis
-            .tickFormat(d3.format(',.2f'));
-    
-        d3.select('#bar-chart svg')
-            .datum(jsonBar)
-          .transition().duration(500).call(chart);
-    
-        nv.utils.windowResize(chart.update);
-    
-        return chart;
-    });
+        nv.addGraph(function() {
+            var chart = nv.models.multiBarChart()
+                        .stacked(true)
+                        .color(d3.scale.category20().range())
+                        .showControls(false);
+        
+            chart.xAxis
+                .tickFormat(function(d) { return d3.time.format('%b %d')(new Date(d)); });
+        
+            chart.yAxis
+                .tickFormat(d3.format(',.2f'));
+        
+            d3.select('#bar-chart svg')
+                .datum(jsonBar)
+              .transition().duration(500).call(chart);
+        
+            nv.utils.windowResize(chart.update);
+        
+            return chart;
+        });
     });
 }
 

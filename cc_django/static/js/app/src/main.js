@@ -33,7 +33,12 @@
     };
     loadSideBar();
     $('.chzn-select').chosen();
-    return $('#kpi-board').load('/websites/kpi');
+    $('#kpi-board').load('/websites/kpi');
+    return $('#mark').change(function(e) {
+      return $.post("/websites/mark", $("#mark").serialize()).done(function(data) {
+        return drawLineChart();
+      });
+    });
   });
 
 }).call(this);

@@ -58,6 +58,14 @@ def index(request):
 
 @login_required()
 @csrf_exempt
+def set_mark(request):
+    
+    request.session['mark'] = int(request.POST['mark'])
+    
+    return HttpResponse('')
+    
+@login_required()
+@csrf_exempt
 def filter(request):
     """
     AJAX function is excluded from CSRF protection
@@ -87,37 +95,44 @@ def filter(request):
     request.session.modified = True
     return HttpResponseRedirect('/websites/dashboard')
 
-kpi_data = {}
-def add_to_kpi(channel, key, value):
-    if value == None:
-        return
-
-    if channel not in kpi_data:
-        kpi_data[channel] = {
-                             'name': channel,
-                             'roi': 0,
-                             'roi_change': 0,
-                             'clv_per_customer': 0,
-                             'clv_per_customer_change': 0,
-                             'customer_count': 0,
-                             'customer_count_change': 0,
-                             'clv_total': 0,
-                             'clv_total_change': 0,
-                             'cac_total': 0,
-                             'cac_total_change': 0,
-                             'revenue_total': 0,
-                             'revenue_total_change': 0,
-                             'revenue_per_customer': 0,
-                             'revenue_per_customer_change': 0,
-                             'cac_avg': 0,
-                             }
-    kpi_data[channel][key] = float(value)
+class KpiBoard():
+    
+    def __init__(self):
+        self.kpi_data = {}
+    
+    def add_to_kpi(self, channel, key, value):
+        if value == None:
+            return
+    
+        if channel not in self.kpi_data:
+            self.kpi_data[channel] = {
+                                 'name': channel,
+                                 'roi': 0,
+                                 'roi_change': 0,
+                                 'clv_per_customer': 0,
+                                 'clv_per_customer_change': 0,
+                                 'customer_count': 0,
+                                 'customer_count_change': 0,
+                                 'clv_total': 0,
+                                 'clv_total_change': 0,
+                                 'cac_total': 0,
+                                 'cac_total_change': 0,
+                                 'revenue_total': 0,
+                                 'revenue_total_change': 0,
+                                 'revenue_per_customer': 0,
+                                 'revenue_per_customer_change': 0,
+                                 'cac_avg': 0,
+                                 }
+        self.kpi_data[channel][key] = float(value)
 
 @login_required()
 def get_kpi_board(request):
     model = request.session['model']
     session = request.session
     filter = ''
+    
+    kpi_model = KpiBoard()
+    
     if('filter-date-from' in session and 'filter-date-to' in session):
         filter += ' `date` BETWEEN "%s" AND "%s" ' % (session['filter-date-from'], session['filter-date-to'])
     if 'filter-campaign' in session:
@@ -134,12 +149,14 @@ def get_kpi_board(request):
     if filter != "":
         filter = ' WHERE ' + filter
     
+    print filter
+    
     #ROI
     sql = util_models.CustomerCLV.objects.raw("""
        SELECT id, channel_id, AVG(`""" + model + """`/cost)*100 as roi FROM utils_customerclv """ + filter + """ GROUP BY channel_id
     """)
     for line in sql:
-        add_to_kpi(line.channel.name, 'roi', line.roi)
+        kpi_model.add_to_kpi(line.channel.name, 'roi', line.roi)
     
     #CLV (per customer)
     sql = util_models.CustomerCLV.objects.raw("""
@@ -147,7 +164,7 @@ def get_kpi_board(request):
     """)
     
     for line in sql:
-        add_to_kpi(line.channel.name, 'clv_per_customer', line.clv_cust)
+        kpi_model.add_to_kpi(line.channel.name, 'clv_per_customer', line.clv_cust)
     
     #Number of Customers
     sql = util_models.CustomerCLV.objects.raw("""
@@ -155,7 +172,7 @@ def get_kpi_board(request):
     """)
     channel_customer_count = {}
     for line in sql:
-        add_to_kpi(line.channel.name, 'customer_count', line.customer_count)
+        kpi_model.add_to_kpi(line.channel.name, 'customer_count', line.customer_count)
         channel_customer_count[line.channel.name] = line.customer_count
     
     #Total CLV
@@ -164,17 +181,17 @@ def get_kpi_board(request):
         SELECT id, channel_id, SUM(`""" + model + """`) as total_clv, SUM(`cost`) as total_cost FROM utils_customerclv """ + filter + """ GROUP BY channel_id
     """)
     for line in sql:
-        add_to_kpi(line.channel.name, 'clv_total', line.total_clv)
-        add_to_kpi(line.channel.name, 'cac_total', line.total_cost)
-        add_to_kpi(line.channel.name, 'cac_avg', line.total_cost/channel_customer_count[line.channel.name])
+        kpi_model.add_to_kpi(line.channel.name, 'clv_total', line.total_clv)
+        kpi_model.add_to_kpi(line.channel.name, 'cac_total', line.total_cost)
+        kpi_model.add_to_kpi(line.channel.name, 'cac_avg', line.total_cost/channel_customer_count[line.channel.name])
     
     # Total Revenue
     sql = util_models.Attributions.objects.raw("""
         SELECT id, channel_id, SUM(`""" + model + """`) as total_revenue FROM utils_attributions """ + filter + """ GROUP BY channel_id
     """)
     for line in sql:
-        add_to_kpi(line.channel.name, 'revenue_total', line.total_revenue)
-        add_to_kpi(line.channel.name, 'revenue_per_customer', (line.total_revenue/channel_customer_count[line.channel.name]))
+        kpi_model.add_to_kpi(line.channel.name, 'revenue_total', line.total_revenue)
+        kpi_model.add_to_kpi(line.channel.name, 'revenue_per_customer', (line.total_revenue/channel_customer_count[line.channel.name]))
     
     
     """
@@ -183,29 +200,47 @@ def get_kpi_board(request):
     """
     
     kpi_view = []
-    for channel in kpi_data:
+    for channel in kpi_model.kpi_data:
         kpi_view.append({
-            'name'                     :          kpi_data[channel]['name'                   ],
-            'roi'                      : "%.1f" % kpi_data[channel]['roi'                    ],
-            'roi_change'               : "%.2f" % kpi_data[channel]['roi_change'             ],
-            'clv_per_customer'         : "%.2f" % kpi_data[channel]['clv_per_customer'       ],
-            'clv_per_customer_change'  : "%.2f" % kpi_data[channel]['clv_per_customer_change'],
-            'customer_count'           : "%.0f" % kpi_data[channel]['customer_count'         ],
-            'customer_count_change'    : "%.2f" % kpi_data[channel]['customer_count_change'  ],
-            'clv_total'                : "%.2f" % kpi_data[channel]['clv_total'              ],
-            'clv_total_change'         : "%.2f" % kpi_data[channel]['clv_total_change'       ],
-            'cac_total'                : "%.2f" % kpi_data[channel]['cac_total'              ],
-            'cac_total_change'         : "%.2f" % kpi_data[channel]['cac_total_change'       ],
-            'revenue_total'            : "%.2f" % kpi_data[channel]['revenue_total'          ],
-            'revenue_total_change'     : "%.2f" % kpi_data[channel]['revenue_total_change'   ],
-            'revenue_per_customer'     : "%.2f" % kpi_data[channel]['revenue_per_customer'   ],
-            'revenue_per_customer_change': "%.2f" % kpi_data[channel]['revenue_per_customer_change'],
-            'cac_avg': "%.2f" % kpi_data[channel]['cac_avg'],
+            'name'                       :          kpi_model.kpi_data[channel]['name'                       ],
+            'roi'                        : "%.1f" % kpi_model.kpi_data[channel]['roi'                        ],
+            'roi_change'                 : "%.2f" % kpi_model.kpi_data[channel]['roi_change'                 ],
+            'clv_per_customer'           : "%.2f" % kpi_model.kpi_data[channel]['clv_per_customer'           ],
+            'clv_per_customer_change'    : "%.2f" % kpi_model.kpi_data[channel]['clv_per_customer_change'    ],
+            'customer_count'             : "%.0f" % kpi_model.kpi_data[channel]['customer_count'             ],
+            'customer_count_change'      : "%.2f" % kpi_model.kpi_data[channel]['customer_count_change'      ],
+            'clv_total'                  : "%.2f" % kpi_model.kpi_data[channel]['clv_total'                  ],
+            'clv_total_change'           : "%.2f" % kpi_model.kpi_data[channel]['clv_total_change'           ],
+            'cac_total'                  : "%.2f" % kpi_model.kpi_data[channel]['cac_total'                  ],
+            'cac_total_change'           : "%.2f" % kpi_model.kpi_data[channel]['cac_total_change'           ],
+            'revenue_total'              : "%.2f" % kpi_model.kpi_data[channel]['revenue_total'              ],
+            'revenue_total_change'       : "%.2f" % kpi_model.kpi_data[channel]['revenue_total_change'       ],
+            'revenue_per_customer'       : "%.2f" % kpi_model.kpi_data[channel]['revenue_per_customer'       ],
+            'revenue_per_customer_change': "%.2f" % kpi_model.kpi_data[channel]['revenue_per_customer_change'],
+            'cac_avg'                    : "%.2f" % kpi_model.kpi_data[channel]['cac_avg'                    ],
             
         })
         
-    
     return render_to_response('websites/kpi.html', {'kpis': kpi_view})
+
+def get_filter(request):
+    filter = {}
+    if 'filter-channel' in request.session:
+        filter['channel'] = request.session['filter-channel']
+    if 'filter-campaign' in request.session:
+        filter['campaign'] = request.session['filter-campaign']
+    if 'filter-partner' in request.session:
+        filter['partner'] = request.session['filter-partner']
+    if('filter-date-from' in request.session and 'filter-date-to' in request.session):
+        filter['from'] = request.session['filter-date-from']
+        filter['to'] = request.session['filter-date-to']
+    
+    if 'model' in request.session:
+        filter['model'] = request.session['model']
+    
+    filter['mark'] = request.session['mark']
+    
+    return filter
 
 @login_required()
 def get_sidebar(request):
@@ -228,49 +263,61 @@ def get_sidebar(request):
         partners = get_partners()
         cache.set('partners', partners, 3600)
         
-    filter = {}
-    if 'filter-channel' in request.session:
-        filter['channel'] = request.session['filter-channel']
-    if 'filter-campaign' in request.session:
-        filter['campaign'] = request.session['filter-campaign']
-    if 'filter-partner' in request.session:
-        filter['partner'] = request.session['filter-partner']
-    if('filter-date-from' in request.session and 'filter-date-to' in request.session):
-        filter['from'] = request.session['filter-date-from']
-        filter['to'] = request.session['filter-date-to']
-    
-    if 'model' in request.session:
-        filter['model'] = request.session['model']
+    filter = get_filter(request)
     
     models = get_models_available()
     
-    return render_to_response('websites/filter.html', {'request'    : request,
-                                                       'filter'     : filter,
-                                                       'channels'   : channels, 
-                                                       'campaigns'  : campaigns, 
-                                                       'partners'   : partners,
-                                                       'models_available': models
+    return render_to_response('websites/filter.html', {'request'          : request,
+                                                       'filter'           : filter,
+                                                       'channels'         : channels, 
+                                                       'campaigns'        : campaigns, 
+                                                       'partners'         : partners,
+                                                       'models_available' : models
                                                       })
 
 
 @login_required()
 def dashboard(request):
     context = RequestContext(request,{})
+    
+    if 'model' not in request.session:
+        request.session['model'] = 'linear'
+    edge_dates = get_first_and_last_date()
+    if not 'filter-date-from' in request.session:
+        request.session['filter-date-from'] = edge_dates['first'].strftime('%Y-%m-%d')
+        request.session['filter-date-to']   = edge_dates['last'].strftime('%Y-%m-%d')
+
+    if not 'mark' in request.session:
+        request.session['mark'] = 100
+    
+    filter = get_filter(request)
     return render_to_response('websites/dashboard.html', {'request'    : request,
-                                                          'context'    : context, 
+                                                          'context'    : context,
+                                                          'marks'      : get_marks(),
+                                                          'filter'     : filter 
                                                           })
+
+def get_first_and_last_date():
+    first = util_models.CustomerCLV.objects.order_by('date')[0]
+    last = util_models.CustomerCLV.objects.order_by('-date')[0]
+    return {'first': first.date, 'last': last.date}
+    
+    
 
 def get_models_available():
     models = [
-              {'id': 'linear'     , 'label': 'Linear'                },
-              {'id': 'u_shape'    , 'label': 'U-Shape (40-20-40)'    },
-              {'id': 'first_click', 'label': 'First Click'           },
-              {'id': 'last_click' , 'label': 'Last Click'            },
-              {'id': 'decay'      , 'label': 'Time Decay'}
-             ]
+        {'id': 'linear'     , 'label': 'Linear'            },
+        {'id': 'u_shape'    , 'label': 'U-Shape (40-20-40)'},
+        {'id': 'first_click', 'label': 'First Click'       },
+        {'id': 'last_click' , 'label': 'Last Click'        },
+        {'id': 'decay'      , 'label': 'Time Decay'        }
+    ]
     
     return models
     
+def get_marks():
+    marks = [25, 50, 75, 100, 125, 150, 175, 200, 300, 400, 500]
+    return marks
 
 def get_partners():
     partners = map(lambda p: {'id': str(p.id), 'name': p.name}, util_models.Partner.objects.all())
@@ -283,6 +330,9 @@ def get_campaigns():
 def get_channels():
     channels = map(lambda c: {'id': str(c.id), 'name': c.name}, util_models.Channel.objects.all())
     return channels
+
+
+
 @login_required()
 def get_bar_chart_json(request):
     session = request.session
@@ -331,20 +381,20 @@ def get_bar_chart_json(request):
             by_channel[bar.channel.name] = {}
             for date_check in dates_available:
                 by_channel[bar.channel.name][date_check] = {
-                                                      'x': date_check,
-                                                      'y': 0
-                                                      }
+                    'x': date_check,
+                    'y': 0
+                }
         
         by_channel[bar.channel.name][date] = {
-             'x': date,
-             'y': float(bar.sum_linear),
-             }
+            'x': date,
+            'y': float(bar.sum_linear),
+        }
+        
     by_channel_clean = {}
     for channel in by_channel:
         for date in by_channel[channel]:
             if not channel in by_channel_clean:
                 by_channel_clean[channel] = []
-                
             by_channel_clean[channel].append(by_channel[channel][date])
     
     for channel in by_channel_clean:
@@ -361,7 +411,7 @@ def get_line_chart_json(request):
     session = request.session
     filter = ''
     if('filter-date-from' in session and 'filter-date-to' in session):
-        filter += ' AND `date` BETWEEN "%s" AND "%s" ' % (session['filter-date-from'], session['filter-date-to'])
+        filter += ' AND `joined` BETWEEN "%s" AND "%s" ' % (session['filter-date-from'], session['filter-date-to'])
     if 'filter-campaign' in session:
         if len(session['filter-campaign']):
             filter +=  ' AND campaign_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-campaign']))
@@ -370,11 +420,25 @@ def get_line_chart_json(request):
             filter += ' AND channel_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-channel']))
     if 'filter-partner' in session:
         if len(session['filter-partner']):
-            filter += ' AND partner_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-partner']))
+            #filter += ' AND partner_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-partner']))
+            pass
     
     model = session['model']
-    line_data = util_models.CustomerCLV.objects.raw('select `id`, `date`, AVG(`days`) as avg_days ,`channel_id` FROM utils_customerclv WHERE (`' + model + '`/`cost` * 100) BETWEEN 100 AND 125 ' + filter + ' GROUP BY `date` ORDER BY `date`')
-    
+    line_data = util_models.CustomerCLVMarks.objects.raw("""
+        SELECT
+            `id`, 
+            `joined` as `date`, 
+            AVG(`days`) as avg_days ,
+            `channel_id` 
+        FROM 
+            utils_customerclvmarks 
+        WHERE 
+            model = '""" + model + """' 
+            """ + filter + """
+            AND mark = """ + str(int(request.session['mark'])) + """ 
+        
+        GROUP BY `joined` ORDER BY `joined`
+    """)
     values = []
     for line in line_data:
         date = str(line.date)
@@ -428,13 +492,11 @@ def get_bubble_chart_json(request):
         
         realcost = float(bubble.sum_cost) / float(bubble.sum_orders)
         reallinear = float(bubble.sum_linear) / float(bubble.sum_orders)
-        by_channel[bubble.channel.name].append(
-            {
+        by_channel[bubble.channel.name].append({
              'x': realcost,
              'y': reallinear,
              'size': int(bubble.orders)
-             }
-        )
+        })
     for channel in by_channel:
         bubble_chart.append({
             'key': channel,

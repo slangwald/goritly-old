@@ -13,9 +13,6 @@ $(document).ready ->
     if $(@).attr('data-chart') == 'bar'
       drawBarChart()
     
-    
-  #$('#charts-tabs a:last').tab('show')
-  #drawLineChart()
   loadSideBar = () ->
     $('#sidebar').load('/websites/sidebar', () -> 
       drawCalendar()
@@ -23,17 +20,20 @@ $(document).ready ->
       $('#btn-filter').click (e) ->
         e.preventDefault()
         $.post("/websites/filter", $("#filter-form").serialize()).done((data) ->
-            
             $('#kpi-board').load('/websites/kpi')
             drawBubbleChart()
             drawLineChart()
             drawBarChart()
         )
     )
-  loadSideBar()  
+  loadSideBar()
   $('.chzn-select').chosen()
-  #drawBubbleChart()
-  #drawBarChart()
   $('#kpi-board').load('/websites/kpi')
+  
+  $('#mark').change((e) ->
+    $.post("/websites/mark", $("#mark").serialize()).done((data) ->
+      drawLineChart()
+    )
+  )
   
     

@@ -43,6 +43,7 @@ class Keyword(CommonDimensionModel):
 class MatchType(CommonDimensionModel):
     pass
 
+
 class MarketingCost(Commons):
     date        = models.DateField()
     channel     = models.ForeignKey(Channel)
@@ -186,21 +187,15 @@ class Click(Commons):
     order = models.ForeignKey(Order, null = True)
     position_in_chain = models.IntegerField(null=True)
     
-class ChannelAndCampaignCost(Commons):
-    date = models.DateField()
-    campaign = models.ForeignKey(Campaign,null = True,blank = True)
-    channel = models.ForeignKey(Channel,null = True,blank = True)
-    cost = models.FloatField(default = 0.00)
-    
-class Order2Clickchain(Commons):
-    order = models.ForeignKey(Order)
-    clicked_at = models.DateTimeField(blank = True,null = True)
-    ordered_at = models.DateTimeField()
-    position = models.IntegerField()
-    campaign = models.ForeignKey(Campaign, null = True,blank = True)
-    partner = models.ForeignKey(Partner, null = True,blank = True)
-    channel = models.ForeignKey(Channel, null = True,blank = True)
-    keyword = models.ForeignKey(Keyword, null = True,blank = True)
+
+class CustomerCLVMarks(Commons):
+    channel     = models.ForeignKey(Channel)
+    campaign    = models.ForeignKey(Campaign)
+    customer    = models.ForeignKey(Customer)
+    joined      = models.DateField()
+    model       = models.CharField(max_length = 20)
+    mark        = models.IntegerField()
+    days        = models.IntegerField()
     
 """
 class Click(orm.Document):
