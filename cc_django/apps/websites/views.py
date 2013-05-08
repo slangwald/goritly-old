@@ -448,7 +448,7 @@ def get_line_chart_json(request):
         })
         
     line_chart = [{
-        'key': 'days to reach 100% ROI',
+        'key': 'days to reach ' + str(int(request.session['mark'])) +'% ROI',
         'values': values
     }]
     return HttpResponse(json.dumps(line_chart), content_type="application/json")
@@ -458,7 +458,7 @@ def get_bubble_chart_json(request):
     filter = ''
     
     if('filter-date-from' in session and 'filter-date-to' in session):
-        filter += ' `date` BETWEEN "%s" AND "%s" ' % (session['filter-date-from'], session['filter-date-to'])
+        filter += ' `first_ordered_at` BETWEEN "%s" AND "%s" ' % (session['filter-date-from'], session['filter-date-to'])
     
     if 'filter-campaign' in session:
         if len(session['filter-campaign']):
@@ -475,7 +475,7 @@ def get_bubble_chart_json(request):
         if len(session['filter-partner']):
             if filter != "":
                 filter += " AND "
-            filter += ' partner_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-partner']))
+            #filter += ' partner_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-partner']))
     
     if filter != "":
         filter = ' WHERE ' + filter
@@ -483,19 +483,19 @@ def get_bubble_chart_json(request):
     
     
     model = session['model']
-    bubble_data = util_models.Attributions.objects.raw('SELECT *, SUM(cost) as sum_cost, SUM(`' + model + '`) as sum_linear, SUM(orders) as sum_orders FROM utils_attributions ' + filter + ' GROUP BY channel_id')
+    bubble_data = util_models.Attributions.objects.raw('SELECT *, SUM(cost) as sum_cost, SUM(`' + model + '`) as sum_linear, count(DISTINCT customer_id) as customer_count FROM utils_customerclv ' + filter + ' GROUP BY channel_id')
     bubble_chart = []
     by_channel = {}
     for bubble in bubble_data:
         if not bubble.channel.name in by_channel:
             by_channel[bubble.channel.name] = []
         
-        realcost = float(bubble.sum_cost) / float(bubble.sum_orders)
-        reallinear = float(bubble.sum_linear) / float(bubble.sum_orders)
+        realcost = float(bubble.sum_cost) / float(bubble.customer_count) / 2
+        reallinear = float(bubble.sum_linear) / float(bubble.customer_count) / 2 
         by_channel[bubble.channel.name].append({
              'x': realcost,
              'y': reallinear,
-             'size': int(bubble.orders)
+             'size': int(bubble.customer_count)
         })
     for channel in by_channel:
         bubble_chart.append({
