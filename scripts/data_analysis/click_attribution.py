@@ -44,15 +44,15 @@ if __name__ == '__main__':
     click_combinations_revenue = {}
     channels = []
 
-    def add(type, date, channel, campaign, value):
+    def add(type, date, partner, channel, campaign, value):
         channel = int(channel) 
         campaign = int(campaign)
-        if not date     in attributions:
-            attributions[date] = {}
-        if not channel  in attributions[date]:
-            attributions[date][channel] = {}
-        if not campaign in attributions[date][channel]:
-            attributions[date][channel][campaign] = {
+        partner = int(partner)
+        
+        attr_key = (date, partner, channel, campaign)
+        
+        if not attr_key in attributions:
+            attributions[attr_key] = {
                 'linear': 0.00, 
                 'first_click': 0.00, 
                 'last_click': 0.00, 
@@ -61,7 +61,7 @@ if __name__ == '__main__':
                 'orders': 0
             }
         
-        attributions[date][channel][campaign][type] += value
+        attributions[attr_key][type] += value
     
     def add_order(date, channel, campaign):
         channel = int(channel) 

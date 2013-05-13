@@ -8,11 +8,11 @@ DATE_INPUT_FORMATS = ('%m-%d-%Y','%Y-%m-%d')
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-ADMINS = (
-     ('Andreas Dewes', 'andreas.dewes@gmail.com'),
-)
+#ADMINS = (
+#     ('Andreas Dewes', 'andreas.dewes@gmail.com'),
+#)
 
-MANAGERS = ADMINS
+#MANAGERS = ADMINS
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -118,7 +118,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'djangoflash.middleware.FlashMiddleware',
     'websites.middleware.WebsiteAdminMiddleware',
-    'websites.middleware.ActiveWebsiteMiddleware'
+    'websites.middleware.ActiveWebsiteMiddleware',
+    'cc_django.middleware.GlobalRequest'
 )
 
 ROOT_URLCONF = 'cc_django.urls'

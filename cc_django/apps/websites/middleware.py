@@ -22,4 +22,6 @@ class ActiveWebsiteMiddleware(object):
         if request.user.is_authenticated():
             user_websites = request.user.website_admins.all() | request.user.website_owners.all()
             request.user_websites = user_websites
+            if not 'active_website_id' in request.session:
+                request.session['active_website_id'] = request.user_websites[0].id
         return None

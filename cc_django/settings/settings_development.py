@@ -37,6 +37,24 @@ CELERYD=PROJECT_PATH+"/../manage.py celeryd"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'cc_commons',                      # Or path to database file if using sqlite3.
+        'USER': 'root',                      # Not used with sqlite3.
+        'PASSWORD': '',                  # Not used with sqlite3.
+        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
+        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+        'OPTIONS': { 'init_command': 'SET storage_engine=INNODB;' }
+    },
+    'website_1': {
+        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'cc_zalora',                      # Or path to database file if using sqlite3.
+        'USER': 'root',                      # Not used with sqlite3.
+        'PASSWORD': '',                  # Not used with sqlite3.
+        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
+        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+        'OPTIONS': { 'init_command': 'SET storage_engine=INNODB;' }
+    },
+    'website_2': {
+        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
         'NAME': 'cc_test',                      # Or path to database file if using sqlite3.
         'USER': 'root',                      # Not used with sqlite3.
         'PASSWORD': '',                  # Not used with sqlite3.
@@ -45,3 +63,6 @@ DATABASES = {
         'OPTIONS': { 'init_command': 'SET storage_engine=INNODB;' }
     }
 }
+
+#from django.db import connections
+DATABASE_ROUTERS = ['cc_django.apps.utils.db_switch.UserDBRouter']

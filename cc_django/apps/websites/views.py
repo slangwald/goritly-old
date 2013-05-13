@@ -96,14 +96,12 @@ def filter(request):
     return HttpResponseRedirect('/websites/dashboard')
 
 class KpiBoard():
-    
     def __init__(self):
         self.kpi_data = {}
     
     def add_to_kpi(self, channel, key, value):
         if value == None:
             return
-    
         if channel not in self.kpi_data:
             self.kpi_data[channel] = {
                                  'name': channel,
@@ -452,6 +450,7 @@ def get_line_chart_json(request):
         'values': values
     }]
     return HttpResponse(json.dumps(line_chart), content_type="application/json")
+
 @login_required()
 def get_bubble_chart_json(request):
     session = request.session
