@@ -60,6 +60,7 @@ class Attributions(Commons):
     date        = models.DateField()
     channel     = models.ForeignKey(Channel)
     campaign    = models.ForeignKey(Campaign)
+    partner     = models.ForeignKey(Partner)
     u_shape     = models.FloatField(default = 0.00)
     linear      = models.FloatField(default = 0.00)
     first_click = models.FloatField(default = 0.00)
@@ -129,14 +130,24 @@ class CustomerCLV(Commons):
     days        = models.IntegerField(default=0)
     first_ordered_at = models.DateField()
     orders      = models.IntegerField(default=0)
-    clv         = models.FloatField(default = 0.00)
+    clv_total   = models.FloatField(default = 0.00)
+    clv_added   = models.FloatField(default = 0.00)
     channel     = models.ForeignKey(Channel)
     campaign    = models.ForeignKey(Campaign)
-    u_shape     = models.FloatField(default = 0.00)
-    linear      = models.FloatField(default = 0.00)
-    first_click = models.FloatField(default = 0.00)
-    last_click  = models.FloatField(default = 0.00)
-    decay       = models.FloatField(default = 0.00)
+    partner     = models.ForeignKey(Partner)
+    
+    clv_u_shape_total     = models.FloatField(default = 0.00)
+    clv_linear_total      = models.FloatField(default = 0.00)
+    clv_first_click_total = models.FloatField(default = 0.00)
+    clv_last_click_total  = models.FloatField(default = 0.00)
+    clv_decay_total       = models.FloatField(default = 0.00)
+    
+    clv_u_shape_added     = models.FloatField(default = 0.00) 
+    clv_linear_added      = models.FloatField(default = 0.00) 
+    clv_first_click_added = models.FloatField(default = 0.00) 
+    clv_last_click_added  = models.FloatField(default = 0.00) 
+    clv_decay_added       = models.FloatField(default = 0.00) 
+
     cost        = models.FloatField(default = 0.00)
 
 
@@ -188,11 +199,83 @@ class Click(Commons):
     position_in_chain = models.IntegerField(null=True)
     
 
-class CustomerCLVMarks(Commons):
-    channel     = models.ForeignKey(Channel)
-    campaign    = models.ForeignKey(Campaign)
-    customer    = models.ForeignKey(Customer)
-    joined      = models.DateField()
-    model       = models.CharField(max_length = 20)
-    mark        = models.IntegerField()
-    days        = models.IntegerField()
+class CustomerRoiMarks(Commons):
+    channel                = models.ForeignKey(Channel)
+    campaign               = models.ForeignKey(Campaign)
+    partner                = models.ForeignKey(Partner)
+    customer               = models.ForeignKey(Customer)
+    joined                 = models.DateField()
+    roi_linear_25          = models.IntegerField(null = True)
+    roi_linear_50          = models.IntegerField(null = True)
+    roi_linear_75          = models.IntegerField(null = True)
+    roi_linear_100         = models.IntegerField(null = True)
+    roi_linear_125         = models.IntegerField(null = True)
+    roi_linear_150         = models.IntegerField(null = True)
+    roi_linear_175         = models.IntegerField(null = True)
+    roi_linear_200         = models.IntegerField(null = True)
+    roi_linear_300         = models.IntegerField(null = True)
+    roi_linear_400         = models.IntegerField(null = True)
+    roi_linear_500         = models.IntegerField(null = True)
+    roi_first_click_25     = models.IntegerField(null = True)
+    roi_first_click_50     = models.IntegerField(null = True)
+    roi_first_click_75     = models.IntegerField(null = True)
+    roi_first_click_100    = models.IntegerField(null = True)
+    roi_first_click_125    = models.IntegerField(null = True)
+    roi_first_click_150    = models.IntegerField(null = True)
+    roi_first_click_175    = models.IntegerField(null = True)
+    roi_first_click_200    = models.IntegerField(null = True)
+    roi_first_click_300    = models.IntegerField(null = True)
+    roi_first_click_400    = models.IntegerField(null = True)
+    roi_first_click_500    = models.IntegerField(null = True)
+    roi_last_click_25      = models.IntegerField(null = True)
+    roi_last_click_50      = models.IntegerField(null = True)
+    roi_last_click_75      = models.IntegerField(null = True)
+    roi_last_click_100     = models.IntegerField(null = True)
+    roi_last_click_125     = models.IntegerField(null = True)
+    roi_last_click_150     = models.IntegerField(null = True)
+    roi_last_click_175     = models.IntegerField(null = True)
+    roi_last_click_200     = models.IntegerField(null = True)
+    roi_last_click_300     = models.IntegerField(null = True)
+    roi_last_click_400     = models.IntegerField(null = True)
+    roi_last_click_500     = models.IntegerField(null = True)
+    roi_decay_25           = models.IntegerField(null = True)
+    roi_decay_50           = models.IntegerField(null = True)
+    roi_decay_75           = models.IntegerField(null = True)
+    roi_decay_100          = models.IntegerField(null = True)
+    roi_decay_125          = models.IntegerField(null = True)
+    roi_decay_150          = models.IntegerField(null = True)
+    roi_decay_175          = models.IntegerField(null = True)
+    roi_decay_200          = models.IntegerField(null = True)
+    roi_decay_300          = models.IntegerField(null = True)
+    roi_decay_400          = models.IntegerField(null = True)
+    roi_decay_500          = models.IntegerField(null = True)
+    roi_u_shape_25         = models.IntegerField(null = True)
+    roi_u_shape_50         = models.IntegerField(null = True)
+    roi_u_shape_75         = models.IntegerField(null = True)
+    roi_u_shape_100        = models.IntegerField(null = True)
+    roi_u_shape_125        = models.IntegerField(null = True)
+    roi_u_shape_150        = models.IntegerField(null = True)
+    roi_u_shape_175        = models.IntegerField(null = True)
+    roi_u_shape_200        = models.IntegerField(null = True)
+    roi_u_shape_300        = models.IntegerField(null = True)
+    roi_u_shape_400        = models.IntegerField(null = True)
+    roi_u_shape_500        = models.IntegerField(null = True)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

@@ -22,8 +22,12 @@
           How long did it take customers joining between <b>{{filter.from}}</b> and <b>{{filter.to}}</b> to reach 
           <select id="mark" name="mark" class="chzn-select" size="2">
               {% for mark in marks %}
-              {{filter.mark}}
               <option {% if mark == filter.mark %} selected="selected" {% endif %} value="{{mark}}">{{mark}}%</option>
+              {% endfor %}
+          </select> Return on Investment?
+          <select id="line-metric" name="line-metric" class="chzn-select" size="2">
+              {% for metric in metrics.line %}
+              <option {% if mark == filter.mark %} selected="selected" {% endif %} value="{{metric.id}}">{{metric.label}}</option>
               {% endfor %}
           </select> Return on Investment?
       </div>
@@ -128,7 +132,9 @@ function drawBubbleChart() {
                           .showDistX(true)
                           .showDistY(true)
                           .showControls(false)
-                          .color(d3.scale.category20().range());
+                          .color(d3.scale.category20().range())
+                          .forceX([0])
+                          .forceY([0]);
             
             chart.xAxis
                 .axisLabel('Customer Acquisition Cost')
@@ -151,7 +157,7 @@ function drawBubbleChart() {
 function drawLineChart() {
     d3.json("/websites/line", function(jsonLine) {
         nv.addGraph(function() {
-            var chart = nv.models.lineWithFocusChart();
+            var chart = nv.models.lineWithFocusChart().forceY([0]);
             chart.xAxis
                .tickFormat(function(d) { return d3.time.format('%b %d')(new Date(d)); });
                

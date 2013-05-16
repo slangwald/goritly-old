@@ -8,6 +8,7 @@ encoding//cc_django/apps/profiles/migrations/0002_auto__chg_field_confirmationke
 encoding//cc_django/apps/profiles/models.py=utf-8
 encoding//cc_django/apps/profiles/views.py=utf-8
 encoding//cc_django/apps/utils/migrations/0001_initial.py=utf-8
+encoding//cc_django/apps/utils/views.py=utf-8
 encoding//cc_django/apps/websites/forms.py=utf-8
 encoding//cc_django/apps/websites/migrations/0001_initial.py=utf-8
 encoding//cc_django/apps/websites/models.py=utf-8

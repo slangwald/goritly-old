@@ -80,7 +80,7 @@ def filter(request):
     
     request.session['filter-partner'] = []    
     if('filter-partner' in request.POST):
-        request.session['filter-partner1'] = request.POST.getlist('filter-partner')
+        request.session['filter-partner'] = request.POST.getlist('filter-partner')
     
     
     request.session['filter-date-from'] = ""
@@ -144,6 +144,12 @@ def get_kpi_board(request):
                 filter += " AND "
             filter += ' channel_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-channel']))
     
+    if 'filter-partner' in session:
+        if len(session['filter-partner']):
+            if filter != "":
+                filter += " AND "
+            filter += ' partner_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-partner']))
+    
     if filter != "":
         filter = ' WHERE ' + filter
     
@@ -151,14 +157,14 @@ def get_kpi_board(request):
     
     #ROI
     sql = util_models.CustomerCLV.objects.raw("""
-       SELECT id, channel_id, AVG(`""" + model + """`/cost)*100 as roi FROM utils_customerclv """ + filter + """ GROUP BY channel_id
+       SELECT id, channel_id, AVG(`clv_""" + model + """_added`/cost)*100 as roi FROM utils_customerclv """ + filter + """ GROUP BY channel_id
     """)
     for line in sql:
         kpi_model.add_to_kpi(line.channel.name, 'roi', line.roi)
     
     #CLV (per customer)
     sql = util_models.CustomerCLV.objects.raw("""
-        SELECT id, channel_id, SUM(`""" + model + """`)/count(DISTINCT `customer_id`) as clv_cust FROM utils_customerclv """ + filter + """ GROUP BY channel_id
+        SELECT id, channel_id, SUM(`clv_""" + model + """_total`)/count(DISTINCT `customer_id`) as clv_cust FROM utils_customerclv """ + filter + """ GROUP BY channel_id
     """)
     
     for line in sql:
@@ -176,7 +182,7 @@ def get_kpi_board(request):
     #Total CLV
     #Total CAC
     sql = util_models.CustomerCLV.objects.raw("""
-        SELECT id, channel_id, SUM(`""" + model + """`) as total_clv, SUM(`cost`) as total_cost FROM utils_customerclv """ + filter + """ GROUP BY channel_id
+        SELECT id, channel_id, SUM(`clv_""" + model + """_added`) as total_clv, SUM(`cost`) as total_cost FROM utils_customerclv """ + filter + """ GROUP BY channel_id
     """)
     for line in sql:
         kpi_model.add_to_kpi(line.channel.name, 'clv_total', line.total_clv)
@@ -190,12 +196,6 @@ def get_kpi_board(request):
     for line in sql:
         kpi_model.add_to_kpi(line.channel.name, 'revenue_total', line.total_revenue)
         kpi_model.add_to_kpi(line.channel.name, 'revenue_per_customer', (line.total_revenue/channel_customer_count[line.channel.name]))
-    
-    
-    """
-    MISSING:
-    - CAC (ie cost of customer acquisition)
-    """
     
     kpi_view = []
     for channel in kpi_model.kpi_data:
@@ -273,6 +273,16 @@ def get_sidebar(request):
                                                        'models_available' : models
                                                       })
 
+metrics = {
+    'line': [
+        {'id': 'clv',      'label': 'customer lifetime value (in currency)'},
+        {'id': 'roi',      'label': 'return on investment'},
+        {'id': 'revenue',  'label': 'revenue'}
+    ]
+    #'bar'
+    #'bubble'
+}
+
 
 @login_required()
 def dashboard(request):
@@ -292,7 +302,8 @@ def dashboard(request):
     return render_to_response('websites/dashboard.html', {'request'    : request,
                                                           'context'    : context,
                                                           'marks'      : get_marks(),
-                                                          'filter'     : filter 
+                                                          'filter'     : filter,
+                                                          'metrics'    : metrics
                                                           })
 
 def get_first_and_last_date():
@@ -362,7 +373,23 @@ def get_bar_chart_json(request):
         filter = ' WHERE ' + filter
     
     model = session['model']
-    bar_data = util_models.CustomerCLV.objects.raw('SELECT id, `first_ordered_at` as `date`, AVG(`' + model + '`) as sum_linear, channel_id FROM utils_customerclv ' + filter + ' GROUP BY `first_ordered_at`, channel_id ORDER BY `date` DESC')
+    bar_data = util_models.CustomerCLV.objects.raw("""
+        SELECT 
+            id, 
+            `first_ordered_at` as `date`, 
+            AVG(`""" + model + """`) as sum_linear, 
+            channel_id 
+        FROM 
+            utils_customerclv 
+        
+        """ + filter + """ 
+        
+        GROUP BY 
+            `first_ordered_at`, 
+            channel_id 
+        ORDER BY 
+            `date` DESC
+    """)
     by_channel = {}
     bar_chart = []
     dates_available = {}
@@ -418,23 +445,23 @@ def get_line_chart_json(request):
             filter += ' AND channel_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-channel']))
     if 'filter-partner' in session:
         if len(session['filter-partner']):
-            #filter += ' AND partner_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-partner']))
-            pass
+            filter += ' AND partner_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-partner']))
     
     model = session['model']
-    line_data = util_models.CustomerCLVMarks.objects.raw("""
+    
+    days_field = 'roi_%s_%s' % (model, str(int(request.session['mark'])))
+    
+    line_data = util_models.CustomerRoiMarks.objects.raw("""
         SELECT
             `id`, 
             `joined` as `date`, 
-            AVG(`days`) as avg_days ,
+            AVG(`""" + days_field + """`) as avg_days ,
             `channel_id` 
         FROM 
-            utils_customerclvmarks 
+            utils_customerroimarks 
         WHERE 
-            model = '""" + model + """' 
+            1
             """ + filter + """
-            AND mark = """ + str(int(request.session['mark'])) + """ 
-        
         GROUP BY `joined` ORDER BY `joined`
     """)
     values = []

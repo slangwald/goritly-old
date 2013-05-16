@@ -1,6 +1,6 @@
 from cc_django.middleware import *
-#from websites import models 
-
+from cc_django.apps.global_settings import UTILS_DATABASE
+import sys
 class UserDBRouter(object):
     
     """
@@ -9,6 +9,10 @@ class UserDBRouter(object):
     """
 
     def get_active_website(self):
+        # Command from CLI
+        if UTILS_DATABASE != None:
+            return UTILS_DATABASE
+        
         active_website_id = get_session().get('active_website_id')
         active_website = 'website_' + str(active_website_id)
         return active_website

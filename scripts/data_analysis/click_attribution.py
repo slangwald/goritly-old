@@ -16,8 +16,7 @@ import cc_django.apps.utils.models as models
 
 import datetime
 
-from django.core.management import setup_environ
-
+from django import db
 
 
 """
@@ -63,15 +62,14 @@ if __name__ == '__main__':
         
         attributions[attr_key][type] += value
     
-    def add_order(date, channel, campaign):
+    def add_order(date, partner, channel, campaign):
         channel = int(channel) 
         campaign = int(campaign)
-        if not date     in attributions:
-            attributions[date] = {}
-        if not channel  in attributions[date]:
-            attributions[date][channel] = {}
-        if not campaign in attributions[date][channel]:
-            attributions[date][channel][campaign] = {
+        partner = int(partner)
+        
+        attr_key = (date, partner, channel, campaign)
+        if not attr_key in attributions:
+            attributions[attr_key] = {
                 'linear': 0.00, 
                 'first_click': 0.00, 
                 'last_click': 0.00, 
@@ -79,7 +77,7 @@ if __name__ == '__main__':
                 'u_shape': 0.00,
                 'orders': 0
             }
-        attributions[date][channel][campaign]['orders'] += 1
+        attributions[attr_key]['orders'] += 1
         
     def add_click_combination(path,revenue):
         
@@ -137,6 +135,7 @@ if __name__ == '__main__':
     total_value = 0
     total_runs = 0
     for customer in paying_customers:
+        db.reset_queries()
         #total_runs += 1
         #if total_runs > 100:
         #    break
@@ -161,27 +160,27 @@ if __name__ == '__main__':
 
                 last_click_channel = clicks[len(clicks)-1].channel.id
                 last_click_campaign = clicks[len(clicks)-1].campaign.id
-                add('last_click', order_date, last_click_channel, last_click_campaign, order.value)
+                add('last_click', order_date, clicks[len(clicks)-1].partner.id, last_click_channel, last_click_campaign, order.value)
                 
                 
                 first_click_channel = clicks[0].channel.id
                 first_click_campaign = clicks[0].campaign.id
-                add('first_click', order_date, first_click_channel, first_click_campaign, order.value)
+                add('first_click', order_date, clicks[0].partner.id, first_click_channel, first_click_campaign, order.value)
 
                 if(len(clicks) == 2):
-                    add('u_shape', order_date, clicks[0].channel.id, clicks[0].campaign.id, order.value * 0.5)
-                    add('u_shape', order_date, clicks[1].channel.id, clicks[1].campaign.id, order.value * 0.5)
-                if(len(clicks) == 1):
-                    add('u_shape', order_date, clicks[0].channel.id, clicks[0].campaign.id, order.value)
-                if(len(clicks) > 2):
-                    add('u_shape', order_date, clicks[0].channel.id, clicks[0].campaign.id, order.value * 0.4)
-                    add('u_shape', order_date, clicks[len(clicks)-1].channel.id, clicks[len(clicks)-1].campaign.id, order.value * 0.4)
+                    add('u_shape', order_date, clicks[0].partner.id, clicks[0].channel.id, clicks[0].campaign.id, order.value * 0.5)
+                    add('u_shape', order_date, clicks[1].partner.id, clicks[1].channel.id, clicks[1].campaign.id, order.value * 0.5)
+                if(len(clicks) == 1):                    
+                    add('u_shape', order_date, clicks[0].partner.id,  clicks[0].channel.id, clicks[0].campaign.id, order.value)
+                if(len(clicks) > 2):                     
+                    add('u_shape', order_date, clicks[0].partner.id, clicks[0].channel.id, clicks[0].campaign.id, order.value * 0.4)
+                    add('u_shape', order_date, clicks[len(clicks)-1].partner.id, clicks[len(clicks)-1].channel.id, clicks[len(clicks)-1].campaign.id, order.value * 0.4)
                     for i in range(1, len(clicks)-1):
-                        add('u_shape', order_date, clicks[i].channel.id, clicks[i].campaign.id, (order.value * 0.2) / (len(clicks) - 2) )
+                        add('u_shape', order_date, clicks[i].partner.id, clicks[i].channel.id, clicks[i].campaign.id, (order.value * 0.2) / (len(clicks) - 2) )
                 
                 
                 for i in range(0, len(clicks)):
-                    add('linear', order_date, clicks[i].channel.id, clicks[i].campaign.id, order.value / len(clicks))
+                    add('linear', order_date, clicks[i].partner.id, clicks[i].channel.id, clicks[i].campaign.id, order.value / len(clicks))
                 
                 
                 damping = 0.2
@@ -190,42 +189,62 @@ if __name__ == '__main__':
                 reduced_campaigns = {}
                 
                 for i in range(0, len(clicks)):
-                    add('exponential_decay', order_date, clicks[i].channel.id, clicks[i].campaign.id, order.value * math.exp(-damping * (len(clicks) - i - 1)) / norm)
+                    add('exponential_decay', order_date, clicks[i].partner.id, clicks[i].channel.id, clicks[i].campaign.id, order.value * math.exp(-damping * (len(clicks) - i - 1)) / norm)
                     
-                    if not clicks[i].channel.id in reduced_campaigns:
-                        reduced_campaigns[clicks[i].channel.id] = {}
-                    if not clicks[i].campaign.id in reduced_campaigns[clicks[i].channel.id]:
-                        reduced_campaigns[clicks[i].channel.id][clicks[i].campaign.id] = 1
+                    reduced_key = (clicks[i].partner.id, clicks[i].channel.id, clicks[i].campaign.id)
+                    if not reduced_key in reduced_campaigns:
+                        reduced_campaigns[reduced_key] = 1
                 
-                
-                for red_channel in reduced_campaigns:
-                    for red_campaign in reduced_campaigns[red_channel]:
-                        add_order(order_date, red_channel, red_campaign)
+                for (red_partner, red_channel, red_campaign) in reduced_campaigns:
+                    add_order(order_date, red_partner, red_channel, red_campaign)
                     
             else:
                 unattributed_revenue += order.value
     
     attr_ordered = attributions
     
-    for date in attr_ordered:
-        for channel in attr_ordered[date]:
-            for campaign in attr_ordered[date][channel]:
-                model_attr = models.Attributions()
-                
-                model_attr.date        = date
-                model_attr.channel_id  = channel
-                model_attr.campaign_id = campaign
-                model_attr.u_shape     = attr_ordered[date][channel][campaign]['u_shape']
-                model_attr.linear      = attr_ordered[date][channel][campaign]['linear']
-                model_attr.first_click = attr_ordered[date][channel][campaign]['first_click']
-                model_attr.last_click  = attr_ordered[date][channel][campaign]['last_click']
-                model_attr.decay       = attr_ordered[date][channel][campaign]['exponential_decay']
-                model_attr.orders      = attr_ordered[date][channel][campaign]['orders']
-                model_attr.save() 
+    for (date, partner, channel, campaign) in attr_ordered:
+        
+        attr_key = (date, partner, channel, campaign)
+        
+        model_attr = models.Attributions()
+        
+        model_attr.date        = date
+        model_attr.channel_id  = channel
+        model_attr.campaign_id = campaign
+        model_attr.partner_id  = partner
+        model_attr.u_shape     = attr_ordered[attr_key]['u_shape']
+        model_attr.linear      = attr_ordered[attr_key]['linear']
+        model_attr.first_click = attr_ordered[attr_key]['first_click']
+        model_attr.last_click  = attr_ordered[attr_key]['last_click']
+        model_attr.decay       = attr_ordered[attr_key]['exponential_decay']
+        model_attr.orders      = attr_ordered[attr_key]['orders']
+        model_attr.save() 
     
     
+    models.Attributions.objects.raw("""
+        UPDATE 
+            utils_attributions as a 
+        SET 
+            a.cost = IFNULL(
+                (
+                    SELECT 
+                        SUM(m.cost) 
+                    FROM 
+                        utils_marketingcost as m 
+                    WHERE 
+                    m.partner_id = a.partner_id 
+                    AND m.channel_id=a.channel_id 
+                    AND m.campaign_id = a.campaign_id 
+                    AND m.date = a.date
+                )
+                ,0)
+    """)
     sys.exit()
+    """
     
+
+    """
     
     print "Total value: %g" % total_value
     print "Unattributed revenue: %g" % unattributed_revenue

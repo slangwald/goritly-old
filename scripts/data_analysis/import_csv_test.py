@@ -185,9 +185,6 @@ class CsvOrders(CsvImporter):
         
         country = row[0]
         
-        if country != "sg":
-            return
-        
         visitor,  created = Visitor.objects.get_or_create(identifier= 'cust_' + row[3])
         customer, created = Customer.objects.get_or_create(identifier=row[3])
         
@@ -289,7 +286,7 @@ if __name__ == '__main__':
     parser.add_argument('--marketing-cost',type=str)
     parser.add_argument('--products', type=str)
     parser.add_argument('--voucher', type=str)
-    parser.add_argument('--db-utils', type=str)
+    parser.add_argument('--utils-db', type=str)
     
     args = parser.parse_args()
     imports = []
