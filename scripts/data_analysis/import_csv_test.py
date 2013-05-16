@@ -75,9 +75,9 @@ class CsvMarketingCost(CsvImporter):
         #print row
         #sys.exit()
 
-        if row[8] != "sg":
-            print "skipped (sg-filter) %s" % (row)
-            return 0
+        #if row[8] != "sg":
+        #    print "skipped (sg-filter) %s" % (row)
+        #    return 0
 
         if row[5] == "0":
             print "skipped (cost-zero-filter) %s" % (row)
@@ -123,9 +123,9 @@ class CsvClickChain(CsvImporter):
         
         #sys.exit()
         
-        if row[0] != "sg":
+        #if row[0] != "sg":
             #print "skipped (sg-filter) %s" % (row)
-            return 0
+        #    return 0
         
         order = Order.objects.all().filter(order_id=row[1])
         
