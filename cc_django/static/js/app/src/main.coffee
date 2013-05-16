@@ -4,14 +4,8 @@ $(document).ready ->
     $(@).tab('show')
     
     window.location.hash = '#!' + @.hash
-    if $(@).attr('data-chart') == 'bubble'
-      drawBubbleChart()
-     
-    if $(@).attr('data-chart') == 'line'
-      drawLineChart()
-        
     if $(@).attr('data-chart') == 'bar'
-      drawBarChart()
+      drawBarNew()
     
   loadSideBar = () ->
     $('#sidebar').load('/websites/sidebar', () -> 
@@ -21,9 +15,7 @@ $(document).ready ->
         e.preventDefault()
         $.post("/websites/filter", $("#filter-form").serialize()).done((data) ->
             $('#kpi-board').load('/websites/kpi')
-            drawBubbleChart()
-            drawLineChart()
-            drawBarChart()
+            drawBarNew()
         )
     )
   loadSideBar()
@@ -32,7 +24,7 @@ $(document).ready ->
   
   $('#mark').change((e) ->
     $.post("/websites/mark", $("#mark").serialize()).done((data) ->
-      drawLineChart()
+      #drawLineChart()
     )
   )
   

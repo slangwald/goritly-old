@@ -6,14 +6,8 @@
     $('#charts-tabs a').click(function(e) {
       $(this).tab('show');
       window.location.hash = '#!' + this.hash;
-      if ($(this).attr('data-chart') === 'bubble') {
-        drawBubbleChart();
-      }
-      if ($(this).attr('data-chart') === 'line') {
-        drawLineChart();
-      }
       if ($(this).attr('data-chart') === 'bar') {
-        return drawBarChart();
+        return drawBarNew();
       }
     });
     loadSideBar = function() {
@@ -24,9 +18,7 @@
           e.preventDefault();
           return $.post("/websites/filter", $("#filter-form").serialize()).done(function(data) {
             $('#kpi-board').load('/websites/kpi');
-            drawBubbleChart();
-            drawLineChart();
-            return drawBarChart();
+            return drawBarNew();
           });
         });
       });
@@ -35,9 +27,7 @@
     $('.chzn-select').chosen();
     $('#kpi-board').load('/websites/kpi');
     return $('#mark').change(function(e) {
-      return $.post("/websites/mark", $("#mark").serialize()).done(function(data) {
-        return drawLineChart();
-      });
+      return $.post("/websites/mark", $("#mark").serialize()).done(function(data) {});
     });
   });
 

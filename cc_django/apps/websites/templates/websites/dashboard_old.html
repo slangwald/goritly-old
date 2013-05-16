@@ -1,0 +1,245 @@
+{% extends "layouts/base.html" %}
+{%load static %}
+{%block title%}Website Dashboard{%endblock%}
+
+{%block content %}
+
+
+<ul class="nav nav-tabs" id="charts-tabs">
+  <li class="active"><a data-chart="kpi" href="#kpi-board" data-toggle="tab">KPI Board</a></li>
+  <li><a data-chart="line" href="#line-chart" data-toggle="tab">Line Chart</a></li>
+  <li><a data-chart="bar" href="#bar-chart" data-toggle="tab">Bar Chart</a></li>
+  <li><a data-chart="bubble" href="#bubble-chart" data-toggle="tab">Bubble Chart</a></li>
+</ul>
+
+<div class="tab-content">
+  <div class="tab-pane active" id="kpi-board">
+      
+  </div>
+  
+  <div class="tab-pane" id="line-chart">
+      <div class="well well-small">
+          How long did it take customers joining between <b>{{filter.from}}</b> and <b>{{filter.to}}</b> to reach 
+          <select id="mark" name="mark" class="chzn-select" size="2">
+              {% for mark in marks %}
+              <option {% if mark == filter.mark %} selected="selected" {% endif %} value="{{mark}}">{{mark}}%</option>
+              {% endfor %}
+          </select> Return on Investment?
+          <select id="line-metric" name="line-metric" class="chzn-select" size="2">
+              {% for metric in metrics.line %}
+              <option {% if mark == filter.mark %} selected="selected" {% endif %} value="{{metric.id}}">{{metric.label}}</option>
+              {% endfor %}
+          </select> Return on Investment?
+      </div>
+      <svg style="height:600px;width:800px"></svg>
+  </div>
+  <div class="tab-pane" id="bubble-chart">
+      <div class="well well-small">
+           What is the CLV, CAC and Number of Customers of Customers from <b>{{filter.from}}</b> to <b>{{filter.to}}</b>
+      </div>
+      <svg style="height:600px;width:800px"></svg>
+  </div>
+  <div class="tab-pane" id="bar-chart">
+      <div class="well well-small">
+          What is today’s total CLV of customers joining between <b>{{filter.from}}</b> and <b>{{filter.to}}</b>
+      </div>
+      <svg style="height:400px;width:800px"></svg>
+  </div>
+  
+</div>
+
+<script>
+function drawCalendar() {
+/* Special date widget */
+    var format = d3.time.format("%Y-%m-%d");
+    
+    
+    var to = format.parse($('#filter-date-to').val()) || new Date();
+    var from = format.parse($('#filter-date-from').val()) || new Date(to.getTime() - 1000 * 60 * 60 * 24 * 14);
+    
+    function pad(n){ return n < 10 ? '0' + n : n }
+    
+    $('#filter-date-from').val(from.getFullYear() + '-' + pad(from.getMonth(true)+1) + '-' + pad(from.getDate()));
+    $('#filter-date-to').val(to.getFullYear() + '-' + pad(to.getMonth(true)+1) + '-' + pad(to.getDate()));
+    console.log($('#filter-date-to').val());
+    
+    
+    $('#datepicker-calendar').DatePicker({
+      inline: true,
+      date: [from, to],
+      calendars: 3,
+      mode: 'range',
+      current: new Date(to.getFullYear(), to.getMonth()-1, 1),
+      onChange: function(dates,el) {
+        $('#filter-date-from').val(dates[0].getFullYear() + '-' + pad(dates[0].getMonth(true)+1) + '-' + pad(dates[0].getDate()));
+        $('#filter-date-to').val(dates[1].getFullYear() + '-' + pad(dates[1].getMonth(true)+1) + '-' + pad(dates[1].getDate()));
+        console.log($('#filter-date-to').val());
+        // update the range display
+        $('#date-range-field span').text(dates[0].getDate()+' '+dates[0].getMonthName(true)+', '+dates[0].getFullYear()+' - '+
+                                    dates[1].getDate()+' '+dates[1].getMonthName(true)+', '+dates[1].getFullYear());
+      }
+    });
+    
+    // initialize the special date dropdown field
+    $('#date-range-field span').text(from.getDate()+' '+from.getMonthName(true)+', '+from.getFullYear()+' - '+
+                                    to.getDate()+' '+to.getMonthName(true)+', '+to.getFullYear());
+    
+    // bind a click handler to the date display field, which when clicked
+    // toggles the date picker calendar, flips the up/down indicator arrow,
+    // and keeps the borders looking pretty
+    $('#date-range-field').bind('click', function(){
+      $('#datepicker-calendar').toggle();
+      if($('#date-range-field a').text().charCodeAt(0) == 9660) {
+        // switch to up-arrow
+        $('#date-range-field a').html('&#9650;');
+        $('#date-range-field').css({borderBottomLeftRadius:0, borderBottomRightRadius:0});
+        $('#date-range-field a').css({borderBottomRightRadius:0});
+      } else {
+        // switch to down-arrow
+        $('#date-range-field a').html('&#9660;');
+        $('#date-range-field').css({borderBottomLeftRadius:5, borderBottomRightRadius:5});
+        $('#date-range-field a').css({borderBottomRightRadius:5});
+      }
+      return false;
+    });
+    
+    // global click handler to hide the widget calendar when it's open, and
+    // some other part of the document is clicked.  Note that this works best
+    // defined out here rather than built in to the datepicker core because this
+    // particular example is actually an 'inline' datepicker which is displayed
+    // by an external event, unlike a non-inline datepicker which is automatically
+    // displayed/hidden by clicks within/without the datepicker element and datepicker respectively
+    $('html').click(function() {
+      if($('#datepicker-calendar').is(":visible")) {
+        $('#datepicker-calendar').hide();
+        $('#date-range-field a').html('&#9660;');
+        $('#date-range-field').css({borderBottomLeftRadius:5, borderBottomRightRadius:5});
+        $('#date-range-field a').css({borderBottomRightRadius:5});
+      }
+    });
+    
+    // stop the click propagation when clicking on the calendar element
+    // so that we don't close it
+    $('#datepicker-calendar').click(function(event){
+      event.stopPropagation();
+    });
+      /* End special page widget */
+}
+function drawBubbleChart() { 
+    d3.json("/websites/bubble", function(jsonBubble) {
+        nv.addGraph(function() {
+            var chart = nv.models.scatterChart()
+                          .showDistX(true)
+                          .showDistY(true)
+                          .showControls(false)
+                          .color(d3.scale.category20().range())
+                          .forceX([0])
+                          .forceY([0]);
+            
+            chart.xAxis
+                .axisLabel('Customer Acquisition Cost')
+                .tickFormat(d3.format('.02f'))
+            chart.yAxis
+                .axisLabel('Customer Lifetime Value')
+                .tickFormat(d3.format('.02f'))
+            
+            d3.select('#bubble-chart svg')
+                .datum(jsonBubble)
+              .transition().duration(500)
+                .call(chart);
+            
+            nv.utils.windowResize(chart.update);
+            return chart;
+        });
+    });
+}
+
+function drawLineChart() {
+    d3.json("/websites/line", function(jsonLine) {
+        nv.addGraph(function() {
+            var chart = nv.models.lineWithFocusChart().forceY([0]);
+            chart.xAxis
+               .tickFormat(function(d) { return d3.time.format('%b %d')(new Date(d)); });
+               
+            chart.x2Axis
+                 .tickFormat(function(d) { return d3.time.format('%b %d')(new Date(d)); });
+            chart.yAxis
+                 .tickFormat(d3.format('.f'));
+            
+            chart.y2Axis
+                 .tickFormat(d3.format('.f'));
+        
+          d3.select('#line-chart svg')
+              .datum(jsonLine)
+            .transition().duration(500)
+              .call(chart);
+        
+          nv.utils.windowResize(chart.update);
+        
+          return chart;
+        });
+  });
+}
+
+
+function drawBarChart() {
+    d3.json("/websites/bar", function(jsonBar) {
+        nv.addGraph(function() {
+            var chart = nv.models.multiBarChart()
+                        .stacked(true)
+                        .color(d3.scale.category20().range())
+                        .showControls(false);
+        
+            chart.xAxis
+                .tickFormat(function(d) { return d3.time.format('%b %d')(new Date(d)); });
+        
+            chart.yAxis
+                .tickFormat(d3.format(',.2f'));
+        
+            d3.select('#bar-chart svg')
+                .datum(jsonBar)
+              .transition().duration(500).call(chart);
+        
+            nv.utils.windowResize(chart.update);
+        
+            return chart;
+        });
+    });
+}
+
+</script>
+{%endblock%}
+
+
+{%block sidebar%}
+<div id="sidebar">
+    <form>
+  <fieldset>
+    <legend>Filter </legend>
+    <i>loading your filter... </i> <img src="/static/loading.gif" />
+   </fieldset>
+  </form>
+</div>
+{%endblock%}
+
+
+{%block head_extra %}
+<link href="/static/js/nv/src/nv.d3.css" rel="stylesheet">
+<link href="/static/chosen/chosen.css" rel="stylesheet">
+<link href="/static/styles/charts.css" rel="stylesheet">
+<link rel="stylesheet" media="screen" type="text/css" href="/static/js/datepicker/css/datepicker/base.css" />
+<link rel="stylesheet" media="screen" type="text/css" href="/static/js/datepicker/css/datepicker/clean.css" />
+
+<script src="/static/chosen/chosen.jquery.js"></script>
+<!--<script src="/static/js/d3.v3.min.js"></script>-->
+
+<script type="text/javascript" src="/static/js/datepicker/js/datepicker.js"></script>
+
+
+<script src="/static/js/nv/lib/d3.v2.js"></script>
+<script src="/static/js/nv/nv.d3.js"></script>
+
+<!--<script src="/static/js/app/src/charts.js"></script>-->
+<script src="/static/js/app/src/main.js"></script>
+
+{%endblock%}

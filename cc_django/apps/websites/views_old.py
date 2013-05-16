@@ -35,8 +35,6 @@ import websites.models as models
 import websites.forms as forms
 from profiles.views import login_required
 import utils.models as util_models
-from websites.metrics import * 
-
 
 class valid_website_required(object):
 
@@ -51,68 +49,8 @@ class valid_website_required(object):
             return function(request,*args,**kwargs)
         
         return check_for_valid_website
-"""
-------------------------
-FILTERS 
-------------------------
-"""
 
-FILTERS_AVAILABLE = [
-      'partner' 
-    , 'channel' 
-    , 'campaign'
-    , 'date'
-    , 'model'   
-]
 
-def set_filter(request):
-    request.session['filter'] = {}
-    
-    if('filter-channel' in request.POST):
-        request.session['filter']['channel'] = request.POST.getlist('filter-channel')
-    
-    if('filter-campaign' in request.POST):
-        request.session['filter']['campaign'] = request.POST.getlist('filter-campaign')
-    
-    if('filter-partner' in request.POST):
-        request.session['filter']['partner'] = request.POST.getlist('filter-partner')
-    
-    if('filter-date-from' in request.POST and 'filter-date-to' in request.POST):
-        request.session['filter']['date'] = {}
-        request.session['filter']['date']['from'] = request.POST['filter-date-from']
-        request.session['filter']['date']['to']   = request.POST['filter-date-to']
-    
-    if 'model' in request.POST:
-        request.session['model'] = request.POST['model']
-    
-    request.session.modified = True
-    return True
-
-def init_filters():
-    filters = {}
-    
-    for filter in FILTERS_AVAILABLE:
-        filters[filter] = None
-    return filters
-
-def get_filter(request):
-    filters = init_filters()
-    
-    if not 'filter' in request.session:
-        return filters
-    
-    for filter in request.session['filter']:
-        filters[filter] = request.session['filter'][filter]
-        
-    filters['model'] = request.session['model']
-    
-    return filters
-
-"""
-------------------------
-VIEWS 
-------------------------
-"""
 @login_required()
 def index(request):
     context = RequestContext(request,{})
@@ -120,13 +58,42 @@ def index(request):
 
 @login_required()
 @csrf_exempt
+def set_mark(request):
+    
+    request.session['mark'] = int(request.POST['mark'])
+    
+    return HttpResponse('')
+    
+@login_required()
+@csrf_exempt
 def filter(request):
     """
     AJAX function is excluded from CSRF protection
     """
-    set_filter(request)
-    print request.session['filter']
-    return HttpResponse('', )
+    request.session['filter-channel'] = []
+    if('filter-channel' in request.POST):
+        request.session['filter-channel'] = request.POST.getlist('filter-channel')
+    
+    request.session['filter-campaign'] = []    
+    if('filter-campaign' in request.POST):
+        request.session['filter-campaign'] = request.POST.getlist('filter-campaign')
+    
+    request.session['filter-partner'] = []    
+    if('filter-partner' in request.POST):
+        request.session['filter-partner'] = request.POST.getlist('filter-partner')
+    
+    
+    request.session['filter-date-from'] = ""
+    request.session['filter-date-to']   = ""
+    if('filter-date-from' in request.POST and 'filter-date-to' in request.POST):
+        request.session['filter-date-from'] = request.POST['filter-date-from']
+        request.session['filter-date-to']   = request.POST['filter-date-to']
+    
+    if 'model' in request.POST:
+        request.session['model'] = request.POST['model']
+    
+    request.session.modified = True
+    return HttpResponseRedirect('/websites/dashboard')
 
 class KpiBoard():
     def __init__(self):
@@ -137,23 +104,23 @@ class KpiBoard():
             return
         if channel not in self.kpi_data:
             self.kpi_data[channel] = {
-                'name': channel,
-                'roi': 0,
-                'roi_change': 0,
-                'clv_per_customer': 0,
-                'clv_per_customer_change': 0,
-                'customer_count': 0,
-                'customer_count_change': 0,
-                'clv_total': 0,
-                'clv_total_change': 0,
-                'cac_total': 0,
-                'cac_total_change': 0,
-                'revenue_total': 0,
-                'revenue_total_change': 0,
-                'revenue_per_customer': 0,
-                'revenue_per_customer_change': 0,
-                'cac_avg': 0,
-            }
+                                 'name': channel,
+                                 'roi': 0,
+                                 'roi_change': 0,
+                                 'clv_per_customer': 0,
+                                 'clv_per_customer_change': 0,
+                                 'customer_count': 0,
+                                 'customer_count_change': 0,
+                                 'clv_total': 0,
+                                 'clv_total_change': 0,
+                                 'cac_total': 0,
+                                 'cac_total_change': 0,
+                                 'revenue_total': 0,
+                                 'revenue_total_change': 0,
+                                 'revenue_per_customer': 0,
+                                 'revenue_per_customer_change': 0,
+                                 'cac_avg': 0,
+                                 }
         self.kpi_data[channel][key] = float(value)
 
 @login_required()
@@ -254,7 +221,24 @@ def get_kpi_board(request):
         
     return render_to_response('websites/kpi.html', {'kpis': kpi_view})
 
-
+def get_filter(request):
+    filter = {}
+    if 'filter-channel' in request.session:
+        filter['channel'] = request.session['filter-channel']
+    if 'filter-campaign' in request.session:
+        filter['campaign'] = request.session['filter-campaign']
+    if 'filter-partner' in request.session:
+        filter['partner'] = request.session['filter-partner']
+    if('filter-date-from' in request.session and 'filter-date-to' in request.session):
+        filter['from'] = request.session['filter-date-from']
+        filter['to'] = request.session['filter-date-to']
+    
+    if 'model' in request.session:
+        filter['model'] = request.session['model']
+    
+    filter['mark'] = request.session['mark']
+    
+    return filter
 
 @login_required()
 def get_sidebar(request):
@@ -279,10 +263,6 @@ def get_sidebar(request):
         
     filter = get_filter(request)
     
-    print "----------"
-    print filter
-    print "----------"
-    
     models = get_models_available()
     
     return render_to_response('websites/filter.html', {'request'          : request,
@@ -293,44 +273,37 @@ def get_sidebar(request):
                                                        'models_available' : models
                                                       })
 
-
+metrics = {
+    'line': [
+        {'id': 'clv',      'label': 'customer lifetime value (in currency)'},
+        {'id': 'roi',      'label': 'return on investment'},
+        {'id': 'revenue',  'label': 'revenue'}
+    ]
+    #'bar'
+    #'bubble'
+}
 
 
 @login_required()
 def dashboard(request):
     context = RequestContext(request,{})
     
-    if not 'model' in request.session:
+    if 'model' not in request.session:
         request.session['model'] = 'linear'
-    
-    if not 'filter' in request.session:
-        request.session['filter'] = {}
-    
-    
     edge_dates = get_first_and_last_date()
     if not 'filter-date-from' in request.session:
-        request.session['filter']['date'] = {}
-        request.session['filter']['date']['from'] = edge_dates['first'].strftime('%Y-%m-%d')
-        request.session['filter']['date']['to']   = edge_dates['last'].strftime('%Y-%m-%d')
+        request.session['filter-date-from'] = edge_dates['first'].strftime('%Y-%m-%d')
+        request.session['filter-date-to']   = edge_dates['last'].strftime('%Y-%m-%d')
 
     if not 'mark' in request.session:
         request.session['mark'] = 100
     
     filter = get_filter(request)
-    
-    metric = RoiMetric(
-        model   = request.session['model'],
-        filter  = filter, 
-        options = {}
-    )
-    
-    print metric.get_data()
-    
     return render_to_response('websites/dashboard.html', {'request'    : request,
                                                           'context'    : context,
                                                           'marks'      : get_marks(),
                                                           'filter'     : filter,
-                                                          'metrics'    : METRICS
+                                                          'metrics'    : metrics
                                                           })
 
 def get_first_and_last_date():
@@ -457,6 +430,107 @@ def get_bar_chart_json(request):
         
     return HttpResponse(json.dumps(bar_chart), content_type="application/json")
 
+
+@login_required()
+def get_line_chart_json(request):
+    session = request.session
+    filter = ''
+    if('filter-date-from' in session and 'filter-date-to' in session):
+        filter += ' AND `joined` BETWEEN "%s" AND "%s" ' % (session['filter-date-from'], session['filter-date-to'])
+    if 'filter-campaign' in session:
+        if len(session['filter-campaign']):
+            filter +=  ' AND campaign_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-campaign']))
+    if 'filter-channel' in session:
+        if len(session['filter-channel']):
+            filter += ' AND channel_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-channel']))
+    if 'filter-partner' in session:
+        if len(session['filter-partner']):
+            filter += ' AND partner_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-partner']))
+    
+    model = session['model']
+    
+    days_field = 'roi_%s_%s' % (model, str(int(request.session['mark'])))
+    
+    line_data = util_models.CustomerRoiMarks.objects.raw("""
+        SELECT
+            `id`, 
+            `joined` as `date`, 
+            AVG(`""" + days_field + """`) as avg_days ,
+            `channel_id` 
+        FROM 
+            utils_customerroimarks 
+        WHERE 
+            1
+            """ + filter + """
+        GROUP BY `joined` ORDER BY `joined`
+    """)
+    values = []
+    for line in line_data:
+        date = str(line.date)
+        values.append({
+           'x': int(line.date.strftime('%s000')),
+           'y': float(line.avg_days)
+        })
+        
+    line_chart = [{
+        'key': 'days to reach ' + str(int(request.session['mark'])) +'% ROI',
+        'values': values
+    }]
+    return HttpResponse(json.dumps(line_chart), content_type="application/json")
+
+@login_required()
+def get_bubble_chart_json(request):
+    session = request.session
+    filter = ''
+    
+    if('filter-date-from' in session and 'filter-date-to' in session):
+        filter += ' `first_ordered_at` BETWEEN "%s" AND "%s" ' % (session['filter-date-from'], session['filter-date-to'])
+    
+    if 'filter-campaign' in session:
+        if len(session['filter-campaign']):
+            if filter != "":
+                filter += " AND "
+            filter +=  ' campaign_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-campaign']))
+    if 'filter-channel' in session:
+        if len(session['filter-channel']):
+            if filter != "":
+                filter += " AND "
+            filter += ' channel_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-channel']))
+    
+    if 'filter-partner' in session:
+        if len(session['filter-partner']):
+            if filter != "":
+                filter += " AND "
+            #filter += ' partner_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-partner']))
+    
+    if filter != "":
+        filter = ' WHERE ' + filter
+    
+    
+    
+    model = session['model']
+    bubble_data = util_models.Attributions.objects.raw('SELECT *, SUM(cost) as sum_cost, SUM(`' + model + '`) as sum_linear, count(DISTINCT customer_id) as customer_count FROM utils_customerclv ' + filter + ' GROUP BY channel_id')
+    bubble_chart = []
+    by_channel = {}
+    for bubble in bubble_data:
+        if not bubble.channel.name in by_channel:
+            by_channel[bubble.channel.name] = []
+        
+        realcost = float(bubble.sum_cost) / float(bubble.customer_count) / 2
+        reallinear = float(bubble.sum_linear) / float(bubble.customer_count) / 2 
+        by_channel[bubble.channel.name].append({
+             'x': realcost,
+             'y': reallinear,
+             'size': int(bubble.customer_count)
+        })
+    for channel in by_channel:
+        bubble_chart.append({
+            'key': channel,
+            'values': by_channel[channel]
+        })
+        
+    
+    return HttpResponse(json.dumps(bubble_chart), content_type="application/json")
 
 @login_required()
 def set_active_website(request,website_id = None):
