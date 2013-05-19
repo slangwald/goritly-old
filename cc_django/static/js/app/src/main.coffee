@@ -1,6 +1,16 @@
 $(document).ready ->
   
-  $('#charts-tabs a').click (e) ->     
+  doMetric = (e) ->
+    $.post("/websites/set_metric", $(@).serialize()).done((data) ->
+            #$('#kpi-board').load('/websites/kpi')
+            drawBarNew()
+        )
+    
+  
+  $("#metric-left").change doMetric
+  $("#metric-right").change doMetric
+  
+  $('#charts-tabs a').click (e) ->
     $(@).tab('show')
     
     window.location.hash = '#!' + @.hash

@@ -2,6 +2,9 @@ from utils.models import *
 from dateutil import rrule
 from datetime import datetime
 
+from django.core import serializers
+
+
 """
 ------------------------
 METRICS
@@ -21,6 +24,7 @@ class BasicMetric():
             (stuff used by specific metrics)
         }
         """
+        print filter
         self.filter  = filter
         self.options = options
         self.model   = model
@@ -38,19 +42,13 @@ class BasicMetric():
     def get_dimension_filter(self):
         
         dim_filter = []
-        
         for dimension in self.dimensions:
             if dimension in self.filter:
                 if self.filter[dimension] != None:
                     sql = dimension + '_id IN(%s)' % (', '.join(str(int(d)) for d in self.filter[dimension]))
                     dim_filter.append(sql)
         
-        
-        
         return dim_filter
-    
-    def get_filter_date(self):
-        return ''
     
     def get_filter_sql(self):
         
@@ -58,6 +56,9 @@ class BasicMetric():
         dim_filter.append(self.get_filter_date())
         
         sql = ' AND '.join(part for part in dim_filter)
+        
+        if sql != "":
+            sql = ' WHERE ' + sql
         
         return sql
     
@@ -80,35 +81,29 @@ class BasicMetric():
         pass
     
     def get_json(self):
-        return
+        return json.dumps(self.get_data())
+    
+    def get_filter_date(self):
+        filter = ""
+        if(self.filter_date_set):
+            filter = ' (`' + self.date_column + '` BETWEEN "%s" AND "%s") ' % (self.filter_date_from, self.filter_date_to)
+        return filter
 
 class RoiMetric(BasicMetric):
     
-    table = 'utils_customerclv'
-    
-    def get_filter_date(self):
-        _filter = ""
-        if(self.filter_date_set):
-            _filter = ' (`first_ordered_at` BETWEEN "%s" AND "%s") ' % (self.filter_date_from, self.filter_date_to)
-        return _filter
-    
-    def get_raw_data(self):
-        
-        return
+    table       = 'utils_customerclv'
+    date_column = 'first_ordered_at'
     
     def get_data(self):
         
         filter = self.get_filter_sql()
         
-        if filter != "":
-            filter = ' WHERE ' + filter
-        
         model = self.model
         raw_data = CustomerCLV.objects.raw("""
             SELECT 
                 id, 
-                `first_ordered_at` as `date`, 
-                AVG(`clv_""" + model + """_added`) as summed
+                `first_ordered_at`, 
+                SUM(`clv_""" + model + """_added`)/SUM(cost)*100 as summed
             FROM 
                 utils_customerclv 
             
@@ -117,11 +112,131 @@ class RoiMetric(BasicMetric):
             GROUP BY 
                 `first_ordered_at`
             ORDER BY 
+                `first_ordered_at`
+        """)
+        date_range = self.get_date_range()
+        
+        data = []
+        date_counter = 0
+        for d in raw_data:
+            print "%s==%s" % (d.first_ordered_at, date_range[date_counter])
+            if d.first_ordered_at.strftime('%Y-%m-%d') == date_range[date_counter]:
+                data.append([int(d.first_ordered_at.strftime('%s000')), d.summed])
+            else:
+                print date_range[date_counter]
+                placeholder = datetime.strptime(date_range[date_counter], '%Y-%m-%d').strftime('%s000')
+                data.append([placeholder, 0])
+            date_counter += 1
+        
+        return data
+    
+class ProfitMetric(BasicMetric):
+    table       = 'utils_customerclv'
+    date_column = 'first_ordered_at'
+    
+    def get_data(self):
+        
+        filter = self.get_filter_sql()
+        
+        model = self.model
+        raw_data = CustomerCLV.objects.raw("""
+            SELECT 
+                id, 
+                `first_ordered_at`, 
+                SUM(`clv_""" + model + """_added`)/SUM(cost)*100 as summed
+            FROM 
+                utils_customerclv 
+            
+            """ + filter + """ 
+            
+            GROUP BY 
+                `first_ordered_at`
+            ORDER BY 
+                `first_ordered_at`
+        """)
+        date_range = self.get_date_range()
+        
+        data = []
+        date_counter = 0
+        for d in raw_data:
+            print "%s==%s" % (d.first_ordered_at, date_range[date_counter])
+            if d.first_ordered_at.strftime('%Y-%m-%d') == date_range[date_counter]:
+                data.append([int(d.first_ordered_at.strftime('%s000')), d.summed])
+            else:
+                print date_range[date_counter]
+                placeholder = datetime.strptime(date_range[date_counter], '%Y-%m-%d').strftime('%s000')
+                data.append([placeholder, 0])
+            date_counter += 1
+        
+        return data
+
+class ClvMetric(BasicMetric):
+    table       = 'utils_customerclv'
+    date_column = 'first_ordered_at'
+    
+    def get_data(self):
+        
+        per_unit = ''
+        if 'per_unit' in self.options:
+            per_unit = '/count(DISTINCT customer_id)'
+        
+        filter = self.get_filter_sql()
+        
+        model = self.model
+        raw_data = CustomerCLV.objects.raw("""
+            SELECT 
+                id, 
+                `first_ordered_at`, 
+                SUM(`clv_""" + model + """_added`)""" + per_unit + """ as summed
+            FROM 
+                utils_customerclv 
+            
+            """ + filter + """ 
+            
+            GROUP BY 
+                `first_ordered_at`
+            ORDER BY 
+                `first_ordered_at`
+        """)
+        date_range = self.get_date_range()
+        
+        data = []
+        date_counter = 0
+        for d in raw_data:
+            print "%s==%s" % (d.first_ordered_at, date_range[date_counter])
+            if d.first_ordered_at.strftime('%Y-%m-%d') == date_range[date_counter]:
+                data.append([int(d.first_ordered_at.strftime('%s000')), d.summed])
+            else:
+                print date_range[date_counter]
+                placeholder = datetime.strptime(date_range[date_counter], '%Y-%m-%d').strftime('%s000')
+                data.append([placeholder, 0])
+            date_counter += 1
+        
+        return data
+
+class RevenueMetric(BasicMetric):
+    
+    date_column = 'date'
+    
+    def get_data(self):
+    
+        filter = self.get_filter_sql()
+        model  = self.model
+        
+        raw_data = Attributions.objects.raw("""
+            SELECT 
+                id, 
+                SUM(`""" + model + """`) as summed
+            FROM 
+                utils_attributions 
+            """ + filter + """ 
+            GROUP BY 
+                `date`
+            ORDER BY 
                 `date`
         """)
         
         date_range = self.get_date_range()
-        
         data = []
         date_counter = 0
         for d in raw_data:
@@ -133,23 +248,56 @@ class RoiMetric(BasicMetric):
                 placeholder = datetime.strptime(date_range[date_counter], '%Y-%m-%d').strftime('%s000')
                 data.append([placeholder, 0])
             date_counter += 1
-        print data
         
-        return 
         
+        return data
+    
     
 
-class ProfitMetric(BasicMetric):
-    pass
-
-class ClvMetric(BasicMetric):
-    pass
-
-class RevenueMetric(BasicMetric):
-    pass
-
 class CostMetric(BasicMetric):
-    pass
+    table       = 'utils_customerclv'
+    date_column = 'first_ordered_at'
+    
+    def get_data(self):
+        
+        filter = self.get_filter_sql()
+        
+        per_unit = ''
+        if 'per_unit' in self.options:
+            per_unit = '/count(DISTINCT customer_id)'
+        
+        
+        model = self.model
+        raw_data = CustomerCLV.objects.raw("""
+            SELECT 
+                id, 
+                `first_ordered_at`, 
+                SUM(cost)""" + per_unit + """  as summed
+            FROM 
+                utils_customerclv 
+            
+            """ + filter + """ 
+            
+            GROUP BY 
+                `first_ordered_at`
+            ORDER BY 
+                `first_ordered_at`
+        """)
+        date_range = self.get_date_range()
+        
+        data = []
+        date_counter = 0
+        for d in raw_data:
+            print "%s==%s" % (d.first_ordered_at, date_range[date_counter])
+            if d.first_ordered_at.strftime('%Y-%m-%d') == date_range[date_counter]:
+                data.append([int(d.first_ordered_at.strftime('%s000')), d.summed])
+            else:
+                print date_range[date_counter]
+                placeholder = datetime.strptime(date_range[date_counter], '%Y-%m-%d').strftime('%s000')
+                data.append([placeholder, 0])
+            date_counter += 1
+        
+        return data
 
 METRICS = {
     'roi': {
@@ -189,10 +337,9 @@ METRICS = {
         'options': {}
     },        
     'customer_equity': {
-        'label': 'Return on Investment', 
+        'label': 'Customer Equity', 
         'class': ClvMetric, 
         'options': {
-            'per_unit': False
         }
     },     
     'marketingspend': {

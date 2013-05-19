@@ -21,6 +21,7 @@
         padding-top: 60px;
         font-family:Century Gothic,Arial,Helvetica,sans-serif;
         padding-bottom: 40px;
+        overflow-y: scroll;
       }
       p
       {
@@ -51,7 +52,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="/websites/dashboard"><img src="/static/DemandMiningLogo.png" /></a>
+          <a class="brand" href="/websites/dashboard">PeakMaven</a>
           <div class="nav-collapse">
             <ul class="nav">
               {%if request.user.is_authenticated %}
@@ -92,14 +93,14 @@
                       <li><a href="{%url profiles.views.profile %}">Profile</a></li>
                     {%endif%} -->
                   {% if request.user_websites.count %}
-                  <li class="divider"></li>
+                  <!-- <li class="divider"></li> -->
                   <li><p style="padding-left:20px">active website:</p></li>
                     {% for website in request.user_websites %}
-                    <li><a href="{% url websites.views.set_active_website website.id %}">{{website.name}} {%if request.active_website == website %}<span class="menu_icon">&#10003;</span>{%endif%}</a></li>
+                    <li><a href="{% url websites.views.set_active_website website.id %}">{%if request.active_website == website %}<i class="icon-ok"></i> {%endif%}{{website.name}} </a></li>
                     {%endfor%}
                   {%endif%}
                   <li class="divider"></li>
-                  <li><a href="{%url profiles.views.logout %}">Logout</a></li>
+                  <li><a href="{%url profiles.views.logout %}"><i class=" icon-off"></i> Logout</a></li>
                 </ul>
                 {%else%}
                   <li><a href="">Login</a></li>

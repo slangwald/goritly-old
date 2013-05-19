@@ -5,8 +5,8 @@
 {%block content %}
 
 <ul class="nav nav-tabs" id="charts-tabs">
-  <li class="active"><a data-chart="kpi" href="#kpi-board" data-toggle="tab">KPI Board</a></li>
-  <li><a data-chart="bar" href="#bar-chart" data-toggle="tab">Omni Chart</a></li>
+  <li class="active"><a data-chart="kpi" href="#kpi-board" data-toggle="tab"><i class="icon-th"></i> KPI Board</a></li>
+  <li><a data-chart="bar" href="#bar-chart" data-toggle="tab"><i class=" icon-signal"></i> Omni Chart </a></li>
 </ul>
 
 <div class="tab-content">
@@ -15,9 +15,35 @@
   </div>
   <div class="tab-pane" id="bar-chart">
       <div class="well well-small">
+        LEFT:
+        <select id="metric-left" name="metric-left">
+          {% for metric in metrics %}
+          <option 
+            {% if metric.id == selected_metrics.left %} 
+            selected='selected'
+            {% endif %}
+            value="{{metric.id}}">
+              {{metric.label}}
+          </option>
+          {% endfor %}
+        </select>
           
+        RIGHT:
+        <select id="metric-right"  name="metric-right">
+          {% for metric in metrics %}
+          <option 
+            {% if metric.id == selected_metrics.right %} 
+            selected='selected'
+            {% endif %}
+            value="{{metric.id}}">
+              
+              {{metric.label}}
+              
+          </option>
+          {% endfor %}
+        </select>
       </div>
-      <svg style="height:400px;width:800px"></svg>
+      <svg style="height:400px;width:870px"></svg>
   </div>
   
 </div>
@@ -125,49 +151,60 @@ function drawBarNew() {
   return series;
 });
 
-nv.addGraph(function() {
-    var chart = nv.models.linePlusBarWithFocusChart()
-        .margin({top: 30, right: 60, bottom: 50, left: 70})
-        .x(function(d,i) { return i })
-        .color(d3.scale.category10().range());
+$('#bar-chart svg').empty();
 
-    chart.xAxis.tickFormat(function(d) {
-
-      var dx = testdata[0].values[d] && testdata[0].values[d].x || 0;
-      if (dx > 0) {
-          return d3.time.format('%x')(new Date(dx))
-      }
-      return null;
-    });
-
-    chart.x2Axis.tickFormat(function(d) {
-      var dx = testdata[0].values[d] && testdata[0].values[d].x || 0;
-      return d3.time.format('%x')(new Date(dx))
-    });
+d3.json("/websites/bar", function(jsonBar) {
+    jsonBar = jsonBar.map(function(series) {
+      series.values = series.values.map(function(d) { return {x: d[0], y: d[1] } });
+      return series;
+    })
     
-    chart.y1Axis
-        .tickFormat(d3.format(',f'));
-
-    chart.y3Axis
-        .tickFormat(d3.format(',f'));
+    console.log(jsonBar);
+    
+    nv.addGraph(function() {
+        var chart = nv.models.linePlusBarWithFocusChart()
+            .margin({top: 30, right: 60, bottom: 50, left: 70})
+            .x(function(d,i) { return i })
+            .color(d3.scale.category10().range());
+    
+        chart.xAxis.tickFormat(function(d) {
+    
+          var dx = jsonBar[0].values[d] && jsonBar[0].values[d].x || 0;
+          if (dx > 0) {
+              return d3.time.format('%x')(new Date(dx))
+          }
+          return null;
+        });
+    
+        chart.x2Axis.tickFormat(function(d) {
+          var dx = jsonBar[0].values[d] && jsonBar[0].values[d].x || 0;
+          return d3.time.format('%x')(new Date(dx))
+        });
         
-    chart.y2Axis
-        .tickFormat(function(d) { return '$' + d3.format(',.2f')(d) });
-
-    chart.y4Axis
-        .tickFormat(function(d) { return '$' + d3.format(',.2f')(d) });
-        
-    chart.bars.forceY([0]);
-    chart.bars2.forceY([0]);
-    chart.lines.forceY([0]);
-    //nv.log(testdata);
-    d3.select('#bar-chart svg')
-        .datum(testdata)
-      .transition().duration(500).call(chart);
-
-    nv.utils.windowResize(chart.update);
-
-    return chart;
+        chart.y1Axis
+            .tickFormat(d3.format(',f'));
+    
+        chart.y3Axis
+            .tickFormat(d3.format(',f'));
+            
+        chart.y2Axis
+            .tickFormat(function(d) { return d3.format(',.2f')(d) });
+    
+        chart.y4Axis
+            .tickFormat(function(d) { return d3.format(',.2f')(d) });
+            
+        chart.bars.forceY([0]);
+        chart.bars2.forceY([0]);
+        chart.lines.forceY([0]);
+        //nv.log(testdata);
+        d3.select('#bar-chart svg')
+            .datum(jsonBar)
+          .transition().duration(500).call(chart);
+    
+        //nv.utils.windowResize(chart.update);
+    
+        return chart;
+    });
 });
 }
 

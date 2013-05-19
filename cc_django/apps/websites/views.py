@@ -126,7 +126,7 @@ def filter(request):
     """
     set_filter(request)
     print request.session['filter']
-    return HttpResponse('', )
+    return HttpResponse('')
 
 class KpiBoard():
     def __init__(self):
@@ -186,18 +186,16 @@ def get_kpi_board(request):
     if filter != "":
         filter = ' WHERE ' + filter
     
-    print filter
-    
     #ROI
     sql = util_models.CustomerCLV.objects.raw("""
-       SELECT id, channel_id, AVG(`clv_""" + model + """_added`/cost)*100 as roi FROM utils_customerclv """ + filter + """ GROUP BY channel_id
+       SELECT id, channel_id, AVG(`clv_""" + model + """_added`)/cost*100 as roi FROM utils_customerclv """ + filter + """ GROUP BY channel_id
     """)
     for line in sql:
         kpi_model.add_to_kpi(line.channel.name, 'roi', line.roi)
     
     #CLV (per customer)
     sql = util_models.CustomerCLV.objects.raw("""
-        SELECT id, channel_id, SUM(`clv_""" + model + """_total`)/count(DISTINCT `customer_id`) as clv_cust FROM utils_customerclv """ + filter + """ GROUP BY channel_id
+        SELECT id, channel_id, SUM(`clv_""" + model + """_added`)/count(DISTINCT `customer_id`) as clv_cust FROM utils_customerclv """ + filter + """ GROUP BY channel_id
     """)
     
     for line in sql:
@@ -258,8 +256,6 @@ def get_kpi_board(request):
 
 @login_required()
 def get_sidebar(request):
-    if 'model' not in request.session:
-        request.session['model'] = 'linear'
     
     channels  = cache.get('channels')
     if not channels:
@@ -277,28 +273,55 @@ def get_sidebar(request):
         partners = get_partners()
         cache.set('partners', partners, 3600)
         
-    filter = get_filter(request)
-    
-    print "----------"
-    print filter
-    print "----------"
-    
-    models = get_models_available()
-    
-    return render_to_response('websites/filter.html', {'request'          : request,
-                                                       'filter'           : filter,
-                                                       'channels'         : channels, 
-                                                       'campaigns'        : campaigns, 
-                                                       'partners'         : partners,
-                                                       'models_available' : models
-                                                      })
-
-
-
+    return render_to_response('websites/filter.html', {
+        'request'          : request,
+        'filter'           : get_filter(request),
+        'channels'         : channels, 
+        'campaigns'        : campaigns, 
+        'partners'         : partners,
+        'models_available' : get_models_available()
+    })
 
 @login_required()
 def dashboard(request):
     context = RequestContext(request,{})
+    
+    set_session_defaults(request)
+    
+    return render_to_response('websites/dashboard.html', {
+        'request': request,
+        'context': context,
+        'marks'  : get_marks(),
+        'filter' : get_filter(request),
+        'metrics': get_view_metrics(),
+        'selected_metrics': {'right': request.session['metric-right'], 
+                             'left': request.session['metric-left']}
+    })
+    
+@login_required()
+@csrf_exempt
+def set_metric(request):
+    post = request.POST
+    if 'metric-left' in post:
+        request.session['metric-left'] = post['metric-left']
+    
+    if 'metric-right' in post:
+        request.session['metric-right'] = post['metric-right']
+        
+    print request.session['metric-right']
+    print request.session['metric-left'] 
+    return HttpResponse('', )
+
+def set_session_defaults(request):
+    
+    request.session['metric-right']
+    request.session['metric-left'] 
+    
+    if not 'metric-right' in request.session:
+        request.session['metric-right'] = 'cac'
+    
+    if not 'metric-left' in request.session:
+        request.session['metric-left'] = 'roi'
     
     if not 'model' in request.session:
         request.session['model'] = 'linear'
@@ -306,32 +329,24 @@ def dashboard(request):
     if not 'filter' in request.session:
         request.session['filter'] = {}
     
-    
-    edge_dates = get_first_and_last_date()
-    if not 'filter-date-from' in request.session:
+    if not 'date' in request.session['filter']:
+        edge_dates = get_first_and_last_date()
         request.session['filter']['date'] = {}
         request.session['filter']['date']['from'] = edge_dates['first'].strftime('%Y-%m-%d')
         request.session['filter']['date']['to']   = edge_dates['last'].strftime('%Y-%m-%d')
 
     if not 'mark' in request.session:
         request.session['mark'] = 100
+
+def get_view_metrics():
+    view_metrics = []
+    for metric in METRICS:
+        view_metric = METRICS[metric].copy()
+        view_metric['id'] = metric
+        view_metrics.append(view_metric)
     
-    filter = get_filter(request)
+    return view_metrics
     
-    metric = RoiMetric(
-        model   = request.session['model'],
-        filter  = filter, 
-        options = {}
-    )
-    
-    print metric.get_data()
-    
-    return render_to_response('websites/dashboard.html', {'request'    : request,
-                                                          'context'    : context,
-                                                          'marks'      : get_marks(),
-                                                          'filter'     : filter,
-                                                          'metrics'    : METRICS
-                                                          })
 
 def get_first_and_last_date():
     first = util_models.CustomerCLV.objects.order_by('date')[0]
@@ -371,91 +386,52 @@ def get_channels():
 
 @login_required()
 def get_bar_chart_json(request):
-    session = request.session
     
-    filter = ''
+    metric = RoiMetric(
+        model   = request.session['model'],
+        filter  = get_filter(request), 
+        options = {}
+    )
     
-    if('filter-date-from' in session and 'filter-date-to' in session):
-        filter += ' `first_ordered_at` BETWEEN "%s" AND "%s" ' % (session['filter-date-from'], session['filter-date-to'])
+    constructor_right = METRICS[request.session['metric-right']]['class']
+    constructor_left  = METRICS[request.session['metric-left' ]]['class']
+    
+    options_right = METRICS[request.session['metric-right']]['options']
+    options_left  = METRICS[request.session['metric-left' ]]['options']
+    
+    label_right = METRICS[request.session['metric-right']]['label']
+    label_left  = METRICS[request.session['metric-left' ]]['label']
+    
+    metric_right = constructor_right(
+        model   = request.session['model'],
+        filter  = get_filter(request), 
+        options = options_right
+    )
+    
+    metric_left = constructor_left(
+        model   = request.session['model'],
+        filter  = get_filter(request), 
+        options = options_left
+    )
+    
+    json = """
+    [
+    
+    {
+        "key" : " """ + label_left + """ " ,
+        "bar": true,
+        "values" : """ + metric_left.get_json() + """
+    },
+    {
+        "key" : " """ + label_right + """ " ,
+        "values" : """ + metric_right.get_json() + """
+    }
+    
+    ]
+    """
     
     
-    if 'filter-campaign' in session:
-        if len(session['filter-campaign']):
-            if filter != "":
-                filter += " AND "
-            filter +=  ' campaign_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-campaign']))
-    if 'filter-channel' in session:
-        if len(session['filter-channel']):
-            if filter != "":
-                filter += " AND "
-            filter += ' channel_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-channel']))
-    if 'filter-partner' in session:
-        if len(session['filter-partner']):
-            if filter != "":
-                filter += " AND "
-            filter += ' partner_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-partner']))
-    
-    
-    if filter != "":
-        filter = ' WHERE ' + filter
-    
-    model = session['model']
-    bar_data = util_models.CustomerCLV.objects.raw("""
-        SELECT 
-            id, 
-            `first_ordered_at` as `date`, 
-            AVG(`""" + model + """`) as sum_linear, 
-            channel_id 
-        FROM 
-            utils_customerclv 
-        
-        """ + filter + """ 
-        
-        GROUP BY 
-            `first_ordered_at`, 
-            channel_id 
-        ORDER BY 
-            `date` DESC
-    """)
-    by_channel = {}
-    bar_chart = []
-    dates_available = {}
-    
-
-    for bar in bar_data:
-        date = int(bar.date.strftime('%s000'))
-        if not date in dates_available:
-            dates_available[date] = date
-    
-    for bar in bar_data:
-        date = int(bar.date.strftime('%s000'))
-        if not bar.channel.name in by_channel:
-            by_channel[bar.channel.name] = {}
-            for date_check in dates_available:
-                by_channel[bar.channel.name][date_check] = {
-                    'x': date_check,
-                    'y': 0
-                }
-        
-        by_channel[bar.channel.name][date] = {
-            'x': date,
-            'y': float(bar.sum_linear),
-        }
-        
-    by_channel_clean = {}
-    for channel in by_channel:
-        for date in by_channel[channel]:
-            if not channel in by_channel_clean:
-                by_channel_clean[channel] = []
-            by_channel_clean[channel].append(by_channel[channel][date])
-    
-    for channel in by_channel_clean:
-        bar_chart.append({
-            'key': channel,
-            'values': by_channel_clean[channel]
-        })
-        
-    return HttpResponse(json.dumps(bar_chart), content_type="application/json")
+    return HttpResponse(json, content_type="application/json")
 
 
 @login_required()
