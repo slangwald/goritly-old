@@ -314,9 +314,6 @@ def set_metric(request):
 
 def set_session_defaults(request):
     
-    request.session['metric-right']
-    request.session['metric-left'] 
-    
     if not 'metric-right' in request.session:
         request.session['metric-right'] = 'cac'
     

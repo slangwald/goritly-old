@@ -1,0 +1,3 @@
+python import_csv_test.py --marketing-cost="/var/www/gps/data/testdata_6month/2013-05-14_Demo Data Set_v05_Cost.csv" --utils-db=website_3
+python import_csv_test.py --orders="/var/www/gps/data/testdata_6month/2013-05-14_Demo Data Set_v05_Orders.csv" --utils-db=website_3
+python import_csv_test.py --clickchain=/var/www/gps/data/testdata_6month/2013-05-14_Demo\ Data\ Set_v05_Click\ Chain.csv --utils-db=website_3
