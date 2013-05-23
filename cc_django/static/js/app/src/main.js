@@ -3,6 +3,7 @@
   $(document).ready(function() {
     var doMetric, loadSideBar;
 
+    $('#kpi-board').load('/websites/kpi');
     doMetric = function(e) {
       return $.post("/websites/set_metric", $(this).serialize()).done(function(data) {
         return drawBarNew();
@@ -10,11 +11,18 @@
     };
     $("#metric-left").change(doMetric);
     $("#metric-right").change(doMetric);
+    $('input[name="seperation"]').change(function(e) {
+      return $.post("/websites/set_seperation", $(this).serialize()).done(function(data) {
+        return drawBarNew();
+      });
+    });
     $('#charts-tabs a').click(function(e) {
       $(this).tab('show');
       window.location.hash = '#!' + this.hash;
       if ($(this).attr('data-chart') === 'bar') {
-        return drawBarNew();
+        return $.post("/websites/set_seperation", 'seperation=aggregated').done(function(data) {
+          return drawBarNew();
+        });
       }
     });
     loadSideBar = function() {
@@ -30,12 +38,8 @@
         });
       });
     };
-    loadSideBar();
     $('.chzn-select').chosen();
-    $('#kpi-board').load('/websites/kpi');
-    return $('#mark').change(function(e) {
-      return $.post("/websites/mark", $("#mark").serialize()).done(function(data) {});
-    });
+    return loadSideBar();
   });
 
 }).call(this);

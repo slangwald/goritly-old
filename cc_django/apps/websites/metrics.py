@@ -17,20 +17,36 @@ class BasicMetric():
 
     dimensions = ['channel', 'partner', 'campaign']
 
-    def __init__(self, model, filter, options = {}):
-        """
-        options = {
-            'model':
-            (stuff used by specific metrics)
-        }
-        """
-        print filter
-        self.filter  = filter
-        self.options = options
-        self.model   = model
+    seperation_field = {
+        'channel' : 'channel_id', 
+        'partner' : 'partner_id', 
+        'campaign': 'campaign_id'
+    }
+    
+    seperation_objects = {
+        'channel' : Channel ,
+        'partner' : Partner ,
+        'campaign': Campaign, 
+    }
+    
+    seperation_aggregated = 'aggregated'
+
+    
+
+    def __init__(self, model, filter, seperation, options = {}):
+        self.filter     = filter
+        self.options    = options
+        self.model      = model
         
+        self.apply_seperation(seperation)
         self.apply_filter()
-        
+    
+    def apply_seperation(self, seperation):
+        self.seperation = False
+        if seperation != self.seperation_aggregated:
+            self.seperation        = self.seperation_field[seperation]
+            self.seperation_object = self.seperation_objects[seperation]
+            
     def apply_filter(self):
         self.filter_date_set  = False
         if 'date' in self.filter:
@@ -40,7 +56,6 @@ class BasicMetric():
                 self.filter_date_set  = True
     
     def get_dimension_filter(self):
-        
         dim_filter = []
         for dimension in self.dimensions:
             if dimension in self.filter:
@@ -77,227 +92,155 @@ class BasicMetric():
         
         return rangelist 
     
-    def get_data(self):
-        pass
-    
     def get_json(self):
-        return json.dumps(self.get_data())
+        data = self.get_data()
+        if self.seperation:
+            data_view = []
+            for d in data:
+                data_view.append({
+                    "key"    : d,
+                    "values" : data[d]
+                })
+            _json = json.dumps(data_view)
+        else:
+            _json = json.dumps(data)
+        return _json
     
     def get_filter_date(self):
         filter = ""
         if(self.filter_date_set):
             filter = ' (`' + self.date_column + '` BETWEEN "%s" AND "%s") ' % (self.filter_date_from, self.filter_date_to)
         return filter
+    
+    def get_group_by(self):
+        group_items = []
+        group_items.append(self.date_column)
+        if self.seperation:
+            group_items.append(self.seperation)
+        
+        return ', '.join(group_items)
+        
+    def get_order_by(self):
+        return self.get_group_by()
+    
+    def get_data(self):
+        filter   = self.get_filter_sql()
+        model    = self.model
+        group_by = self.get_group_by()
+        order_by = self.get_order_by()
+        seperation = ', ' + self.seperation if self.seperation else ''
+        
+        per_unit = ''
+        if 'per_unit' in self.options:
+            per_unit = self.per_unit_divider
+        
+        raw_data = self.hydration.objects.raw("""
+            SELECT 
+                id, 
+                `""" + self.date_column + """`, 
+                """ + self.get_value_field() + per_unit + """ as `value`
+                """ + seperation + """
+            FROM 
+                """ + self.table + """
+            """ + filter + """ 
+            GROUP BY 
+                """ + group_by + """
+            ORDER BY 
+                """ + order_by + """
+        """)
+        
+        return self.transform(raw_data)
+    
+    def transform_seperated(self, raw_data):
+        reduced = {}
+        date_range = self.get_date_range()
+        
+        for line in raw_data:
+            sep_id = getattr(line, self.seperation)
+            sep_obj = self.seperation_object.objects.get(pk=sep_id)
+            line_date = str(getattr(line, self.date_column).strftime('%Y-%m-%d'))
+            if not sep_obj.name in reduced:
+                reduced[sep_obj.name] = {}
+            reduced[sep_obj.name][line_date] = {'value': line.value, 'date': int(getattr(line, self.date_column).strftime('%s000'))}
+        
+        sorted = {}
+        
+        for campaign in reduced:
+            sorted[campaign] = []
+            for date in date_range:
+                if date in reduced[campaign]:
+                    val = reduced[campaign][date]['value'] if reduced[campaign][date]['value'] else 0
+                    tmp = [reduced[campaign][date]['date'], val]
+                    sorted[campaign].append(tmp)
+                else:
+                    placeholder = datetime.strptime(date, '%Y-%m-%d').strftime('%s000')
+                    sorted[campaign].append([placeholder, 0])
+        
+        return sorted
+        
+    def transform_unseperated(self, raw_data):
+        date_range = self.get_date_range()
+        data = []
+        date_counter = 0
+        for d in raw_data:
+            date_attr = getattr(d, self.date_column)
+            if date_attr.strftime('%Y-%m-%d') == date_range[date_counter]:
+                data.append([int(date_attr.strftime('%s000')), d.value])
+            else:
+                placeholder = datetime.strptime(date_range[date_counter], '%Y-%m-%d').strftime('%s000')
+                data.append([placeholder, 0])
+            date_counter += 1
+        return data
+    
+    def transform(self, raw_data):
+        if self.seperation:
+            return self.transform_seperated(raw_data)
+        return self.transform_unseperated(raw_data)
 
 class RoiMetric(BasicMetric):
     
     table       = 'utils_customerclv'
     date_column = 'first_ordered_at'
+    hydration   = CustomerCLV
     
-    def get_data(self):
-        
-        filter = self.get_filter_sql()
-        
-        model = self.model
-        raw_data = CustomerCLV.objects.raw("""
-            SELECT 
-                id, 
-                `first_ordered_at`, 
-                SUM(`clv_""" + model + """_added`)/SUM(cost)*100 as summed
-            FROM 
-                utils_customerclv 
-            
-            """ + filter + """ 
-            
-            GROUP BY 
-                `first_ordered_at`
-            ORDER BY 
-                `first_ordered_at`
-        """)
-        date_range = self.get_date_range()
-        
-        data = []
-        date_counter = 0
-        for d in raw_data:
-            print "%s==%s" % (d.first_ordered_at, date_range[date_counter])
-            if d.first_ordered_at.strftime('%Y-%m-%d') == date_range[date_counter]:
-                data.append([int(d.first_ordered_at.strftime('%s000')), d.summed])
-            else:
-                print date_range[date_counter]
-                placeholder = datetime.strptime(date_range[date_counter], '%Y-%m-%d').strftime('%s000')
-                data.append([placeholder, 0])
-            date_counter += 1
-        
-        return data
+    def get_value_field(self):
+        return "SUM(`clv_" + self.model + "_added`)/SUM(cost)*100"
+    
     
 class ProfitMetric(BasicMetric):
-    table       = 'utils_customerclv'
-    date_column = 'first_ordered_at'
+    table       = 'utils_attributions'
+    date_column = 'date'
+    hydration   = Attributions
     
-    def get_data(self):
-        
-        filter = self.get_filter_sql()
-        
-        model = self.model
-        raw_data = CustomerCLV.objects.raw("""
-            SELECT 
-                id, 
-                `first_ordered_at`, 
-                SUM(`clv_""" + model + """_added`)/SUM(cost)*100 as summed
-            FROM 
-                utils_customerclv 
-            
-            """ + filter + """ 
-            
-            GROUP BY 
-                `first_ordered_at`
-            ORDER BY 
-                `first_ordered_at`
-        """)
-        date_range = self.get_date_range()
-        
-        data = []
-        date_counter = 0
-        for d in raw_data:
-            print "%s==%s" % (d.first_ordered_at, date_range[date_counter])
-            if d.first_ordered_at.strftime('%Y-%m-%d') == date_range[date_counter]:
-                data.append([int(d.first_ordered_at.strftime('%s000')), d.summed])
-            else:
-                print date_range[date_counter]
-                placeholder = datetime.strptime(date_range[date_counter], '%Y-%m-%d').strftime('%s000')
-                data.append([placeholder, 0])
-            date_counter += 1
-        
-        return data
-
+    def get_value_field(self):
+        return "SUM(`" + self.model + "` - cost)"
+    
 class ClvMetric(BasicMetric):
     table       = 'utils_customerclv'
     date_column = 'first_ordered_at'
+    hydration   = CustomerCLV
+    per_unit_divider = "/count(DISTINCT customer_id)"
     
-    def get_data(self):
-        
-        per_unit = ''
-        if 'per_unit' in self.options:
-            per_unit = '/count(DISTINCT customer_id)'
-        
-        filter = self.get_filter_sql()
-        
-        model = self.model
-        raw_data = CustomerCLV.objects.raw("""
-            SELECT 
-                id, 
-                `first_ordered_at`, 
-                SUM(`clv_""" + model + """_added`)""" + per_unit + """ as summed
-            FROM 
-                utils_customerclv 
-            
-            """ + filter + """ 
-            
-            GROUP BY 
-                `first_ordered_at`
-            ORDER BY 
-                `first_ordered_at`
-        """)
-        date_range = self.get_date_range()
-        
-        data = []
-        date_counter = 0
-        for d in raw_data:
-            print "%s==%s" % (d.first_ordered_at, date_range[date_counter])
-            if d.first_ordered_at.strftime('%Y-%m-%d') == date_range[date_counter]:
-                data.append([int(d.first_ordered_at.strftime('%s000')), d.summed])
-            else:
-                print date_range[date_counter]
-                placeholder = datetime.strptime(date_range[date_counter], '%Y-%m-%d').strftime('%s000')
-                data.append([placeholder, 0])
-            date_counter += 1
-        
-        return data
-
+    def get_value_field(self):
+        return "SUM(`clv_" + self.model + "_added`)"
+    
 class RevenueMetric(BasicMetric):
-    
+    table       = 'utils_attributions'
     date_column = 'date'
+    hydration   = Attributions
     
-    def get_data(self):
+    def get_value_field(self):
+        return "SUM(`" + self.model + "`)"
     
-        filter = self.get_filter_sql()
-        model  = self.model
-        
-        raw_data = Attributions.objects.raw("""
-            SELECT 
-                id, 
-                SUM(`""" + model + """`) as summed
-            FROM 
-                utils_attributions 
-            """ + filter + """ 
-            GROUP BY 
-                `date`
-            ORDER BY 
-                `date`
-        """)
-        
-        date_range = self.get_date_range()
-        data = []
-        date_counter = 0
-        for d in raw_data:
-            print "%s==%s" % (d.date, date_range[date_counter])
-            if d.date.strftime('%Y-%m-%d') == date_range[date_counter]:
-                data.append([int(d.date.strftime('%s000')), d.summed])
-            else:
-                print date_range[date_counter]
-                placeholder = datetime.strptime(date_range[date_counter], '%Y-%m-%d').strftime('%s000')
-                data.append([placeholder, 0])
-            date_counter += 1
-        
-        
-        return data
-    
-    
-
 class CostMetric(BasicMetric):
     table       = 'utils_customerclv'
     date_column = 'first_ordered_at'
+    hydration   = CustomerCLV
+    per_unit_divider = "/count(DISTINCT customer_id)"
     
-    def get_data(self):
-        
-        filter = self.get_filter_sql()
-        
-        per_unit = ''
-        if 'per_unit' in self.options:
-            per_unit = '/count(DISTINCT customer_id)'
-        
-        
-        model = self.model
-        raw_data = CustomerCLV.objects.raw("""
-            SELECT 
-                id, 
-                `first_ordered_at`, 
-                SUM(cost)""" + per_unit + """  as summed
-            FROM 
-                utils_customerclv 
-            
-            """ + filter + """ 
-            
-            GROUP BY 
-                `first_ordered_at`
-            ORDER BY 
-                `first_ordered_at`
-        """)
-        date_range = self.get_date_range()
-        
-        data = []
-        date_counter = 0
-        for d in raw_data:
-            print "%s==%s" % (d.first_ordered_at, date_range[date_counter])
-            if d.first_ordered_at.strftime('%Y-%m-%d') == date_range[date_counter]:
-                data.append([int(d.first_ordered_at.strftime('%s000')), d.summed])
-            else:
-                print date_range[date_counter]
-                placeholder = datetime.strptime(date_range[date_counter], '%Y-%m-%d').strftime('%s000')
-                data.append([placeholder, 0])
-            date_counter += 1
-        
-        return data
+    def get_value_field(self):
+        return "SUM(cost)"
+    
 
 METRICS = {
     'roi': {
@@ -334,7 +277,8 @@ METRICS = {
     'profit_total': {
         'label': 'Profit (total)', 
         'class': ProfitMetric, 
-        'options': {}
+        'options': {
+        }
     },        
     'customer_equity': {
         'label': 'Customer Equity', 
@@ -352,4 +296,11 @@ METRICS = {
         'class': RevenueMetric, 
         'options': {}
     },       
+}
+
+SEPERATIONS = {
+    'channel'   : 'by channel' ,
+    'partner'   : 'by partner' ,
+    'campaign'  : 'by campaign',
+    'aggregated': 'aggregated' ,
 }

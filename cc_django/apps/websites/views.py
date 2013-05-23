@@ -307,9 +307,15 @@ def set_metric(request):
     
     if 'metric-right' in post:
         request.session['metric-right'] = post['metric-right']
-        
-    print request.session['metric-right']
-    print request.session['metric-left'] 
+    return HttpResponse('', )
+
+@login_required()
+@csrf_exempt
+def set_seperation(request):
+    
+    if 'seperation' in request.POST:
+        request.session['seperation'] = request.POST['seperation']
+    
     return HttpResponse('', )
 
 def set_session_defaults(request):
@@ -325,6 +331,9 @@ def set_session_defaults(request):
     
     if not 'filter' in request.session:
         request.session['filter'] = {}
+    
+    if not 'seperation' in request.session:
+        request.session['seperation'] = 'aggregated'
     
     if not 'date' in request.session['filter']:
         edge_dates = get_first_and_last_date()
@@ -384,50 +393,43 @@ def get_channels():
 @login_required()
 def get_bar_chart_json(request):
     
-    metric = RoiMetric(
-        model   = request.session['model'],
-        filter  = get_filter(request), 
-        options = {}
-    )
-    
     constructor_right = METRICS[request.session['metric-right']]['class']
     constructor_left  = METRICS[request.session['metric-left' ]]['class']
     
-    options_right = METRICS[request.session['metric-right']]['options']
-    options_left  = METRICS[request.session['metric-left' ]]['options']
+    options_right     = METRICS[request.session['metric-right']]['options']
+    options_left      = METRICS[request.session['metric-left' ]]['options']
     
-    label_right = METRICS[request.session['metric-right']]['label']
-    label_left  = METRICS[request.session['metric-left' ]]['label']
+    label_right       = METRICS[request.session['metric-right']]['label']
+    label_left        = METRICS[request.session['metric-left' ]]['label']
     
     metric_right = constructor_right(
-        model   = request.session['model'],
-        filter  = get_filter(request), 
-        options = options_right
+        model      = request.session['model'],
+        filter     = get_filter(request), 
+        options    = options_right,
+        seperation = request.session['seperation']
     )
     
     metric_left = constructor_left(
-        model   = request.session['model'],
-        filter  = get_filter(request), 
-        options = options_left
+        model      = request.session['model'],
+        filter     = get_filter(request), 
+        options    = options_left,
+        seperation = request.session['seperation']
     )
     
-    json = """
-    [
-    
-    {
-        "key" : " """ + label_left + """ " ,
-        "bar": true,
-        "values" : """ + metric_left.get_json() + """
-    },
-    {
-        "key" : " """ + label_right + """ " ,
-        "values" : """ + metric_right.get_json() + """
-    }
-    
-    ]
-    """
-    
-    
+    if request.session['seperation'] == "aggregated":
+        json = """
+        [{
+            "key"    : " """ + label_left + """ " ,
+            "bar"    : true,
+            "values" : """ + metric_left.get_json() + """
+        },{
+            "key"    : " """ + label_right + """ " ,
+            "values" : """ + metric_right.get_json() + """
+        }]
+        """
+    else:
+        json = metric_left.get_json()
+        
     return HttpResponse(json, content_type="application/json")
 
 
