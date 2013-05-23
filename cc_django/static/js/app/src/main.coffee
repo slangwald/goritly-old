@@ -5,6 +5,12 @@ $(document).ready ->
   #
   # The metric stuff
   #
+  
+  redrawWithOptions = () ->
+    $.post("/websites/set_bar_options", $('#bar-chart-options').serialize()).done((data) ->
+        drawBarNew()
+    )
+  
   doMetric = (e) ->
     $.post("/websites/set_metric", $(@).serialize()).done((data) ->
             drawBarNew()
@@ -16,6 +22,25 @@ $(document).ready ->
     $.post("/websites/set_seperation", $(@).serialize() ).done((data) ->
         drawBarNew()
     )
+
+
+  $("#timerange-value").hide()
+  changeTimeRange = (e) ->
+    el = @
+    val = $(el).val()
+    if val is 'today'
+      $("#timerange-value").hide()
+    else
+      $("#timerange-value").show()
+      $("#timerange-value").focus()
+    redrawWithOptions()
+    
+  
+  
+      
+  
+  $('#timerange-unit').change changeTimeRange
+  $('#timerange-value').blur redrawWithOptions
   
   #
   # Tabs

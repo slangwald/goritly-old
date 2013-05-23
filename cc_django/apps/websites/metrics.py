@@ -38,6 +38,11 @@ class BasicMetric():
         self.options    = options
         self.model      = model
         
+        if 'timerange' in self.options:
+            self.timerange = self.options['timerange']
+        else:
+            self.timerange = None
+                
         self.apply_seperation(seperation)
         self.apply_filter()
     
@@ -69,6 +74,10 @@ class BasicMetric():
         
         dim_filter = self.get_dimension_filter()
         dim_filter.append(self.get_filter_date())
+        
+        if self.hydration == CustomerCLV:
+            if self.timerange:
+                dim_filter.append('days <= ' + self.timerange)
         
         sql = ' AND '.join(part for part in dim_filter)
         
@@ -173,7 +182,7 @@ class BasicMetric():
                     tmp = [reduced[campaign][date]['date'], val]
                     sorted[campaign].append(tmp)
                 else:
-                    placeholder = datetime.strptime(date, '%Y-%m-%d').strftime('%s000')
+                    placeholder = int(datetime.strptime(date, '%Y-%m-%d').strftime('%s000'))
                     sorted[campaign].append([placeholder, 0])
         
         return sorted
@@ -187,7 +196,7 @@ class BasicMetric():
             if date_attr.strftime('%Y-%m-%d') == date_range[date_counter]:
                 data.append([int(date_attr.strftime('%s000')), d.value])
             else:
-                placeholder = datetime.strptime(date_range[date_counter], '%Y-%m-%d').strftime('%s000')
+                placeholder = int(datetime.strptime(date_range[date_counter], '%Y-%m-%d').strftime('%s000'))
                 data.append([placeholder, 0])
             date_counter += 1
         return data

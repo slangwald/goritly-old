@@ -282,6 +282,9 @@ def get_sidebar(request):
         'models_available' : get_models_available()
     })
 
+
+TIMERANGE_UNITS = ['today', 'days', 'weeks', 'months']
+
 @login_required()
 def dashboard(request):
     context = RequestContext(request,{})
@@ -289,15 +292,33 @@ def dashboard(request):
     set_session_defaults(request)
     
     return render_to_response('websites/dashboard.html', {
-        'request': request,
-        'context': context,
-        'marks'  : get_marks(),
-        'filter' : get_filter(request),
-        'metrics': get_view_metrics(),
-        'selected_metrics': {'right': request.session['metric-right'], 
+          'request': request
+        , 'context': context
+        , 'marks'  : get_marks()
+        , 'filter' : get_filter(request)
+        , 'metrics': get_view_metrics()
+        , 'selected_metrics': {'right': request.session['metric-right'], 
                              'left': request.session['metric-left']}
+        , 'timeunits': TIMERANGE_UNITS
     })
-    
+
+@login_required()
+@csrf_exempt
+def set_options(request):
+    if 'timerange-unit' in request.POST and 'timerange-value' in request.POST:
+        unit = request.POST['timerange-unit']
+        value = request.POST['timerange-value']
+        days = None
+        if unit == 'days':
+            days = value
+        if unit == 'weeks':
+            days = value * 7
+        if unit == 'months':
+            days = value * 30
+        request.session['timerange'] = days
+        
+    return HttpResponse('', )
+
 @login_required()
 @csrf_exempt
 def set_metric(request):
@@ -334,6 +355,9 @@ def set_session_defaults(request):
     
     if not 'seperation' in request.session:
         request.session['seperation'] = 'aggregated'
+    
+    if not 'timerange' in request.session:
+        request.session['timerange'] = None
     
     if not 'date' in request.session['filter']:
         edge_dates = get_first_and_last_date()
@@ -388,8 +412,6 @@ def get_channels():
     channels = map(lambda c: {'id': str(c.id), 'name': c.name}, util_models.Channel.objects.all())
     return channels
 
-
-
 @login_required()
 def get_bar_chart_json(request):
     
@@ -401,6 +423,9 @@ def get_bar_chart_json(request):
     
     label_right       = METRICS[request.session['metric-right']]['label']
     label_left        = METRICS[request.session['metric-left' ]]['label']
+    
+    options_right['timerange'] = request.session['timerange']
+    options_left['timerange']  = request.session['timerange']
     
     metric_right = constructor_right(
         model      = request.session['model'],

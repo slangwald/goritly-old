@@ -15,6 +15,19 @@
   </div>
   <div class="tab-pane" id="bar-chart">
       <div class="well well-small">
+          <form id="bar-chart-options">
+          
+          show data till 
+  
+        <input id="timerange-value" name="timerange-value" value="30" class="input-mini" /> 
+        <select id="timerange-unit" name="timerange-unit" class="span2">
+            {% for timeunit in timeunits %}
+            <option name="{{timeunit}}">{{timeunit}}</option>
+            {% endfor %}
+        </select>
+        
+        after customer join date
+        
         <h4>Left axis (bars):</h4>
         <select id="metric-left" name="metric-left">
           {% for metric in metrics %}
@@ -61,6 +74,7 @@
           seperated by campaign
         </label>
         
+        </form>
         
       </div>
       <svg style="height:400px;width:870px"></svg>
@@ -222,7 +236,7 @@ function drawBarNew() {
                 .datum(jsonBar)
               .transition().duration(500).call(chart);
         
-            nv.utils.windowResize(chart.update);
+            //nv.utils.windowResize(chart.update);
         
             return chart;
         });
@@ -253,7 +267,7 @@ function drawBarChart() {
                 .datum(jsonBar)
               .transition().duration(500).call(chart);
         
-            nv.utils.windowResize(chart.update);
+            //nv.utils.windowResize(chart.update);
         
             return chart;
         });
