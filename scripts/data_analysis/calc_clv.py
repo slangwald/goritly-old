@@ -133,9 +133,9 @@ class CustomerProcessor():
             cm.customer    = self.customer 
             cm.joined      = self.joined
             
-            cm_entries.append(cm)
+            #cm_entries.append(cm)
             
-        CustomerRoiMarks.objects.bulk_create(cm_entries)
+        #CustomerRoiMarks.objects.bulk_create(cm_entries)
     
     def start(self):
         
@@ -161,9 +161,9 @@ class CustomerProcessor():
                 order_products = OrderProducts.objects.filter(order_id=order.id)
                 costs_product = sum(map(lambda op: op.cost_per_unit * op.qty, order_products))
                 # costs_returns
-                #order.value = order.revenue - (costs_product)
+                order.value = order.revenue - (costs_product)
                 #order.value = order.revenue
-                #order.save()
+                order.save()
                 clv               += order.value
                 
                 clicks = order.clicks()
@@ -239,18 +239,19 @@ class CustomerProcessor():
                         cust_clv.clv_last_click_total  = self.channel_attributions[key]['last_click']
                         cust_clv.clv_decay_total       = self.channel_attributions[key]['decay']
                         
-                        cust_clv.clv_u_shape_added     = self.channel_attr_per_order[self.order_counter][key]['u_shape']
-                        cust_clv.clv_linear_added      = self.channel_attr_per_order[self.order_counter][key]['linear']
-                        cust_clv.clv_first_click_added = self.channel_attr_per_order[self.order_counter][key]['first_click']
-                        cust_clv.clv_last_click_added  = self.channel_attr_per_order[self.order_counter][key]['last_click']
-                        cust_clv.clv_decay_added       = self.channel_attr_per_order[self.order_counter][key]['decay']
+                        if self.order_counter in self.channel_attr_per_order:
+                            cust_clv.clv_u_shape_added     = self.channel_attr_per_order[self.order_counter][key]['u_shape']
+                            cust_clv.clv_linear_added      = self.channel_attr_per_order[self.order_counter][key]['linear']
+                            cust_clv.clv_first_click_added = self.channel_attr_per_order[self.order_counter][key]['first_click']
+                            cust_clv.clv_last_click_added  = self.channel_attr_per_order[self.order_counter][key]['last_click']
+                            cust_clv.clv_decay_added       = self.channel_attr_per_order[self.order_counter][key]['decay']
                         
                         cust_clv.cost        = self.channel_attributions[key]['cost']
                         cust_clv_entries.append(cust_clv)
                         
                         roi_cost = self.channel_attributions[key]['cost']
                         # only if costs exists we can calc the ROI
-                        if(roi_cost > 0.0):
+                        """if(roi_cost > 0.0):
                             for model in self.channel_attributions[key]:
                                 if model == "cost":
                                     continue
@@ -259,9 +260,9 @@ class CustomerProcessor():
                                     for mark in self.marks:
                                         if roi >= mark:
                                             self.add_roi_mark(partner, channel, campaign, model, mark, days)
-            
+                        """
             CustomerCLV.objects.bulk_create(cust_clv_entries)
-            self.save_roi_marks()
+            #self.save_roi_marks()
 
 
                     

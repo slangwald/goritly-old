@@ -187,6 +187,7 @@ def get_kpi_board(request):
             kpi_model.add_to_kpi(channel, metric, line.value)
         
     
+    print kpi_model.kpi_data
     
     
     kpi_view = []
@@ -195,19 +196,19 @@ def get_kpi_board(request):
             'name'                       :          kpi_model.kpi_data[channel]['name'                       ],
             'roi'                        : "%.1f" % kpi_model.kpi_data[channel]['roi'                        ],
             'roi_change'                 : "%.2f" % kpi_model.kpi_data[channel]['roi_change'                 ],
-            'clv_per_customer'           : "%.2f" % kpi_model.kpi_data[channel]['clv_per_customer'           ],
+            'clv_per_customer'           : "%.2f" % kpi_model.kpi_data[channel]['clv'                        ],
             'clv_per_customer_change'    : "%.2f" % kpi_model.kpi_data[channel]['clv_per_customer_change'    ],
             'customer_count'             : "%.0f" % kpi_model.kpi_data[channel]['customer_count'             ],
             'customer_count_change'      : "%.2f" % kpi_model.kpi_data[channel]['customer_count_change'      ],
-            'clv_total'                  : "%.2f" % kpi_model.kpi_data[channel]['clv_total'                  ],
+            'clv_total'                  : "%.2f" % kpi_model.kpi_data[channel]['customer_equity'            ],
             'clv_total_change'           : "%.2f" % kpi_model.kpi_data[channel]['clv_total_change'           ],
-            'cac_total'                  : "%.2f" % kpi_model.kpi_data[channel]['cac_total'                  ],
+            'cac_total'                  : "%.2f" % kpi_model.kpi_data[channel]['marketingspend'             ],
             'cac_total_change'           : "%.2f" % kpi_model.kpi_data[channel]['cac_total_change'           ],
             'revenue_total'              : "%.2f" % kpi_model.kpi_data[channel]['revenue_total'              ],
             'revenue_total_change'       : "%.2f" % kpi_model.kpi_data[channel]['revenue_total_change'       ],
             'revenue_per_customer'       : "%.2f" % kpi_model.kpi_data[channel]['revenue_per_customer'       ],
             'revenue_per_customer_change': "%.2f" % kpi_model.kpi_data[channel]['revenue_per_customer_change'],
-            'cac_avg'                    : "%.2f" % kpi_model.kpi_data[channel]['cac_avg'                    ],
+            'cac_avg'                    : "%.2f" % kpi_model.kpi_data[channel]['cac'                        ],
             
         })
         
