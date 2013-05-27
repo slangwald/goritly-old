@@ -31,8 +31,6 @@ class BasicMetric():
     
     seperation_aggregated = 'aggregated'
 
-    
-
     def __init__(self, model, filter, seperation, options = {}):
         self.filter     = filter
         self.options    = options
@@ -42,7 +40,12 @@ class BasicMetric():
             self.timerange = self.options['timerange']
         else:
             self.timerange = None
-                
+        
+        self.kpi_view = False
+        if 'kpi_view' in self.options:
+            if self.options['kpi_view'] == True:
+                self.kpi_view = True
+        
         self.apply_seperation(seperation)
         self.apply_filter()
     
@@ -75,9 +78,9 @@ class BasicMetric():
         dim_filter = self.get_dimension_filter()
         dim_filter.append(self.get_filter_date())
         
-        if self.hydration == CustomerCLV:
-            if self.timerange:
-                dim_filter.append('days <= ' + self.timerange)
+        #if self.hydration == CustomerCLV:
+        #    if self.timerange:
+        #        dim_filter.append('days <= ' + self.timerange)
         
         sql = ' AND '.join(part for part in dim_filter)
         
@@ -123,20 +126,96 @@ class BasicMetric():
     
     def get_group_by(self):
         group_items = []
-        group_items.append(self.date_column)
+        if not self.kpi_view:
+            group_items.append(self.date_column)
+            print "hellop"
+        print self.kpi_view
         if self.seperation:
             group_items.append(self.seperation)
         
-        return ', '.join(group_items)
+        group_by = False
+        if len(group_items) > 0:
+            group_by = ', '.join(group_items) 
+        
+        return group_by 
         
     def get_order_by(self):
         return self.get_group_by()
+    
+    def get_data_kpi(self):
+        filter   = self.get_filter_sql()
+        model    = self.model
+        group_by = self.get_group_by()
+        if group_by:
+            group_by = " GROUP BY " + group_by
+        else:
+            group_by = ""
+            
+        order_by = self.get_order_by()
+        if order_by:
+            order_by = " ORDER BY " + order_by
+        else:
+            order_by = ""
+            
+        seperation = ', ' + self.seperation if self.seperation else ''
+        
+        per_unit = ''
+        if 'per_unit' in self.options:
+            per_unit = self.per_unit_divider
+        
+        raw_data = self.hydration.objects.raw("""
+            SELECT 
+                id, 
+                """ + self.get_value_field() + per_unit + """ as `value`
+                """ + seperation + """
+            FROM 
+                """ + self.table + """
+            """ + filter + """ 
+            """ + group_by + """
+            """ + order_by + """
+        """)
+        
+        return raw_data
+    
+    def get_data_bubble(self):
+        filter   = self.get_filter_sql()
+        model    = self.model
+
+        group_by = 'GROUP BY partner_id, channel_id'
+        
+        per_unit = ''
+        if 'per_unit' in self.options:
+            per_unit = self.per_unit_divider
+        
+        seperation = ', ' + self.seperation if self.seperation else ''
+        
+        raw_data = self.hydration.objects.raw("""
+            SELECT 
+                id, 
+                """ + self.get_value_field() + per_unit + """ as `value`
+                """ + seperation + """
+            FROM 
+                """ + self.table + """
+            """ + filter + """ 
+            """ + group_by + """
+        """)
+        
+        return raw_data
     
     def get_data(self):
         filter   = self.get_filter_sql()
         model    = self.model
         group_by = self.get_group_by()
+        if group_by:
+            group_by = " GROUP BY " + group_by
+        else:
+            group_by = ""
+            
         order_by = self.get_order_by()
+        if order_by:
+            order_by = " ORDER BY " + order_by
+        else:
+            order_by = ""
         seperation = ', ' + self.seperation if self.seperation else ''
         
         per_unit = ''
@@ -152,12 +231,10 @@ class BasicMetric():
             FROM 
                 """ + self.table + """
             """ + filter + """ 
-            GROUP BY 
-                """ + group_by + """
-            ORDER BY 
-                """ + order_by + """
+            """ + group_by + """
+            """ + order_by + """
         """)
-        
+        print raw_data
         return self.transform(raw_data)
     
     def transform_seperated(self, raw_data):
@@ -237,6 +314,7 @@ class RevenueMetric(BasicMetric):
     table       = 'utils_attributions'
     date_column = 'date'
     hydration   = Attributions
+    per_unit_divider = "/orders"
     
     def get_value_field(self):
         return "SUM(`" + self.model + "`)"

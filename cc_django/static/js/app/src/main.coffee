@@ -1,11 +1,13 @@
 $(document).ready ->
 
-  $('#kpi-board').load('/websites/kpi')
-  
   #
   # The metric stuff
   #
   
+  loadKpiBoard = () ->
+    $('#kpi-board-content').html('<img src="/static/loading.gif" />')
+    $('#kpi-board-content').load('/websites/kpi')
+  loadKpiBoard()
   redrawWithOptions = () ->
     $.post("/websites/set_bar_options", $('#bar-chart-options').serialize()).done((data) ->
         drawBarNew()
@@ -15,14 +17,25 @@ $(document).ready ->
     $.post("/websites/set_metric", $(@).serialize()).done((data) ->
             drawBarNew()
         )
-  $("#metric-left").change doMetric
-  $("#metric-right").change doMetric
+  $("#omni-metric-left").change doMetric
+  $("#omni-metric-right").change doMetric
   
-  $('input[name="seperation"]').change (e) ->
+  $("#bubble-metric-left").change doMetric
+  $("#bubble-metric-right").change doMetric
+  $("#bubble-metric-size").change doMetric
+
+  $('input[name="omni-seperation"]').change (e) ->
     $.post("/websites/set_seperation", $(@).serialize() ).done((data) ->
         drawBarNew()
     )
-
+  $('input[name="kpi-seperation"]').change (e) ->
+    $.post("/websites/set_seperation", $(@).serialize() ).done((data) ->
+        loadKpiBoard()
+    )
+  $('input[name="bubble-seperation"]').change (e) ->
+    $.post("/websites/set_seperation", $(@).serialize() ).done((data) ->
+        drawBubbleChart()
+    )
 
   $("#timerange-value").hide()
   changeTimeRange = (e) ->
@@ -50,9 +63,9 @@ $(document).ready ->
     
     window.location.hash = '#!' + @.hash
     if $(@).attr('data-chart') == 'bar'
-        $.post("/websites/set_seperation", 'seperation=aggregated' ).done((data) ->
-          drawBarNew()
-        )
+      drawBarNew()
+    if $(@).attr('data-chart') == 'bubble'
+      drawBubbleChart()  
   #
   # Filter
   #
@@ -63,7 +76,7 @@ $(document).ready ->
       $('#btn-filter').click (e) ->
         e.preventDefault()
         $.post("/websites/filter", $("#filter-form").serialize()).done((data) ->
-            $('#kpi-board').load('/websites/kpi')
+            loadKpiBoard()
             drawBarNew()
         )
     )

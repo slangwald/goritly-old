@@ -36,6 +36,7 @@ import websites.forms as forms
 from profiles.views import login_required
 import utils.models as util_models
 from websites.metrics import * 
+from django.core import serializers
 
 
 class valid_website_required(object):
@@ -158,75 +159,35 @@ class KpiBoard():
 
 @login_required()
 def get_kpi_board(request):
-    model = request.session['model']
     session = request.session
-    filter = ''
     
     kpi_model = KpiBoard()
     
-    if('filter-date-from' in session and 'filter-date-to' in session):
-        filter += ' `date` BETWEEN "%s" AND "%s" ' % (session['filter-date-from'], session['filter-date-to'])
-    if 'filter-campaign' in session:
-        if len(session['filter-campaign']):
-            if filter != "":
-                filter += " AND "
-            filter +=  ' campaign_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-campaign']))
-    if 'filter-channel' in session:
-        if len(session['filter-channel']):
-            if filter != "":
-                filter += " AND "
-            filter += ' channel_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-channel']))
     
-    if 'filter-partner' in session:
-        if len(session['filter-partner']):
-            if filter != "":
-                filter += " AND "
-            filter += ' partner_id IN(%s) ' % (', '.join(str(int(v)) for v in session['filter-partner']))
+    for metric in METRICS:
+        constructor_right = METRICS[metric]['class']
+        options_right     = METRICS[metric]['options']
+        label_right       = METRICS[metric]['label']
+        options_right['timerange'] = request.session['timerange']
+        options_right['kpi_view'] = True
+        metric_right = constructor_right(
+            model      = request.session['model'],
+            filter     = get_filter(request), 
+            options    = options_right,
+            seperation = request.session['kpi-seperation']
+        )
+        lines = metric_right.get_data_kpi()
+        
+        print request.session['kpi-seperation']
+        for line in lines:
+            if request.session['kpi-seperation'] == 'aggregated':
+                channel = 'All'
+            else:
+                channel = getattr(line, request.session['kpi-seperation']).name
+            kpi_model.add_to_kpi(channel, metric, line.value)
+        
     
-    if filter != "":
-        filter = ' WHERE ' + filter
     
-    #ROI
-    sql = util_models.CustomerCLV.objects.raw("""
-       SELECT id, channel_id, AVG(`clv_""" + model + """_added`)/cost*100 as roi FROM utils_customerclv """ + filter + """ GROUP BY channel_id
-    """)
-    for line in sql:
-        kpi_model.add_to_kpi(line.channel.name, 'roi', line.roi)
-    
-    #CLV (per customer)
-    sql = util_models.CustomerCLV.objects.raw("""
-        SELECT id, channel_id, SUM(`clv_""" + model + """_added`)/count(DISTINCT `customer_id`) as clv_cust FROM utils_customerclv """ + filter + """ GROUP BY channel_id
-    """)
-    
-    for line in sql:
-        kpi_model.add_to_kpi(line.channel.name, 'clv_per_customer', line.clv_cust)
-    
-    #Number of Customers
-    sql = util_models.CustomerCLV.objects.raw("""
-        SELECT id, channel_id, count(DISTINCT `customer_id`) as customer_count FROM utils_customerclv """ + filter + """ GROUP BY channel_id
-    """)
-    channel_customer_count = {}
-    for line in sql:
-        kpi_model.add_to_kpi(line.channel.name, 'customer_count', line.customer_count)
-        channel_customer_count[line.channel.name] = line.customer_count
-    
-    #Total CLV
-    #Total CAC
-    sql = util_models.CustomerCLV.objects.raw("""
-        SELECT id, channel_id, SUM(`clv_""" + model + """_added`) as total_clv, SUM(`cost`) as total_cost FROM utils_customerclv """ + filter + """ GROUP BY channel_id
-    """)
-    for line in sql:
-        kpi_model.add_to_kpi(line.channel.name, 'clv_total', line.total_clv)
-        kpi_model.add_to_kpi(line.channel.name, 'cac_total', line.total_cost)
-        kpi_model.add_to_kpi(line.channel.name, 'cac_avg', line.total_cost/channel_customer_count[line.channel.name])
-    
-    # Total Revenue
-    sql = util_models.Attributions.objects.raw("""
-        SELECT id, channel_id, SUM(`""" + model + """`) as total_revenue FROM utils_attributions """ + filter + """ GROUP BY channel_id
-    """)
-    for line in sql:
-        kpi_model.add_to_kpi(line.channel.name, 'revenue_total', line.total_revenue)
-        kpi_model.add_to_kpi(line.channel.name, 'revenue_per_customer', (line.total_revenue/channel_customer_count[line.channel.name]))
     
     kpi_view = []
     for channel in kpi_model.kpi_data:
@@ -297,8 +258,8 @@ def dashboard(request):
         , 'marks'  : get_marks()
         , 'filter' : get_filter(request)
         , 'metrics': get_view_metrics()
-        , 'selected_metrics': {'right': request.session['metric-right'], 
-                             'left': request.session['metric-left']}
+        , 'selected_metrics': {'right': request.session['omni-metric-right'], 
+                             'left': request.session['omni-metric-left']}
         , 'timeunits': TIMERANGE_UNITS
     })
 
@@ -323,29 +284,55 @@ def set_options(request):
 @csrf_exempt
 def set_metric(request):
     post = request.POST
-    if 'metric-left' in post:
-        request.session['metric-left'] = post['metric-left']
+    if 'omni-metric-left' in post:
+        request.session['omni-metric-left'] = post['omni-metric-left']
     
-    if 'metric-right' in post:
-        request.session['metric-right'] = post['metric-right']
+    if 'omni-metric-right' in post:
+        request.session['omni-metric-right'] = post['omni-metric-right']
+    
+    if 'bubble-metric-left' in post:
+        request.session['bubble-metric-left'] = post['bubble-metric-left']
+    
+    if 'bubble-metric-right' in post:
+        request.session['bubble-metric-right'] = post['bubble-metric-right']
+    
+    if 'bubble-metric-size' in post:
+        request.session['bubble-metric-size'] = post['bubble-metric-size']
+        
     return HttpResponse('', )
 
 @login_required()
 @csrf_exempt
 def set_seperation(request):
     
-    if 'seperation' in request.POST:
-        request.session['seperation'] = request.POST['seperation']
+    if 'omni-seperation' in request.POST:
+        request.session['omni-seperation'] = request.POST['omni-seperation']
+    
+    if 'kpi-seperation' in request.POST:
+        request.session['kpi-seperation'] = request.POST['kpi-seperation']
+    
+    if 'bubble-seperation' in request.POST:
+        request.session['bubble-seperation'] = request.POST['bubble-seperation']
+    
     
     return HttpResponse('', )
 
 def set_session_defaults(request):
     
-    if not 'metric-right' in request.session:
-        request.session['metric-right'] = 'cac'
+    if not 'omni-metric-right' in request.session:
+        request.session['omni-metric-right'] = 'cac'
     
-    if not 'metric-left' in request.session:
-        request.session['metric-left'] = 'roi'
+    if not 'omni-metric-left' in request.session:
+        request.session['omni-metric-left'] = 'roi'
+        
+    if not 'bubble-metric-right' in request.session:
+        request.session['bubble-metric-right'] = 'cac'
+    
+    if not 'bubble-metric-left' in request.session:
+        request.session['bubble-metric-left'] = 'roi'
+    
+    if not 'bubble-metric-size' in request.session:
+        request.session['bubble-metric-size'] = 'roi'
     
     if not 'model' in request.session:
         request.session['model'] = 'linear'
@@ -353,8 +340,12 @@ def set_session_defaults(request):
     if not 'filter' in request.session:
         request.session['filter'] = {}
     
-    if not 'seperation' in request.session:
-        request.session['seperation'] = 'aggregated'
+    if not 'omni-seperation' in request.session:
+        request.session['omni-seperation'] = 'aggregated'
+    if not 'bubble-seperation' in request.session:
+        request.session['bubble-seperation'] = 'aggregated'
+    if not 'kpi-seperation' in request.session:
+        request.session['kpi-seperation'] = 'aggregated'
     
     if not 'timerange' in request.session:
         request.session['timerange'] = None
@@ -415,33 +406,36 @@ def get_channels():
 @login_required()
 def get_bar_chart_json(request):
     
-    constructor_right = METRICS[request.session['metric-right']]['class']
-    constructor_left  = METRICS[request.session['metric-left' ]]['class']
-    
-    options_right     = METRICS[request.session['metric-right']]['options']
-    options_left      = METRICS[request.session['metric-left' ]]['options']
-    
-    label_right       = METRICS[request.session['metric-right']]['label']
-    label_left        = METRICS[request.session['metric-left' ]]['label']
+    constructor_right = METRICS[request.session['omni-metric-right']]['class']
+    constructor_left  = METRICS[request.session['omni-metric-left' ]]['class']
+
+    options_right     = METRICS[request.session['omni-metric-right']]['options']
+    options_left      = METRICS[request.session['omni-metric-left' ]]['options']
+
+    label_right       = METRICS[request.session['omni-metric-right']]['label']
+    label_left        = METRICS[request.session['omni-metric-left' ]]['label']
     
     options_right['timerange'] = request.session['timerange']
     options_left['timerange']  = request.session['timerange']
+    
+    options_right['kpi_view'] = False
+    options_left['kpi_view'] = False
     
     metric_right = constructor_right(
         model      = request.session['model'],
         filter     = get_filter(request), 
         options    = options_right,
-        seperation = request.session['seperation']
+        seperation = request.session['omni-seperation']
     )
     
     metric_left = constructor_left(
         model      = request.session['model'],
         filter     = get_filter(request), 
         options    = options_left,
-        seperation = request.session['seperation']
+        seperation = request.session['omni-seperation']
     )
     
-    if request.session['seperation'] == "aggregated":
+    if request.session['omni-seperation'] == "aggregated":
         json = """
         [{
             "key"    : " """ + label_left + """ " ,
@@ -457,6 +451,69 @@ def get_bar_chart_json(request):
         
     return HttpResponse(json, content_type="application/json")
 
+@login_required()
+def get_bubble_chart_json(request):
+    constructor_bottom = METRICS[request.session['bubble-metric-right']]['class']
+    constructor_left   = METRICS[request.session['bubble-metric-left' ]]['class']
+    constructor_size   = METRICS[request.session['bubble-metric-size' ]]['class']
+    
+    options_bottom     = METRICS[request.session['bubble-metric-right']]['options']
+    options_left       = METRICS[request.session['bubble-metric-left' ]]['options']
+    options_size       = METRICS[request.session['bubble-metric-size' ]]['options']
+    
+    label_bottom       = METRICS[request.session['bubble-metric-right']]['label']
+    label_left         = METRICS[request.session['bubble-metric-left' ]]['label']
+    label_size         = METRICS[request.session['bubble-metric-size' ]]['label']
+    
+    #options_bottom['timerange'] = request.session['timerange']
+    #options_left['timerange']   = request.session['timerange']
+    
+    metric_bottom = constructor_bottom(
+        model      = request.session['model'],
+        filter     = get_filter(request), 
+        options    = options_bottom,
+        seperation = request.session['bubble-seperation']
+    )
+    
+    metric_left = constructor_left(
+        model      = request.session['model'],
+        filter     = get_filter(request), 
+        options    = options_left,
+        seperation = request.session['bubble-seperation']
+    )
+    
+    metric_size = constructor_size(
+        model      = request.session['model'],
+        filter     = get_filter(request), 
+        options    = options_size,
+        seperation = request.session['bubble-seperation']
+    )
+    
+    seperator = request.session['bubble-seperation']
+    
+    bla = {'y': metric_left.get_data_bubble(), 
+           'x': metric_bottom.get_data_bubble(), 
+           'size': metric_size.get_data_bubble()}
+    
+    add_krams = {}
+    
+    for position in bla:
+        for line in bla[position]:
+            key_attr = getattr(line, seperator).name
+            if not key_attr in add_krams:
+                add_krams[key_attr] = {}
+            add_krams[key_attr][position] = line.value
+    
+    _json = []
+    for bubble in add_krams:
+        _json.append({
+            "key"    : bubble,
+            "values" : [add_krams[bubble]]
+        })
+    return HttpResponse(json.dumps(_json), content_type="application/json")
+    
+    
+    
 
 @login_required()
 def set_active_website(request,website_id = None):

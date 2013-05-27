@@ -5,19 +5,39 @@
 {%block content %}
 
 <ul class="nav nav-tabs" id="charts-tabs">
-  <li class="active"><a data-chart="kpi" href="#kpi-board" data-toggle="tab"><i class="icon-th"></i> KPI Board</a></li>
+  <li><a data-chart="kpi" href="#kpi-board" data-toggle="tab"><i class="icon-th"></i> KPI Board</a></li>
   <li><a data-chart="bar" href="#bar-chart" data-toggle="tab"><i class=" icon-signal"></i> Omni Chart </a></li>
+  <li class="active"><a data-chart="bubble" href="#bubble-chart" data-toggle="tab"><i class=" icon-signal"></i>Bubble Chart </a></li>
 </ul>
 
 <div class="tab-content">
-  <div class="tab-pane active" id="kpi-board">
-      
+  <div class="tab-pane" id="kpi-board">
+      <div class="well well-small">
+        <h4>Seperation:</h4>
+        <label class="radio">
+          <input type="radio" name="kpi-seperation"  value="aggregated" checked />
+          aggregated                
+        </label>                    
+        <label class="radio">       
+          <input type="radio" name="kpi-seperation"  value="partner"/>
+          seperated by partner      
+        </label>                    
+        <label class="radio">       
+          <input type="radio" name="kpi-seperation"  value="channel"/>
+          seperated by channel      
+        </label>                    
+        <label class="radio">       
+          <input type="radio" name="kpi-seperation"  value="campaign"/>
+          seperated by campaign
+        </label>
+      </div>
+      <div id="kpi-board-content"></div>
   </div>
   <div class="tab-pane" id="bar-chart">
       <div class="well well-small">
           <form id="bar-chart-options">
           
-          show data till 
+         <!-- show data till 
   
         <input id="timerange-value" name="timerange-value" value="30" class="input-mini" /> 
         <select id="timerange-unit" name="timerange-unit" class="span2">
@@ -27,9 +47,9 @@
         </select>
         
         after customer join date
-        
+        -->
         <h4>Left axis (bars):</h4>
-        <select id="metric-left" name="metric-left">
+        <select id="omni-metric-left" name="omni-metric-left">
           {% for metric in metrics %}
           <option 
             {% if metric.id == selected_metrics.left %} 
@@ -42,7 +62,7 @@
         </select>
           
         <h4>Right axis (line):</h4>
-        <select id="metric-right"  name="metric-right">
+        <select id="omni-metric-right"  name="omni-metric-right">
           {% for metric in metrics %}
           <option 
             {% if metric.id == selected_metrics.right %} 
@@ -58,19 +78,19 @@
         
         <h4>Seperation:</h4>
         <label class="radio">
-          <input type="radio" name="seperation" id="optionsRadios1" value="aggregated" checked>
+          <input type="radio" name="omni-seperation" value="aggregated" checked>
           aggregated                
         </label>                    
         <label class="radio">       
-          <input type="radio" name="seperation" id="optionsRadios2" value="partner">
+          <input type="radio" name="omni-seperation" value="partner" />
           seperated by partner      
         </label>                    
         <label class="radio">       
-          <input type="radio" name="seperation" id="optionsRadios3" value="channel">
+          <input type="radio" name="omni-seperation" value="channel" />
           seperated by channel      
         </label>                    
         <label class="radio">       
-          <input type="radio" name="seperation" id="optionsRadios4" value="campaign">
+          <input type="radio" name="omni-seperation" value="campaign" />
           seperated by campaign
         </label>
         
@@ -79,7 +99,72 @@
       </div>
       <svg style="height:400px;width:870px"></svg>
   </div>
-  
+  <div class="tab-pane active" id="bubble-chart">
+      <div class="well well-small">
+      <form id="bubble-chart-options">
+          
+        <h4>Left axis:</h4>
+        <select id="bubble-metric-left" name="bubble-metric-left">
+          {% for metric in metrics %}
+          <option 
+            {% if metric.id == selected_bubble_metrics.left %} 
+            selected='selected'
+            {% endif %}
+            value="{{metric.id}}">
+              {{metric.label}}
+          </option>
+          {% endfor %}
+        </select>
+          
+        <h4>Bottom axis:</h4>
+        <select id="bubble-metric-right"  name="bubble-metric-right">
+          {% for metric in metrics %}
+          <option 
+            {% if metric.id == selected_bubble_metrics.right %} 
+            selected='selected'
+            {% endif %}
+            value="{{metric.id}}">
+              
+              {{metric.label}}
+              
+          </option>
+          {% endfor %}
+        </select>
+        
+        <h4>Bubble Size:</h4>
+        <select id="bubble-metric-size"  name="bubble-metric-size">
+          {% for metric in metrics %}
+          <option 
+            {% if metric.id == selected_bubble_metrics.size %} 
+            selected='selected'
+            {% endif %}
+            value="{{metric.id}}">
+              
+              {{metric.label}}
+              
+          </option>
+          {% endfor %}
+        </select>
+        
+        <h4>Seperation:</h4>
+        <label class="radio">       
+          <input type="radio" name="bubble-seperation" value="partner" />
+          seperated by partner      
+        </label>                    
+        <label class="radio">       
+          <input type="radio" name="bubble-seperation" value="channel" />
+          seperated by channel      
+        </label>                    
+        <label class="radio">       
+          <input type="radio" name="bubble-seperation" value="campaign" />
+          seperated by campaign
+        </label> 
+        
+        </form>
+        </div>
+        <div id="bubble-chart-content">
+        <svg style="height:400px;width:870px"></svg></div>
+  </div>
 </div>
 
 <script>
@@ -159,7 +244,7 @@ function drawCalendar() {
 }
 function drawBarNew() {
     
-    if($('input[name="seperation"]:checked').val() != 'aggregated') {
+    if($('input[name="omni-seperation"]:checked').val() != 'aggregated') {
         drawBarChart();
         return;
     }
@@ -267,8 +352,34 @@ function drawBarChart() {
                 .datum(jsonBar)
               .transition().duration(500).call(chart);
         
+            return chart;
+        });
+    });
+}
+
+function drawBubbleChart() { 
+    $('#bubble-chart-content svg').empty();
+    d3.json("/websites/bubble", function(jsonBubble) {
+        nv.addGraph(function() {
+            var chart = nv.models.scatterChart()
+                          .showDistX(true)
+                          .showDistY(true)
+                          //.showControls(true)
+                          .color(d3.scale.category20().range())
+                          .forceX([0])
+                          .forceY([0]);
+            
+            chart.xAxis
+                .tickFormat(d3.format('.02f'))
+            chart.yAxis
+                .tickFormat(d3.format('.02f'))
+            
+            d3.select('#bubble-chart-content svg')
+                .datum(jsonBubble)
+              .transition().duration(500)
+                .call(chart);
+            
             //nv.utils.windowResize(chart.update);
-        
             return chart;
         });
     });

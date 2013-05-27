@@ -203,7 +203,10 @@ if __name__ == '__main__':
     
     attr_ordered = attributions
     
+    print "saving data"
     for (date, partner, channel, campaign) in attr_ordered:
+        
+        print "saved %s %s %s %s" % (date, partner, channel, campaign)
         
         attr_key = (date, partner, channel, campaign)
         
