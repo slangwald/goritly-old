@@ -2,126 +2,133 @@
 
 <h3>{{channel.name}}</h3>
 <div>
-<div class="span4">
-    <div class="tile large positive">
-        <h4>ROI <small>on {{channel.name}}</small>
-        <div class="badge">
-            ?
-        </div></h4>
-        <p class="content">
-            {{channel.roi}}%
-        </p>
-        <div class="change">
-            {{channel.roi_change}}%
-        </div>
-    </div>
-</div>
-<div class="span4">
-        <div class="tile positive">
-            <h4>CLV <small>per avg. user</small>
-            <div class="badge">
-                ?
-            </div></h4>
+    <div class="span4">
+        <div class="tile large positive">
+            <h4>ROI <small>on {{channel.name}}</small>
+            </h4>
             <p class="content">
-                {{channel.clv_per_customer}}&euro;
+                {{channel.roi}}%
             </p>
             <div class="change">
-                {{channel.clv_per_customer_change}}%
+                {{channel.roi_change}}
             </div>
         </div>
-</div>
-<div class="span4">
-        <div class="tile positive">
-            <h4>No. of customers <small></small>
-            <div class="badge">
-                ?
-            </div></h4>
-            <p class="content">
-                {{channel.customer_count}}
-            </p>
-            <div class="change">
-                {{channel.customer_count_change}}%
+    </div>
+    <div class="span4">
+            <div class="tile positive">
+                <h4>CLV <small>per customer</small>
+                </h4>
+                <p class="content">
+                    {{channel.clv_per_customer}}
+                </p>
+                <div class="change">
+                    {{channel.clv_per_customer_change}}
+                </div>
+            </div>
+    </div>
+    <div class="span4">
+            <div class="tile positive">
+                <h4>CAC <small>per customer</small>
+                </h4>
+                <p class="content">
+                    {{channel.cac_avg}}
+                </p>
+                <div class="change">
+                    {{channel.cac_avg_change}}
+                </div>
             </div>
     </div>
 </div>
-</div>
-
 <div>
-<div class="span4">
-        <div class="tile positive">
-            <h4>Total CLV 
-            <div class="badge">
-                ?
-            </div></h4>
-            <p class="content">
-                {{channel.clv_total}}
-            </p>
-            <div class="change">
-                {{channel.clv_total_change}}
+    <div class="span4">
+            <div class="tile positive">
+                <h4>Profit <small>per customer</small>
+                </h4>
+                <p class="content">
+                    {{channel.cac_avg}}
+                </p>
+                <div class="change">
+                    {{channel.cac_avg_change}}
+                </div>
             </div>
-        </div>
-</div>
-<div class="span4">
-        <div class="tile positive">
-            <h4>Total CAC <small>customer acquesition cost</small>
-            <div class="badge">
-                ?
-            </div></h4>
-            <p class="content">
-                {{channel.cac_total}}
-            </p>
-            <div class="change">
-                {{channel.cac_total_change}}
+    </div>
+    <div class="span4">
+            <div class="tile positive">
+                <h4>Revenue per cust.
+                </h4>
+                <p class="content">
+                    {{channel.revenue_per_customer}}
+                </p>
+                <div class="change">
+                    {{channel.revenue_per_customer_change}}
+                </div>
             </div>
-        </div>
+    </div>
 </div>
-<div class="span4">
-        <div class="tile positive">
-            <h4>Total Revenue <small></small>
-            <div class="badge">
-                ?
-            </div></h4>
-            <p class="content">
-                {{channel.revenue_total}}
-            </p>
-            <div class="change">
-                {{channel.revenue_total_change}}
-            </div>
-        </div>
-</div>
-
+<div class="clearfix"></div>
 <div>
-<div class="span4">
-        <div class="tile positive">
-            <h4>Revenue per cust.
-            <div class="badge">
-                ?
-            </div></h4>
-            <p class="content">
-                {{channel.revenue_per_customer}}
-            </p>
-            <div class="change">
-                {{channel.revenue_per_customer_change}}
+    <div class="span4">
+            <div class="tile positive">
+                <h4>Profit (total) <small></small>
+                </h4>
+                <p class="content">
+                    {{channel.revenue_total}}
+                </p>
+                <div class="change">
+                    {{channel.revenue_total_change}}
+                </div>
             </div>
-        </div>
-</div>
-
-<div class="span4">
-        <div class="tile positive">
-            <h4>CAC per customer
-            <div class="badge">
-                ?
-            </div></h4>
-            <p class="content">
-                {{channel.cac_avg}}
-            </p>
-            <div class="change">
-                {{channel.cac_avg_change}}
+    </div>
+    <div class="span4">
+            <div class="tile positive">
+                <h4>Customer Equity
+                </h4>
+                <p class="content">
+                    {{channel.clv_total}}
+                </p>
+                <div class="change">
+                    {{channel.clv_total_change}}
+                </div>
             </div>
-        </div>
+    </div>
+    <div class="span4">
+            <div class="tile positive">
+                <h4>Marketing Spend
+                </h4>
+                <p class="content">
+                    {{channel.cac_total}}
+                </p>
+                <div class="change">
+                    {{channel.cac_total_change}}
+                </div>
+            </div>
+    </div>
 </div>
-
-
+<div>
+    <div class="span4">
+            <div class="tile positive">
+                <h4>No. of customers <small></small>
+                </h4>
+                <p class="content">
+                    {{channel.customer_count}}
+                </p>
+                <div class="change">
+                    {{channel.customer_count_change}}
+                </div>
+        </div>
+    </div>
+    <div class="span4">
+            <div class="tile positive">
+                <h4>Total Revenue <small></small>
+                </h4>
+                <p class="content">
+                    {{channel.revenue_total}}
+                </p>
+                <div class="change">
+                    {{channel.revenue_total_change}}
+                </div>
+            </div>
+    </div>
 </div>
 <div class="clearfix"></div>
 {% endfor %}

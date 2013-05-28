@@ -5,29 +5,29 @@
 {%block content %}
 
 <ul class="nav nav-tabs" id="charts-tabs">
-  <li><a data-chart="kpi" href="#kpi-board" data-toggle="tab"><i class="icon-th"></i> KPI Board</a></li>
+  <li class="active"><a data-chart="kpi" href="#kpi-board" data-toggle="tab"><i class="icon-th"></i> KPI Board</a></li>
   <li><a data-chart="bar" href="#bar-chart" data-toggle="tab"><i class=" icon-signal"></i> Omni Chart </a></li>
-  <li class="active"><a data-chart="bubble" href="#bubble-chart" data-toggle="tab"><i class=" icon-signal"></i>Bubble Chart </a></li>
+  <li><a data-chart="bubble" href="#bubble-chart" data-toggle="tab"><i class=" icon-signal"></i>Bubble Chart </a></li>
 </ul>
 
 <div class="tab-content">
-  <div class="tab-pane" id="kpi-board">
+  <div class="tab-pane active" id="kpi-board">
       <div class="well well-small">
         <h4>Seperation:</h4>
         <label class="radio">
-          <input type="radio" name="kpi-seperation"  value="aggregated" checked />
+          <input type="radio" name="kpi-seperation"  value="aggregated" {% if seperations.kpi == 'aggregated' %} checked="checked" {% endif %} />
           aggregated                
         </label>                    
         <label class="radio">       
-          <input type="radio" name="kpi-seperation"  value="partner"/>
+          <input type="radio" name="kpi-seperation"  value="partner" {% if seperations.kpi == 'partner' %} checked="checked" {% endif %} />
           seperated by partner      
         </label>                    
         <label class="radio">       
-          <input type="radio" name="kpi-seperation"  value="channel"/>
+          <input type="radio" name="kpi-seperation"  value="channel" {% if seperations.kpi == 'channel' %} checked="checked" {% endif %} />
           seperated by channel      
         </label>                    
         <label class="radio">       
-          <input type="radio" name="kpi-seperation"  value="campaign"/>
+          <input type="radio" name="kpi-seperation"  value="campaign" {% if seperations.kpi == 'campaign' %} checked="checked" {% endif %} />
           seperated by campaign
         </label>
       </div>
@@ -78,28 +78,29 @@
         
         <h4>Seperation:</h4>
         <label class="radio">
-          <input type="radio" name="omni-seperation" value="aggregated" checked>
+          <input type="radio" name="omni-seperation"  value="aggregated" {% if seperations.omni == 'aggregated' %} checked="checked" {% endif %} />
           aggregated                
         </label>                    
         <label class="radio">       
-          <input type="radio" name="omni-seperation" value="partner" />
+          <input type="radio" name="omni-seperation"  value="partner" {% if seperations.omni == 'partner' %} checked="checked" {% endif %} />
           seperated by partner      
         </label>                    
         <label class="radio">       
-          <input type="radio" name="omni-seperation" value="channel" />
+          <input type="radio" name="omni-seperation"  value="channel" {% if seperations.omni == 'channel' %} checked="checked" {% endif %} />
           seperated by channel      
         </label>                    
         <label class="radio">       
-          <input type="radio" name="omni-seperation" value="campaign" />
+          <input type="radio" name="omni-seperation"  value="campaign" {% if seperations.omni == 'campaign' %} checked="checked" {% endif %} />
           seperated by campaign
         </label>
         
         </form>
         
       </div>
-      <svg style="height:400px;width:870px"></svg>
+      <div id="bar-chart-content">
+      <svg style="height:400px;width:870px"></svg></div>
   </div>
-  <div class="tab-pane active" id="bubble-chart">
+  <div class="tab-pane" id="bubble-chart">
       <div class="well well-small">
       <form id="bubble-chart-options">
           
@@ -148,17 +149,17 @@
         
         <h4>Seperation:</h4>
         <label class="radio">       
-          <input type="radio" name="bubble-seperation" value="partner" />
+          <input type="radio" name="bubble-seperation"  value="partner" {% if seperations.bubble == 'partner' %} checked="checked" {% endif %} />
           seperated by partner      
         </label>                    
         <label class="radio">       
-          <input type="radio" name="bubble-seperation" value="channel" />
+          <input type="radio" name="bubble-seperation"  value="channel" {% if seperations.bubble == 'channel' %} checked="checked" {% endif %} />
           seperated by channel      
         </label>                    
         <label class="radio">       
-          <input type="radio" name="bubble-seperation" value="campaign" />
+          <input type="radio" name="bubble-seperation"  value="campaign" {% if seperations.bubble == 'campaign' %} checked="checked" {% endif %} />
           seperated by campaign
-        </label> 
+        </label>
         
         </form>
         </div>
@@ -273,7 +274,7 @@ function drawBarNew() {
       return series;
     });
     
-    $('#bar-chart svg').empty();
+    $('#bar-chart-content svg').empty();
     
     d3.json("/websites/bar", function(jsonBar) {
         jsonBar = jsonBar.map(function(series) {
@@ -294,12 +295,12 @@ function drawBarNew() {
                   return d3.time.format('%x')(new Date(dx))
               }
               return null;
-            });
+            }).axisLabel('Customer Join Date');
         
             chart.x2Axis.tickFormat(function(d) {
               var dx = jsonBar[0].values[d] && jsonBar[0].values[d].x || 0;
               return d3.time.format('%x')(new Date(dx))
-            });
+            }).axisLabel('Customer Join Date');
             
             chart.y1Axis
                 .tickFormat(d3.format(',f'));
@@ -317,7 +318,7 @@ function drawBarNew() {
             chart.bars2.forceY([0]);
             chart.lines.forceY([0]);
             //nv.log(testdata);
-            d3.select('#bar-chart svg')
+            d3.select('#bar-chart-content  svg')
                 .datum(jsonBar)
               .transition().duration(500).call(chart);
         
@@ -329,10 +330,11 @@ function drawBarNew() {
 }
 
 function drawBarChart() {
-    $('#bar-chart svg').empty();
+    $('#bar-chart-content svg').empty();
     d3.json("/websites/bar", function(jsonBar) {
         nv.addGraph(function() {
             var chart = nv.models.multiBarChart()
+                        .margin({top: 30, right: 60, bottom: 80, left: 70})
                         .stacked(true)
                         .color(d3.scale.category20().range());
                         //.showControls(false);
@@ -343,12 +345,13 @@ function drawBarChart() {
             })
             
             chart.xAxis
-                .tickFormat(function(d) { return d3.time.format('%b %d')(new Date(d)); });
+                .tickFormat(function(d) { return d3.time.format('%b %d')(new Date(d)); })
+                .axisLabel('Customer Join Date');
         
             chart.yAxis
                 .tickFormat(d3.format(',.2f'));
         
-            d3.select('#bar-chart svg')
+            d3.select('#bar-chart-content svg')
                 .datum(jsonBar)
               .transition().duration(500).call(chart);
         

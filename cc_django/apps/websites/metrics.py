@@ -291,7 +291,16 @@ class RoiMetric(BasicMetric):
     
     def get_value_field(self):
         return "SUM(`clv_" + self.model + "_added`)/SUM(cost)*100"
+
+class CustomerCountMetric(BasicMetric):
     
+    table       = 'utils_customerclv'
+    date_column = 'first_ordered_at'
+    hydration   = CustomerCLV
+    
+    def get_value_field(self):
+        return "COUNT(DISTINCT customer_id)"
+   
     
 class ProfitMetric(BasicMetric):
     table       = 'utils_attributions'
@@ -338,7 +347,9 @@ METRICS = {
     'profit_per_customer':  {
         'label': 'Profit (per Customer)', 
         'class': ProfitMetric, 
-        'options': {}
+        'options': {
+            #'per_unit': True
+        }
     },
     'clv': {
         'label': 'Customer Lifetime Value', 
@@ -382,7 +393,12 @@ METRICS = {
         'label': 'Revenue (total)', 
         'class': RevenueMetric, 
         'options': {}
-    },       
+    },
+    'customer_count': {
+        'label': 'No. of Customers', 
+        'class': CustomerCountMetric, 
+        'options': {}
+    }
 }
 
 SEPERATIONS = {

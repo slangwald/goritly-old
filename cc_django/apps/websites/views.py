@@ -31,12 +31,16 @@ from django.core import serializers
 import logging
 
 import global_settings
-import websites.models as models
+import websites.models as wmodels
 import websites.forms as forms
 from profiles.views import login_required
 import utils.models as util_models
 from websites.metrics import * 
 from django.core import serializers
+
+
+import locale
+locale.setlocale(locale.LC_ALL, 'en_US.utf8')
 
 
 class valid_website_required(object):
@@ -178,7 +182,6 @@ def get_kpi_board(request):
         )
         lines = metric_right.get_data_kpi()
         
-        print request.session['kpi-seperation']
         for line in lines:
             if request.session['kpi-seperation'] == 'aggregated':
                 channel = 'All'
@@ -193,23 +196,23 @@ def get_kpi_board(request):
     kpi_view = []
     for channel in kpi_model.kpi_data:
         kpi_view.append({
-            'name'                       :          kpi_model.kpi_data[channel]['name'                       ],
-            'roi'                        : "%.1f" % kpi_model.kpi_data[channel]['roi'                        ],
-            'roi_change'                 : "%.2f" % kpi_model.kpi_data[channel]['roi_change'                 ],
-            'clv_per_customer'           : "%.2f" % kpi_model.kpi_data[channel]['clv'                        ],
-            'clv_per_customer_change'    : "%.2f" % kpi_model.kpi_data[channel]['clv_per_customer_change'    ],
-            'customer_count'             : "%.0f" % kpi_model.kpi_data[channel]['customer_count'             ],
-            'customer_count_change'      : "%.2f" % kpi_model.kpi_data[channel]['customer_count_change'      ],
-            'clv_total'                  : "%.2f" % kpi_model.kpi_data[channel]['customer_equity'            ],
-            'clv_total_change'           : "%.2f" % kpi_model.kpi_data[channel]['clv_total_change'           ],
-            'cac_total'                  : "%.2f" % kpi_model.kpi_data[channel]['marketingspend'             ],
-            'cac_total_change'           : "%.2f" % kpi_model.kpi_data[channel]['cac_total_change'           ],
-            'revenue_total'              : "%.2f" % kpi_model.kpi_data[channel]['revenue_total'              ],
-            'revenue_total_change'       : "%.2f" % kpi_model.kpi_data[channel]['revenue_total_change'       ],
-            'revenue_per_customer'       : "%.2f" % kpi_model.kpi_data[channel]['revenue_per_customer'       ],
-            'revenue_per_customer_change': "%.2f" % kpi_model.kpi_data[channel]['revenue_per_customer_change'],
-            'cac_avg'                    : "%.2f" % kpi_model.kpi_data[channel]['cac'                        ],
-            
+            'name'                       : kpi_model.kpi_data[channel]['name'                       ],
+            'roi'                        : locale.format('%.1f', kpi_model.kpi_data[channel]['roi'                        ], grouping=True),
+            #'roi_change'                 : locale.format('%d', kpi_model.kpi_data[channel]['roi_change'                 ], grouping=True),
+            'clv_per_customer'           : '$' + locale.format('%.2f', kpi_model.kpi_data[channel]['clv'                        ], grouping=True),
+            #'clv_per_customer_change'    : locale.format('%d', kpi_model.kpi_data[channel]['clv_per_customer_change'    ], grouping=True),
+            'customer_count'             : locale.format('%d', kpi_model.kpi_data[channel]['customer_count'             ], grouping=True),
+            #'customer_count_change'      : locale.format('%d', kpi_model.kpi_data[channel]['customer_count_change'      ], grouping=True),
+            'clv_total'                  : '$' + locale.format('%d', kpi_model.kpi_data[channel]['customer_equity'            ], grouping=True),
+            #'clv_total_change'           : locale.format('%d', kpi_model.kpi_data[channel]['clv_total_change'           ], grouping=True),
+            'cac_total'                  : '$' + locale.format('%d', kpi_model.kpi_data[channel]['marketingspend'             ], grouping=True),
+            #'cac_total_change'           : locale.format('%d', kpi_model.kpi_data[channel]['cac_total_change'           ], grouping=True),
+            'revenue_total'              : '$' + locale.format('%d', kpi_model.kpi_data[channel]['revenue_total'              ], grouping=True),
+            #'revenue_total_change'       : locale.format('%d', kpi_model.kpi_data[channel]['revenue_total_change'       ], grouping=True),
+            'revenue_per_customer'       : '$' + locale.format('%.2f', kpi_model.kpi_data[channel]['revenue_per_customer'       ], grouping=True),
+            #'revenue_per_customer_change': locale.format('%d', kpi_model.kpi_data[channel]['revenue_per_customer_change'], grouping=True),
+            'cac_avg'                    : '$' + locale.format('%.2f', kpi_model.kpi_data[channel]['cac'                        ], grouping=True),
+            'profit_per_customer'       : '$' + locale.format('%.2f', kpi_model.kpi_data[channel]['profit_per_customer'] /kpi_model.kpi_data[channel]['customer_count'] , grouping=True),
         })
         
     return render_to_response('websites/kpi.html', {'kpis': kpi_view})
@@ -260,7 +263,10 @@ def dashboard(request):
         , 'filter' : get_filter(request)
         , 'metrics': get_view_metrics()
         , 'selected_metrics': {'right': request.session['omni-metric-right'], 
-                             'left': request.session['omni-metric-left']}
+                               'left' : request.session['omni-metric-left']}
+        , 'seperations': {'kpi'   : request.session['kpi-seperation'],
+                          'omni'  : request.session['omni-seperation'],
+                          'bubble': request.session['bubble-seperation']}
         , 'timeunits': TIMERANGE_UNITS
     })
 
@@ -344,7 +350,7 @@ def set_session_defaults(request):
     if not 'omni-seperation' in request.session:
         request.session['omni-seperation'] = 'aggregated'
     if not 'bubble-seperation' in request.session:
-        request.session['bubble-seperation'] = 'aggregated'
+        request.session['bubble-seperation'] = 'partner'
     if not 'kpi-seperation' in request.session:
         request.session['kpi-seperation'] = 'aggregated'
     
@@ -522,8 +528,8 @@ def set_active_website(request,website_id = None):
         request.session['active_website_id'] = None
         return redirect(reverse("websites.views.index"))
     try:
-        website = models.Website.objects.get(id = website_id)
-    except models.Website.DoesNotExist:
+        website = wmodels.Website.objects.get(id = website_id)
+    except wmodels.Website.DoesNotExist:
         raise Http404
     if not request.user in website.owners.all() and not request.user in website.admins.all() and not request.user.is_staff:
         raise PermissionDenied
@@ -536,7 +542,7 @@ def new(request):
         form = forms.WebsiteForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
-            website = models.Website(name = data['name'])
+            website = wmodels.Website(name = data['name'])
             website.save()
             website.owners.add(request.user)
             request.flash["notice"] = _(u"Your website account has been created.")
