@@ -35,8 +35,8 @@
 </select>
 
 
-<label for="filter_campaign">Campaigns</label>
-<select name="filter_campaign" data-placeholder="select one or more campaigns" multiple="multiple" class="chzn-select">
+<label for="filter-campaign">Campaigns</label>
+<select name="filter-campaign" data-placeholder="select one or more campaigns" multiple="multiple" class="chzn-select">
 <!--<option selected="selected" value="_all">all</option>-->
 {% for campaign in campaigns %}
 <option {% if campaign.id in filter.campaign %}selected="selected"{% endif %} value="{{campaign.id}}">{{campaign.name}}</option>

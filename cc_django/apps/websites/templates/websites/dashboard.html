@@ -14,7 +14,7 @@
   <div class="tab-pane active" id="kpi-board">
       <div class="well well-small">
         
-        <h4>Customer Age:</h4>
+        <h4>Customer Age</h4>
         <label class="radio">
           <input type="radio" name="kpi-days"  value="0" {% if days.kpi == '0' %} checked="checked" {% endif %} />
           first order date
@@ -25,7 +25,7 @@
         </label>             
         <small>(beta feature, more options coming soon)</small>
         
-        <h4>Seperation:</h4>
+        <h4>Seperation</h4>
         <label class="radio">
           <input type="radio" name="kpi-seperation"  value="aggregated" {% if seperations.kpi == 'aggregated' %} checked="checked" {% endif %} />
           aggregated                
@@ -49,7 +49,7 @@
       <div class="well well-small">
           <form id="bar-chart-options">
           
-          <h4>Customer Age:</h4>
+          <h4>Customer Age</h4>
         <label class="radio">
           <input type="radio" name="omni-days"  value="0" {% if days.omni == '0' %} checked="checked" {% endif %} />
           first order date
@@ -71,7 +71,7 @@
         
         after customer join date
         -->
-        <h4>Left axis (bars):</h4>
+        <h4>Left axis (bars)</h4>
         <select id="omni-metric-left" name="omni-metric-left">
           {% for metric in metrics %}
           <option 
@@ -84,7 +84,7 @@
           {% endfor %}
         </select>
           
-        <h4>Right axis (line):</h4>
+        <h4>Right axis (line)</h4>
         <select id="omni-metric-right"  name="omni-metric-right">
           {% for metric in metrics %}
           <option 
@@ -99,7 +99,7 @@
           {% endfor %}
         </select>
         
-        <h4>Seperation:</h4>
+        <h4>Seperation</h4>
         <label class="radio">
           <input type="radio" name="omni-seperation"  value="aggregated" {% if seperations.omni == 'aggregated' %} checked="checked" {% endif %} />
           aggregated                
@@ -127,7 +127,7 @@
       <div class="well well-small">
       <form id="bubble-chart-options">
         
-        <h4>Customer Age:</h4>
+        <h4>Customer Age</h4>
         <label class="radio">
           <input type="radio" name="bubble-days"  value="0" {% if days.bubble == '0' %} checked="checked" {% endif %} />
           first order date
@@ -138,7 +138,7 @@
         </label>             
         <small>(beta feature, more options coming soon)</small>
         
-        <h4>Left axis:</h4>
+        <h4>Left axis</h4>
         <select id="bubble-metric-left" name="bubble-metric-left">
           {% for metric in metrics %}
           <option 
@@ -151,7 +151,7 @@
           {% endfor %}
         </select>
           
-        <h4>Bottom axis:</h4>
+        <h4>Bottom axis</h4>
         <select id="bubble-metric-right"  name="bubble-metric-right">
           {% for metric in metrics %}
           <option 
@@ -166,7 +166,7 @@
           {% endfor %}
         </select>
         
-        <h4>Bubble Size:</h4>
+        <h4>Bubble Size</h4>
         <select id="bubble-metric-size"  name="bubble-metric-size">
           {% for metric in metrics %}
           <option 
@@ -181,7 +181,7 @@
           {% endfor %}
         </select>
         
-        <h4>Seperation:</h4>
+        <h4>Seperation</h4>
         <label class="radio">       
           <input type="radio" name="bubble-seperation"  value="partner" {% if seperations.bubble == 'partner' %} checked="checked" {% endif %} />
           seperated by partner      

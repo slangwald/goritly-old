@@ -33,6 +33,7 @@ class BasicMetric():
 
     def __init__(self, model, filter, seperation, options = {}):
         self.filter     = filter
+        print filter
         self.options    = options
         self.model      = model
         
@@ -65,6 +66,7 @@ class BasicMetric():
     
     def get_dimension_filter(self):
         dim_filter = []
+        print self.filter
         for dimension in self.dimensions:
             if dimension in self.filter:
                 if self.filter[dimension] != None:
@@ -172,7 +174,7 @@ class BasicMetric():
             """ + group_by + """
             """ + order_by + """
         """)
-        
+        print raw_data
         return raw_data
     
     def get_data_bubble(self):

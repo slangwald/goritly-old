@@ -73,6 +73,9 @@ FILTERS_AVAILABLE = [
 def set_filter(request):
     request.session['filter'] = {}
     
+    print "#############################"
+    print request.POST
+    print "#############################"
     if('filter-channel' in request.POST):
         request.session['filter']['channel'] = request.POST.getlist('filter-channel')
     
@@ -90,6 +93,9 @@ def set_filter(request):
     if 'model' in request.POST:
         request.session['model'] = request.POST['model']
     
+    print "#-----##########################"
+    print request.session['filter']['campaign']
+    print "#-----##########################"
     request.session.modified = True
     return True
 
@@ -179,6 +185,7 @@ def get_kpi_board(request):
             options    = options_right,
             seperation = request.session['kpi-seperation']
         )
+        print request.session['filter']
         lines = metric_right.get_data_kpi()
         
         for line in lines:
@@ -188,9 +195,6 @@ def get_kpi_board(request):
                 channel = getattr(line, request.session['kpi-seperation']).name
             kpi_model.add_to_kpi(channel, metric, line.value)
         
-    
-    print kpi_model.kpi_data
-    
     
     kpi_view = []
     for channel in kpi_model.kpi_data:
@@ -387,13 +391,13 @@ def set_session_defaults(request):
 
     
     if not 'kpi-days' in request.session:
-        request.session['kpi-days'] = False  
+        request.session['kpi-days'] = ''
     
     if not 'omni-days' in request.session:
-        request.session['omni-days'] = False
+        request.session['omni-days'] = ''
     
     if not 'bubble-days' in request.session:
-        request.session['bubble-days'] = False
+        request.session['bubble-days'] = ''
     
     
     if not 'date' in request.session['filter']:
