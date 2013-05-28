@@ -130,7 +130,6 @@ def filter(request):
     AJAX function is excluded from CSRF protection
     """
     set_filter(request)
-    print request.session['filter']
     return HttpResponse('')
 
 class KpiBoard():
@@ -172,7 +171,7 @@ def get_kpi_board(request):
         constructor_right = METRICS[metric]['class']
         options_right     = METRICS[metric]['options']
         label_right       = METRICS[metric]['label']
-        options_right['timerange'] = request.session['timerange']
+        options_right['timerange'] = request.session['kpi-days']
         options_right['kpi_view'] = True
         metric_right = constructor_right(
             model      = request.session['model'],
@@ -212,7 +211,7 @@ def get_kpi_board(request):
             'revenue_per_customer'       : '$' + locale.format('%.2f', kpi_model.kpi_data[channel]['revenue_per_customer'       ], grouping=True),
             #'revenue_per_customer_change': locale.format('%d', kpi_model.kpi_data[channel]['revenue_per_customer_change'], grouping=True),
             'cac_avg'                    : '$' + locale.format('%.2f', kpi_model.kpi_data[channel]['cac'                        ], grouping=True),
-            'profit_per_customer'       : '$' + locale.format('%.2f', kpi_model.kpi_data[channel]['profit_per_customer'] /kpi_model.kpi_data[channel]['customer_count'] , grouping=True),
+            'profit_per_customer'        : '$' + locale.format('%.2f', kpi_model.kpi_data[channel]['profit_per_customer'] /kpi_model.kpi_data[channel]['customer_count'] , grouping=True),
         })
         
     return render_to_response('websites/kpi.html', {'kpis': kpi_view})
@@ -276,6 +275,11 @@ def dashboard(request):
             'omni'  : request.session['omni-seperation'],
             'bubble': request.session['bubble-seperation']
         }
+        , 'days': {
+            'kpi'   : request.session['kpi-days'],  
+            'bubble': request.session['omni-days'], 
+            'omni'  : request.session['bubble-days']
+        }
         , 'timeunits': TIMERANGE_UNITS
     })
 
@@ -333,6 +337,21 @@ def set_seperation(request):
     
     return HttpResponse('', )
 
+@login_required()
+@csrf_exempt
+def set_days(request):
+    
+    if 'omni-days' in request.POST:
+        request.session['omni-days'] = request.POST['omni-days']
+    
+    if 'kpi-days' in request.POST:
+        request.session['kpi-days'] = request.POST['kpi-days']
+    
+    if 'bubble-days' in request.POST:
+        request.session['bubble-days'] = request.POST['bubble-days']
+    
+    return HttpResponse('', )
+
 def set_session_defaults(request):
     
     if not 'omni-metric-right' in request.session:
@@ -365,6 +384,17 @@ def set_session_defaults(request):
     
     if not 'timerange' in request.session:
         request.session['timerange'] = None
+
+    
+    if not 'kpi-days' in request.session:
+        request.session['kpi-days'] = False  
+    
+    if not 'omni-days' in request.session:
+        request.session['omni-days'] = False
+    
+    if not 'bubble-days' in request.session:
+        request.session['bubble-days'] = False
+    
     
     if not 'date' in request.session['filter']:
         edge_dates = get_first_and_last_date()
@@ -431,8 +461,8 @@ def get_bar_chart_json(request):
     label_right       = METRICS[request.session['omni-metric-right']]['label']
     label_left        = METRICS[request.session['omni-metric-left' ]]['label']
     
-    options_right['timerange'] = request.session['timerange']
-    options_left['timerange']  = request.session['timerange']
+    options_right['timerange'] = request.session['omni-days']
+    options_left['timerange']  = request.session['omni-days']
     
     options_right['kpi_view'] = False
     options_left['kpi_view'] = False
@@ -481,8 +511,9 @@ def get_bubble_chart_json(request):
     label_left         = METRICS[request.session['bubble-metric-left' ]]['label']
     label_size         = METRICS[request.session['bubble-metric-size' ]]['label']
     
-    #options_bottom['timerange'] = request.session['timerange']
-    #options_left['timerange']   = request.session['timerange']
+    options_bottom['timerange'] = request.session['bubble-days']
+    options_left['timerange']   = request.session['bubble-days']
+    options_size['timerange']   = request.session['bubble-days']
     
     metric_bottom = constructor_bottom(
         model      = request.session['model'],

@@ -78,9 +78,9 @@ class BasicMetric():
         dim_filter = self.get_dimension_filter()
         dim_filter.append(self.get_filter_date())
         
-        #if self.hydration == CustomerCLV:
-        #    if self.timerange:
-        #        dim_filter.append('days <= ' + self.timerange)
+        if self.hydration == CustomerCLV:
+            if self.timerange != '':
+                dim_filter.append('days = ' + self.timerange)
         
         sql = ' AND '.join(part for part in dim_filter)
         
@@ -128,8 +128,6 @@ class BasicMetric():
         group_items = []
         if not self.kpi_view:
             group_items.append(self.date_column)
-            print "hellop"
-        print self.kpi_view
         if self.seperation:
             group_items.append(self.seperation)
         

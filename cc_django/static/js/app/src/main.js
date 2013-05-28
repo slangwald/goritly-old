@@ -15,7 +15,8 @@
     };
     doMetric = function(e) {
       return $.post("/websites/set_metric", $(this).serialize()).done(function(data) {
-        return drawBarNew();
+        drawBarNew();
+        return drawBubbleChart();
       });
     };
     $("#omni-metric-left").change(doMetric);
@@ -35,6 +36,21 @@
     });
     $('input[name="bubble-seperation"]').change(function(e) {
       return $.post("/websites/set_seperation", $(this).serialize()).done(function(data) {
+        return drawBubbleChart();
+      });
+    });
+    $('input[name="omni-days"]').change(function(e) {
+      return $.post("/websites/set_days", $(this).serialize()).done(function(data) {
+        return drawBarNew();
+      });
+    });
+    $('input[name="kpi-days"]').change(function(e) {
+      return $.post("/websites/set_days", $(this).serialize()).done(function(data) {
+        return loadKpiBoard();
+      });
+    });
+    $('input[name="bubble-days"]').change(function(e) {
+      return $.post("/websites/set_days", $(this).serialize()).done(function(data) {
         return drawBubbleChart();
       });
     });

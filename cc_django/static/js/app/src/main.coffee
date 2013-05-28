@@ -16,6 +16,7 @@ $(document).ready ->
   doMetric = (e) ->
     $.post("/websites/set_metric", $(@).serialize()).done((data) ->
             drawBarNew()
+            drawBubbleChart()
         )
   $("#omni-metric-left").change doMetric
   $("#omni-metric-right").change doMetric
@@ -36,6 +37,21 @@ $(document).ready ->
     $.post("/websites/set_seperation", $(@).serialize() ).done((data) ->
         drawBubbleChart()
     )
+    
+  
+  $('input[name="omni-days"]').change (e) ->
+    $.post("/websites/set_days", $(@).serialize() ).done((data) ->
+        drawBarNew()
+    )
+  $('input[name="kpi-days"]').change (e) ->
+    $.post("/websites/set_days", $(@).serialize() ).done((data) ->
+        loadKpiBoard()
+    )
+  $('input[name="bubble-days"]').change (e) ->
+    $.post("/websites/set_days", $(@).serialize() ).done((data) ->
+        drawBubbleChart()
+    )
+  
 
   $("#timerange-value").hide()
   changeTimeRange = (e) ->

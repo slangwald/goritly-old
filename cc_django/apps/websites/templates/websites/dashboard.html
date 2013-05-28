@@ -13,6 +13,18 @@
 <div class="tab-content">
   <div class="tab-pane active" id="kpi-board">
       <div class="well well-small">
+        
+        <h4>Customer Age:</h4>
+        <label class="radio">
+          <input type="radio" name="kpi-days"  value="0" {% if days.kpi == '0' %} checked="checked" {% endif %} />
+          first order date
+        </label>             
+        <label class="radio">
+          <input type="radio" name="kpi-days"  value="" {% if days.kpi == '' %} checked="checked" {% endif %} />
+          latest order date
+        </label>             
+        <small>(beta feature, more options coming soon)</small>
+        
         <h4>Seperation:</h4>
         <label class="radio">
           <input type="radio" name="kpi-seperation"  value="aggregated" {% if seperations.kpi == 'aggregated' %} checked="checked" {% endif %} />
@@ -36,6 +48,17 @@
   <div class="tab-pane" id="bar-chart">
       <div class="well well-small">
           <form id="bar-chart-options">
+          
+          <h4>Customer Age:</h4>
+        <label class="radio">
+          <input type="radio" name="omni-days"  value="0" {% if days.omni == '0' %} checked="checked" {% endif %} />
+          first order date
+        </label>             
+        <label class="radio">
+          <input type="radio" name="omni-days"  value="" {% if days.omni == '' %} checked="checked" {% endif %} />
+          latest order date
+        </label>             
+        <small>(beta feature, more options coming soon)</small>
           
          <!-- show data till 
   
@@ -103,7 +126,18 @@
   <div class="tab-pane" id="bubble-chart">
       <div class="well well-small">
       <form id="bubble-chart-options">
-          
+        
+        <h4>Customer Age:</h4>
+        <label class="radio">
+          <input type="radio" name="bubble-days"  value="0" {% if days.bubble == '0' %} checked="checked" {% endif %} />
+          first order date
+        </label>             
+        <label class="radio">
+          <input type="radio" name="bubble-days"  value="" {% if days.bubble == ''%} checked="checked" {% endif %} />
+          latest order date
+        </label>             
+        <small>(beta feature, more options coming soon)</small>
+        
         <h4>Left axis:</h4>
         <select id="bubble-metric-left" name="bubble-metric-left">
           {% for metric in metrics %}
