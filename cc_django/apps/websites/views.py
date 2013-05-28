@@ -262,11 +262,20 @@ def dashboard(request):
         , 'marks'  : get_marks()
         , 'filter' : get_filter(request)
         , 'metrics': get_view_metrics()
-        , 'selected_metrics': {'right': request.session['omni-metric-right'], 
-                               'left' : request.session['omni-metric-left']}
-        , 'seperations': {'kpi'   : request.session['kpi-seperation'],
-                          'omni'  : request.session['omni-seperation'],
-                          'bubble': request.session['bubble-seperation']}
+        , 'selected_metrics': {
+            'right': request.session['omni-metric-right'], 
+            'left' : request.session['omni-metric-left']
+        }
+        , 'selected_bubble_metrics': {
+            'right': request.session['bubble-metric-right'], 
+            'left' : request.session['bubble-metric-left'],
+            'size' : request.session['bubble-metric-size']
+        }
+        , 'seperations': {
+            'kpi'   : request.session['kpi-seperation'],
+            'omni'  : request.session['omni-seperation'],
+            'bubble': request.session['bubble-seperation']
+        }
         , 'timeunits': TIMERANGE_UNITS
     })
 
