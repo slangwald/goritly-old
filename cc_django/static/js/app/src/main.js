@@ -24,32 +24,32 @@
     $("#bubble-metric-left").change(doMetric);
     $("#bubble-metric-right").change(doMetric);
     $("#bubble-metric-size").change(doMetric);
-    $('input[name="omni-seperation"]').change(function(e) {
+    $('select[name="omni-seperation"]').change(function(e) {
       return $.post("/websites/set_seperation", $(this).serialize()).done(function(data) {
         return drawBarNew();
       });
     });
-    $('input[name="kpi-seperation"]').change(function(e) {
+    $('select[name="kpi-seperation"]').change(function(e) {
       return $.post("/websites/set_seperation", $(this).serialize()).done(function(data) {
         return loadKpiBoard();
       });
     });
-    $('input[name="bubble-seperation"]').change(function(e) {
+    $('select[name="bubble-seperation"]').change(function(e) {
       return $.post("/websites/set_seperation", $(this).serialize()).done(function(data) {
         return drawBubbleChart();
       });
     });
-    $('input[name="omni-days"]').change(function(e) {
+    $('select[name="omni-days"]').change(function(e) {
       return $.post("/websites/set_days", $(this).serialize()).done(function(data) {
         return drawBarNew();
       });
     });
-    $('input[name="kpi-days"]').change(function(e) {
+    $('select[name="kpi-days"]').change(function(e) {
       return $.post("/websites/set_days", $(this).serialize()).done(function(data) {
         return loadKpiBoard();
       });
     });
-    $('input[name="bubble-days"]').change(function(e) {
+    $('select[name="bubble-days"]').change(function(e) {
       return $.post("/websites/set_days", $(this).serialize()).done(function(data) {
         return drawBubbleChart();
       });

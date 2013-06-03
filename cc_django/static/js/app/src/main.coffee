@@ -25,29 +25,29 @@ $(document).ready ->
   $("#bubble-metric-right").change doMetric
   $("#bubble-metric-size").change doMetric
 
-  $('input[name="omni-seperation"]').change (e) ->
+  $('select[name="omni-seperation"]').change (e) ->
     $.post("/websites/set_seperation", $(@).serialize() ).done((data) ->
         drawBarNew()
     )
-  $('input[name="kpi-seperation"]').change (e) ->
+  $('select[name="kpi-seperation"]').change (e) ->
     $.post("/websites/set_seperation", $(@).serialize() ).done((data) ->
         loadKpiBoard()
     )
-  $('input[name="bubble-seperation"]').change (e) ->
+  $('select[name="bubble-seperation"]').change (e) ->
     $.post("/websites/set_seperation", $(@).serialize() ).done((data) ->
         drawBubbleChart()
     )
     
   
-  $('input[name="omni-days"]').change (e) ->
+  $('select[name="omni-days"]').change (e) ->
     $.post("/websites/set_days", $(@).serialize() ).done((data) ->
         drawBarNew()
     )
-  $('input[name="kpi-days"]').change (e) ->
+  $('select[name="kpi-days"]').change (e) ->
     $.post("/websites/set_days", $(@).serialize() ).done((data) ->
         loadKpiBoard()
     )
-  $('input[name="bubble-days"]').change (e) ->
+  $('select[name="bubble-days"]').change (e) ->
     $.post("/websites/set_days", $(@).serialize() ).done((data) ->
         drawBubbleChart()
     )

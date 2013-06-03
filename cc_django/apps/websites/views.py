@@ -93,9 +93,6 @@ def set_filter(request):
     if 'model' in request.POST:
         request.session['model'] = request.POST['model']
     
-    print "#-----##########################"
-    print request.session['filter']['campaign']
-    print "#-----##########################"
     request.session.modified = True
     return True
 

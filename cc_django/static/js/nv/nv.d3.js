@@ -10053,6 +10053,7 @@ nv.models.scatterChart = function() {
 
       if (showLegend) {
         legend.width( availableWidth / 2 );
+        //legend.width( availableWidth);
 
         wrap.select('.nv-legendWrap')
             .datum(data)

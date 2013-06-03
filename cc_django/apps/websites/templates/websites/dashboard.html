@@ -1,4 +1,4 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/base.html" %}ggregated
 {%load static %}
 {%block title%}Website Dashboard{%endblock%}
 
@@ -13,8 +13,8 @@
 <div class="tab-content">
   <div class="tab-pane active" id="kpi-board">
       <div class="well well-small">
-        
-        <h4>Customer Age</h4>
+        <!--
+        <span>Customer Age</span>
         <label class="radio">
           <input type="radio" name="kpi-days"  value="0" {% if days.kpi == '0' %} checked="checked" {% endif %} />
           first order date
@@ -24,8 +24,9 @@
           latest order date
         </label>             
         <small>(beta feature, more options coming soon)</small>
-        
-        <h4>Seperation</h4>
+        -->
+        <!--
+        <span>Seperation</span>
         <label class="radio">
           <input type="radio" name="kpi-seperation"  value="aggregated" {% if seperations.kpi == 'aggregated' %} checked="checked" {% endif %} />
           aggregated                
@@ -42,83 +43,93 @@
           <input type="radio" name="kpi-seperation"  value="campaign" {% if seperations.kpi == 'campaign' %} checked="checked" {% endif %} />
           seperated by campaign
         </label>
-      </div>
+        -->
+        <div class="span4">
+            <label for="kpi-days">
+                Customer Age<br />
+                <select name="kpi-days" id="kpi-days">
+                    <option value="0" {% if days.kpi == '0' %} selected="selected" {% endif %}>first order date</option>
+                    <option value="" {% if days.kpi == '' %} selected="selected" {% endif %}>latest order date</option>
+                </select>
+            </label>
+        </div>
+        <div class="span4">
+            <label for="kpi-seperation">
+                Seperation<br />
+                <select name="kpi-seperation" id="kpi-seperation">
+                    <option value="aggregated">aggregated</option>
+                    <option value="partner">seperated by partner</option>
+                    <option value="channel">seperated by channel</option>
+                    <option value="campaign">seperated by campaign</option>
+                </select>
+            </label>
+        </div>
+        <br />
+        <br />
+        <br />
+    </div>
+     
       <div id="kpi-board-content"></div>
   </div>
-  <div class="tab-pane" id="bar-chart">
-      <div class="well well-small">
-          <form id="bar-chart-options">
-          
-          <h4>Customer Age</h4>
-        <label class="radio">
-          <input type="radio" name="omni-days"  value="0" {% if days.omni == '0' %} checked="checked" {% endif %} />
-          first order date
-        </label>             
-        <label class="radio">
-          <input type="radio" name="omni-days"  value="" {% if days.omni == '' %} checked="checked" {% endif %} />
-          latest order date
-        </label>             
-        <small>(beta feature, more options coming soon)</small>
-          
-         <!-- show data till 
-  
-        <input id="timerange-value" name="timerange-value" value="30" class="input-mini" /> 
-        <select id="timerange-unit" name="timerange-unit" class="span2">
-            {% for timeunit in timeunits %}
-            <option name="{{timeunit}}">{{timeunit}}</option>
-            {% endfor %}
-        </select>
-        
-        after customer join date
-        -->
-        <h4>Left axis (bars)</h4>
-        <select id="omni-metric-left" name="omni-metric-left">
-          {% for metric in metrics %}
-          <option 
-            {% if metric.id == selected_metrics.left %} 
-            selected='selected'
-            {% endif %}
-            value="{{metric.id}}">
-              {{metric.label}}
-          </option>
-          {% endfor %}
-        </select>
-          
-        <h4>Right axis (line)</h4>
-        <select id="omni-metric-right"  name="omni-metric-right">
-          {% for metric in metrics %}
-          <option 
-            {% if metric.id == selected_metrics.right %} 
-            selected='selected'
-            {% endif %}
-            value="{{metric.id}}">
-              
-              {{metric.label}}
-              
-          </option>
-          {% endfor %}
-        </select>
-        
-        <h4>Seperation</h4>
-        <label class="radio">
-          <input type="radio" name="omni-seperation"  value="aggregated" {% if seperations.omni == 'aggregated' %} checked="checked" {% endif %} />
-          aggregated                
-        </label>                    
-        <label class="radio">       
-          <input type="radio" name="omni-seperation"  value="partner" {% if seperations.omni == 'partner' %} checked="checked" {% endif %} />
-          seperated by partner      
-        </label>                    
-        <label class="radio">       
-          <input type="radio" name="omni-seperation"  value="channel" {% if seperations.omni == 'channel' %} checked="checked" {% endif %} />
-          seperated by channel      
-        </label>                    
-        <label class="radio">       
-          <input type="radio" name="omni-seperation"  value="campaign" {% if seperations.omni == 'campaign' %} checked="checked" {% endif %} />
-          seperated by campaign
-        </label>
-        
+<div class="tab-pane" id="bar-chart">
+  <div class="well well-small">
+      <form id="bar-chart-options">
+        <div class="span4">
+            <label for="omni-days">
+                Customer Age<br />
+                <select name="omni-days" id="omni-days">
+                    <option value="0" {% if days.omni == '0' %} selected="selected" {% endif %}>first order date</option>
+                    <option value="" {% if days.omni == '' %} selected="selected" {% endif %}>latest order date</option>
+                </select>
+            </label>
+        </div>
+        <div class="span4">
+            <label for="omni-seperation">
+                Seperation<br />
+                <select name="omni-seperation" id="omni-seperation">
+                    <option value="aggregated">aggregated</option>
+                    <option value="partner">seperated by partner</option>
+                    <option value="channel">seperated by channel</option>
+                    <option value="campaign">seperated by campaign</option>
+                </select>
+            </label>
+        </div>
+        <div class="clearfix"></div>
+        <div>
+        <div class="span4">
+            Left axis (bars)<br />
+            <select id="omni-metric-left" name="omni-metric-left">
+              {% for metric in metrics %}
+              <option 
+                {% if metric.id == selected_metrics.left %} 
+                selected='selected'
+                {% endif %}
+                value="{{metric.id}}">
+                  {{metric.label}}
+              </option>
+              {% endfor %}
+            </select>
+        </div>
+        <div class="span4">
+            Right axis (line)<br />
+            <select id="omni-metric-right"  name="omni-metric-right">
+              {% for metric in metrics %}
+              <option 
+                {% if metric.id == selected_metrics.right %} 
+                selected='selected'
+                {% endif %}
+                value="{{metric.id}}">
+                  
+                  {{metric.label}}
+                  
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          </div>
+          <br />
+          <br />
         </form>
-        
       </div>
       <div id="bar-chart-content">
       <svg style="height:400px;width:870px"></svg></div>
@@ -127,18 +138,29 @@
       <div class="well well-small">
       <form id="bubble-chart-options">
         
-        <h4>Customer Age</h4>
-        <label class="radio">
-          <input type="radio" name="bubble-days"  value="0" {% if days.bubble == '0' %} checked="checked" {% endif %} />
-          first order date
-        </label>             
-        <label class="radio">
-          <input type="radio" name="bubble-days"  value="" {% if days.bubble == ''%} checked="checked" {% endif %} />
-          latest order date
-        </label>             
-        <small>(beta feature, more options coming soon)</small>
-        
-        <h4>Left axis</h4>
+        <div class="span4">
+            <label for="bubble-days">
+                Customer Age<br />
+                <select name="bubble-days" id="bubble-days">
+                    <option value="0" {% if days.bubble == '0' %} selected="selected" {% endif %}>first order date</option>
+                    <option value="" {% if days.bubble == '' %} selected="selected" {% endif %}>latest order date</option>
+                </select>
+            </label>
+        </div>
+        <div class="span4">
+            <label for="bubble-seperation">
+                Seperation<br />
+                <select name="bubble-seperation" id="bubble-seperation">
+                    <option value="partner">seperated by partner</option>
+                    <option value="channel">seperated by channel</option>
+                    <option value="campaign">seperated by campaign</option>
+                </select>
+            </label>
+        </div>
+        <div class="clearfix"></div>
+        <div>
+        <div class="span4">
+        <span>Left axis</span>
         <select id="bubble-metric-left" name="bubble-metric-left">
           {% for metric in metrics %}
           <option 
@@ -150,8 +172,10 @@
           </option>
           {% endfor %}
         </select>
-          
-        <h4>Bottom axis</h4>
+        </div>
+        
+        <div class="span4">
+        <span>Bottom axis</span>
         <select id="bubble-metric-right"  name="bubble-metric-right">
           {% for metric in metrics %}
           <option 
@@ -165,8 +189,9 @@
           </option>
           {% endfor %}
         </select>
-        
-        <h4>Bubble Size</h4>
+        </div>
+        <div class="span4">
+        <span>Bubble Size</span>
         <select id="bubble-metric-size"  name="bubble-metric-size">
           {% for metric in metrics %}
           <option 
@@ -180,21 +205,10 @@
           </option>
           {% endfor %}
         </select>
-        
-        <h4>Seperation</h4>
-        <label class="radio">       
-          <input type="radio" name="bubble-seperation"  value="partner" {% if seperations.bubble == 'partner' %} checked="checked" {% endif %} />
-          seperated by partner      
-        </label>                    
-        <label class="radio">       
-          <input type="radio" name="bubble-seperation"  value="channel" {% if seperations.bubble == 'channel' %} checked="checked" {% endif %} />
-          seperated by channel      
-        </label>                    
-        <label class="radio">       
-          <input type="radio" name="bubble-seperation"  value="campaign" {% if seperations.bubble == 'campaign' %} checked="checked" {% endif %} />
-          seperated by campaign
-        </label>
-        
+        </div>
+        </div>
+        <br />
+        <br />
         </form>
         </div>
         <div id="bubble-chart-content">
@@ -278,8 +292,7 @@ function drawCalendar() {
       /* End special page widget */
 }
 function drawBarNew() {
-    
-    if($('input[name="omni-seperation"]:checked').val() != 'aggregated') {
+    if($('select[name="omni-seperation"]').val() != 'aggregated') {
         drawBarChart();
         return;
     }
@@ -402,9 +415,9 @@ function drawBubbleChart() {
                           .showDistX(true)
                           .showDistY(true)
                           //.showControls(true)
-                          .color(d3.scale.category20().range())
-                          .forceX([0])
-                          .forceY([0]);
+                          .color(d3.scale.category20().range());
+                          //.forceX([0])
+                          //.forceY([0]);
             
             chart.xAxis
                 .tickFormat(d3.format('.02f'))

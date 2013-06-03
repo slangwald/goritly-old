@@ -30,7 +30,7 @@ This script implements various forms of click attribution, e.g.
 
 
 if __name__ == '__main__':
-    paying_customers = models.Customer.objects.all()
+    paying_customers = models.Customer.objects.all()#.filter(customer_id=224, customer_id=222)
     attributions = {
         #'last_click': {},
         #'first_click': {},

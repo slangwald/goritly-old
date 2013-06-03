@@ -170,7 +170,7 @@ class BasicMetric():
                 """ + seperation + """
             FROM 
                 """ + self.table + """
-            """ + filter + """ 
+            """ + filter + """
             """ + group_by + """
             """ + order_by + """
         """)
@@ -292,6 +292,7 @@ class RoiMetric(BasicMetric):
     def get_value_field(self):
         return "SUM(`clv_" + self.model + "_added`)/SUM(cost)*100"
 
+
 class CustomerCountMetric(BasicMetric):
     
     table       = 'utils_customerclv'
@@ -319,6 +320,9 @@ class ClvMetric(BasicMetric):
     def get_value_field(self):
         return "SUM(`clv_" + self.model + "_added`)"
     
+   
+
+    
 class RevenueMetric(BasicMetric):
     table       = 'utils_attributions'
     date_column = 'date'
@@ -336,6 +340,9 @@ class CostMetric(BasicMetric):
     
     def get_value_field(self):
         return "SUM(cost)"
+    
+    
+
     
 
 METRICS = {
