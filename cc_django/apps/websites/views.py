@@ -212,7 +212,8 @@ def get_kpi_board(request):
             'revenue_per_customer'       : '$' + locale.format('%.2f', kpi_model.kpi_data[channel]['revenue_per_customer'       ], grouping=True),
             #'revenue_per_customer_change': locale.format('%d', kpi_model.kpi_data[channel]['revenue_per_customer_change'], grouping=True),
             'cac_avg'                    : '$' + locale.format('%.2f', kpi_model.kpi_data[channel]['cac'                        ], grouping=True),
-            'profit_per_customer'        : '$' + locale.format('%.2f', kpi_model.kpi_data[channel]['profit_per_customer'] /kpi_model.kpi_data[channel]['customer_count'] , grouping=True),
+            'profit_per_customer'        : '$' + locale.format('%.2f', kpi_model.kpi_data[channel]['profit_per_customer'] , grouping=True),
+            'profit_total'               : '$' + locale.format('%d', kpi_model.kpi_data[channel]['profit_total'] , grouping=True),
         })
         
     return render_to_response('websites/kpi.html', {'kpis': kpi_view})

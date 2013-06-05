@@ -147,40 +147,40 @@ if __name__ == '__main__':
             continue
         
         for order in orders:
-            total_value += order.value
+            total_value += order.revenue
             
             clicks = customer.clickchain().filter(order_id=order.id)
             
             #clicks = list(customer.clicks({'date':{'$lte':order['Order date'] + datetime.timedelta(days = 1)}}).sort('date'))
-            print "%d relevant clicks for order value %g, %d total clicks" % (len(clicks), order.value, clicks.count())
-            add_to_tree(map(lambda x:x.channel.id ,clicks),order.value)
+            print "%d relevant clicks for order value %g, %d total clicks" % (len(clicks), order.revenue, clicks.count())
+            add_to_tree(map(lambda x:x.channel.id ,clicks),order.revenue)
             if len(clicks):
                 order_date = order.ordered_at.strftime('%Y-%m-%d')
-                add_click_combination(map(lambda x:x.channel.id, clicks), order.value)
+                add_click_combination(map(lambda x:x.channel.id, clicks), order.revenue)
 
                 last_click_channel = clicks[len(clicks)-1].channel.id
                 last_click_campaign = clicks[len(clicks)-1].campaign.id
-                add('last_click', order_date, clicks[len(clicks)-1].partner.id, last_click_channel, last_click_campaign, order.value)
+                add('last_click', order_date, clicks[len(clicks)-1].partner.id, last_click_channel, last_click_campaign, order.revenue)
                 
                 
                 first_click_channel = clicks[0].channel.id
                 first_click_campaign = clicks[0].campaign.id
-                add('first_click', order_date, clicks[0].partner.id, first_click_channel, first_click_campaign, order.value)
+                add('first_click', order_date, clicks[0].partner.id, first_click_channel, first_click_campaign, order.revenue)
 
                 if(len(clicks) == 2):
-                    add('u_shape', order_date, clicks[0].partner.id, clicks[0].channel.id, clicks[0].campaign.id, order.value * 0.5)
-                    add('u_shape', order_date, clicks[1].partner.id, clicks[1].channel.id, clicks[1].campaign.id, order.value * 0.5)
+                    add('u_shape', order_date, clicks[0].partner.id, clicks[0].channel.id, clicks[0].campaign.id, order.revenue * 0.5)
+                    add('u_shape', order_date, clicks[1].partner.id, clicks[1].channel.id, clicks[1].campaign.id, order.revenue * 0.5)
                 if(len(clicks) == 1):                    
-                    add('u_shape', order_date, clicks[0].partner.id,  clicks[0].channel.id, clicks[0].campaign.id, order.value)
+                    add('u_shape', order_date, clicks[0].partner.id,  clicks[0].channel.id, clicks[0].campaign.id, order.revenue)
                 if(len(clicks) > 2):                     
-                    add('u_shape', order_date, clicks[0].partner.id, clicks[0].channel.id, clicks[0].campaign.id, order.value * 0.4)
-                    add('u_shape', order_date, clicks[len(clicks)-1].partner.id, clicks[len(clicks)-1].channel.id, clicks[len(clicks)-1].campaign.id, order.value * 0.4)
+                    add('u_shape', order_date, clicks[0].partner.id, clicks[0].channel.id, clicks[0].campaign.id, order.revenue * 0.4)
+                    add('u_shape', order_date, clicks[len(clicks)-1].partner.id, clicks[len(clicks)-1].channel.id, clicks[len(clicks)-1].campaign.id, order.revenue * 0.4)
                     for i in range(1, len(clicks)-1):
-                        add('u_shape', order_date, clicks[i].partner.id, clicks[i].channel.id, clicks[i].campaign.id, (order.value * 0.2) / (len(clicks) - 2) )
+                        add('u_shape', order_date, clicks[i].partner.id, clicks[i].channel.id, clicks[i].campaign.id, (order.revenue * 0.2) / (len(clicks) - 2) )
                 
                 
                 for i in range(0, len(clicks)):
-                    add('linear', order_date, clicks[i].partner.id, clicks[i].channel.id, clicks[i].campaign.id, order.value / len(clicks))
+                    add('linear', order_date, clicks[i].partner.id, clicks[i].channel.id, clicks[i].campaign.id, order.revenue / len(clicks))
                 
                 
                 damping = 0.2
@@ -189,7 +189,7 @@ if __name__ == '__main__':
                 reduced_campaigns = {}
                 
                 for i in range(0, len(clicks)):
-                    add('exponential_decay', order_date, clicks[i].partner.id, clicks[i].channel.id, clicks[i].campaign.id, order.value * math.exp(-damping * (len(clicks) - i - 1)) / norm)
+                    add('exponential_decay', order_date, clicks[i].partner.id, clicks[i].channel.id, clicks[i].campaign.id, order.revenue * math.exp(-damping * (len(clicks) - i - 1)) / norm)
                     
                     reduced_key = (clicks[i].partner.id, clicks[i].channel.id, clicks[i].campaign.id)
                     if not reduced_key in reduced_campaigns:
@@ -199,7 +199,7 @@ if __name__ == '__main__':
                     add_order(order_date, red_partner, red_channel, red_campaign)
                     
             else:
-                unattributed_revenue += order.value
+                unattributed_revenue += order.revenue
     
     attr_ordered = attributions
     

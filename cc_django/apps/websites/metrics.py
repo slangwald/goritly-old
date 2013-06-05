@@ -304,12 +304,13 @@ class CustomerCountMetric(BasicMetric):
    
     
 class ProfitMetric(BasicMetric):
-    table       = 'utils_attributions'
-    date_column = 'date'
-    hydration   = Attributions
+    table       = 'utils_customerclv'
+    date_column = 'first_ordered_at'
+    hydration   = CustomerCLV
+    per_unit_divider = "/count(DISTINCT customer_id)"
     
     def get_value_field(self):
-        return "SUM(`" + self.model + "` - cost)"
+        return "SUM(`clv_" + self.model + "_added` - cost)"
     
 class ClvMetric(BasicMetric):
     table       = 'utils_customerclv'
@@ -324,13 +325,13 @@ class ClvMetric(BasicMetric):
 
     
 class RevenueMetric(BasicMetric):
-    table       = 'utils_attributions'
-    date_column = 'date'
+    table       = 'utils_customerclv'
+    date_column = 'first_ordered_at'
     hydration   = Attributions
-    per_unit_divider = "/orders"
+    per_unit_divider = "/count(DISTINCT customer_id)"
     
     def get_value_field(self):
-        return "SUM(`" + self.model + "`)"
+        return "SUM(`revenue_" + self.model + "_added`)"
     
 class CostMetric(BasicMetric):
     table       = 'utils_customerclv'
@@ -355,7 +356,7 @@ METRICS = {
         'label': 'Profit (per Customer)', 
         'class': ProfitMetric, 
         'options': {
-            #'per_unit': True
+            'per_unit': True
         }
     },
     'clv': {

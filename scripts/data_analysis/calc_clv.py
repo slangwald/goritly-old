@@ -60,6 +60,10 @@ class CustomerProcessor():
         self.channel_attributions   = {}
         self.joined                 = None
         self.channel_attr_per_order = {}
+        
+        self.revenue_attributions   = {}
+        self.revenue_attr_per_order = {}
+        
         self.order_counter          = 0
     
     def add_campaign_numbers(self, type, partner, channel, campaign, value):
@@ -79,6 +83,34 @@ class CustomerProcessor():
             
         self.channel_attributions[key][type] += value
         self.channel_attr_per_order[self.order_counter][key][type] += value
+    
+    def add_revenue_numbers(self, type, partner, channel, campaign, value):
+        """
+        Adds different ROI marks to the customer_attribution
+        """
+        channel  = int(channel) 
+        campaign = int(campaign)
+        partner  = int(partner)
+        
+        key = (partner, channel, campaign)
+
+        self.init_revenue_attr_per_order(key)
+        
+        if not key in self.revenue_attributions:
+            self.revenue_attributions[key] = self.init_dict.copy()
+            
+        self.revenue_attributions[key][type] += value
+        self.revenue_attr_per_order[self.order_counter][key][type] += value
+    
+    def init_revenue_attr_per_order(self, key):
+        if not self.order_counter in self.revenue_attr_per_order:
+            self.revenue_attr_per_order[self.order_counter] = {}
+            for key2 in self.revenue_attributions:
+                if not key2 in self.revenue_attr_per_order[self.order_counter]:
+                    self.revenue_attr_per_order[self.order_counter][key2] = self.init_dict.copy()
+        
+        if not key in self.revenue_attr_per_order[self.order_counter]:
+            self.revenue_attr_per_order[self.order_counter][key] = self.init_dict.copy()
     
     def init_channel_attr_per_order(self, key):
         if not self.order_counter in self.channel_attr_per_order:
@@ -210,13 +242,50 @@ class CustomerProcessor():
                         campaign_cost_rows = Attributions.objects.all().filter(date=order.ordered_at.strftime('%Y-%m-%d'), 
                                                                              channel_id=clicks[i].channel.id, 
                                                                              campaign_id=clicks[i].campaign.id)
-                                                                            # partner_id=clicks[i].partner.id) 
+                                                                            # partner_id=clicks[i].partner.id)
                         if len(campaign_cost_rows):
                             for ccost in campaign_cost_rows:
                                 cpp = (float(ccost.cost)/float(ccost.orders))
                                 self.add_campaign_numbers('cost', clicks[i].partner.id, clicks[i].channel.id, clicks[i].campaign.id, cpp)
                             
-                        
+                    last_click_channel = clicks[len(clicks)-1].channel.id
+                    last_click_campaign = clicks[len(clicks)-1].campaign.id
+                    last_click_partner = clicks[len(clicks)-1].partner.id
+                    self.add_revenue_numbers('last_click', last_click_partner, last_click_channel, last_click_campaign, order.revenue)
+                    
+                    
+                    first_click_channel = clicks[0].channel.id
+                    first_click_campaign = clicks[0].campaign.id
+                    first_click_partner = clicks[0].partner.id
+                    self.add_revenue_numbers('first_click', 
+                                              first_click_partner,
+                                              first_click_channel, 
+                                              first_click_campaign, 
+                                              order.revenue
+                                              )
+    
+                    if(len(clicks) == 2):
+                        self.add_revenue_numbers('u_shape', clicks[0].partner.id, clicks[0].channel.id, clicks[0].campaign.id, order.revenue * 0.5)
+                        self.add_revenue_numbers('u_shape', clicks[1].partner.id, clicks[1].channel.id, clicks[1].campaign.id, order.revenue * 0.5)
+                    if(len(clicks) == 1):
+                        self.add_revenue_numbers('u_shape', clicks[0].partner.id, clicks[0].channel.id, clicks[0].campaign.id, order.revenue)
+                    if(len(clicks) > 2):
+                        self.add_revenue_numbers('u_shape', clicks[0].partner.id, clicks[0].channel.id, clicks[0].campaign.id, order.revenue * 0.4)
+                        self.add_revenue_numbers('u_shape', clicks[len(clicks)-1].partner.id, clicks[len(clicks)-1].channel.id, clicks[len(clicks)-1].campaign.id, order.revenue * 0.4)
+                        for i in range(1, len(clicks)-1):
+                            self.add_revenue_numbers('u_shape', clicks[i].partner.id, clicks[i].channel.id, clicks[i].campaign.id, (order.revenue * 0.2) / (len(clicks) - 2) )
+                    
+                    
+                    for i in range(0, len(clicks)):
+                        self.add_revenue_numbers('linear', clicks[i].partner.id, clicks[i].channel.id, clicks[i].campaign.id, order.revenue / len(clicks))
+                    
+                    
+                    damping = 0.2
+                    norm = sum(map(lambda i:math.exp(-damping*(len(clicks)-i-1)),range(0,len(clicks))))
+                    
+                    for i in range(0, len(clicks)):
+                        self.add_revenue_numbers('decay', clicks[i].partner.id, clicks[i].channel.id, clicks[i].campaign.id, order.revenue * math.exp(-damping * (len(clicks) - i - 1)) / norm)
+
                 for (partner, channel, campaign) in self.channel_attributions:
                         key = (partner, channel, campaign)
                         
@@ -239,12 +308,25 @@ class CustomerProcessor():
                         cust_clv.clv_last_click_total  = self.channel_attributions[key]['last_click']
                         cust_clv.clv_decay_total       = self.channel_attributions[key]['decay']
                         
+                        cust_clv.revenue_u_shape_total     = self.revenue_attributions[key]['u_shape']
+                        cust_clv.revenue_linear_total      = self.revenue_attributions[key]['linear']
+                        cust_clv.revenue_first_click_total = self.revenue_attributions[key]['first_click']
+                        cust_clv.revenue_last_click_total  = self.revenue_attributions[key]['last_click']
+                        cust_clv.revenue_decay_total       = self.revenue_attributions[key]['decay']
+                        
                         if self.order_counter in self.channel_attr_per_order:
                             cust_clv.clv_u_shape_added     = self.channel_attr_per_order[self.order_counter][key]['u_shape']
                             cust_clv.clv_linear_added      = self.channel_attr_per_order[self.order_counter][key]['linear']
                             cust_clv.clv_first_click_added = self.channel_attr_per_order[self.order_counter][key]['first_click']
                             cust_clv.clv_last_click_added  = self.channel_attr_per_order[self.order_counter][key]['last_click']
                             cust_clv.clv_decay_added       = self.channel_attr_per_order[self.order_counter][key]['decay']
+                            
+                            cust_clv.revenue_u_shape_added     = self.revenue_attr_per_order[self.order_counter][key]['u_shape']
+                            cust_clv.revenue_linear_added      = self.revenue_attr_per_order[self.order_counter][key]['linear']
+                            cust_clv.revenue_first_click_added = self.revenue_attr_per_order[self.order_counter][key]['first_click']
+                            cust_clv.revenue_last_click_added  = self.revenue_attr_per_order[self.order_counter][key]['last_click']
+                            cust_clv.revenue_decay_added       = self.revenue_attr_per_order[self.order_counter][key]['decay']
+                            
                         
                         cust_clv.cost        = self.channel_attributions[key]['cost']
                         cust_clv_entries.append(cust_clv)

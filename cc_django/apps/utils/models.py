@@ -149,6 +149,20 @@ class CustomerCLV(Commons):
     clv_decay_added       = models.FloatField(default = 0.00) 
 
     cost        = models.FloatField(default = 0.00)
+    
+    revenue_u_shape_total     = models.FloatField(default = 0.00)
+    revenue_linear_total      = models.FloatField(default = 0.00)
+    revenue_first_click_total = models.FloatField(default = 0.00)
+    revenue_last_click_total  = models.FloatField(default = 0.00)
+    revenue_decay_total       = models.FloatField(default = 0.00)
+    
+    revenue_u_shape_added     = models.FloatField(default = 0.00) 
+    revenue_linear_added      = models.FloatField(default = 0.00) 
+    revenue_first_click_added = models.FloatField(default = 0.00) 
+    revenue_last_click_added  = models.FloatField(default = 0.00) 
+    revenue_decay_added       = models.FloatField(default = 0.00) 
+    
+    
 
 
 class ProductCategory(CommonDimensionModel):
