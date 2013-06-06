@@ -39,17 +39,17 @@
         return drawBubbleChart();
       });
     });
-    $('select[name="omni-days"]').change(function(e) {
+    $('input[name="omni-days"]').change(function(e) {
       return $.post("/websites/set_days", $(this).serialize()).done(function(data) {
         return drawBarNew();
       });
     });
-    $('select[name="kpi-days"]').change(function(e) {
+    $('input[name="kpi-days"]').change(function(e) {
       return $.post("/websites/set_days", $(this).serialize()).done(function(data) {
         return loadKpiBoard();
       });
     });
-    $('select[name="bubble-days"]').change(function(e) {
+    $('input[name="bubble-days"]').change(function(e) {
       return $.post("/websites/set_days", $(this).serialize()).done(function(data) {
         return drawBubbleChart();
       });

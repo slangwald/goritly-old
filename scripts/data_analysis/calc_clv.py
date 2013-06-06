@@ -182,9 +182,12 @@ class CustomerProcessor():
         if(len(orders)):
             print "customer:%s" % (customer.id)
             first_ordered_at = None
-            
+            iindex = -1
             for order in orders:
                 self.order_counter += 1
+                iindex += 1
+                next_iindex = iindex+1
+                
                 print "customer:%s ordercounter:%s/%s" % (customer.id, self.order_counter, len(orders))
                 if not first_ordered_at:
                     first_ordered_at = order.ordered_at
@@ -313,6 +316,13 @@ class CustomerProcessor():
                         cust_clv.revenue_first_click_total = self.revenue_attributions[key]['first_click']
                         cust_clv.revenue_last_click_total  = self.revenue_attributions[key]['last_click']
                         cust_clv.revenue_decay_total       = self.revenue_attributions[key]['decay']
+                        
+                        if(len(orders) > 1):
+                            try: 
+                                if orders[next_iindex]:
+                                    cust_clv.days_distance = (orders[next_iindex].ordered_at - order.ordered_at).days
+                            except IndexError:
+                                pass
                         
                         if self.order_counter in self.channel_attr_per_order:
                             cust_clv.clv_u_shape_added     = self.channel_attr_per_order[self.order_counter][key]['u_shape']

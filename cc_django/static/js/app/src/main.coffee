@@ -39,15 +39,15 @@ $(document).ready ->
     )
     
   
-  $('select[name="omni-days"]').change (e) ->
+  $('input[name="omni-days"]').change (e) ->
     $.post("/websites/set_days", $(@).serialize() ).done((data) ->
         drawBarNew()
     )
-  $('select[name="kpi-days"]').change (e) ->
+  $('input[name="kpi-days"]').change (e) ->
     $.post("/websites/set_days", $(@).serialize() ).done((data) ->
         loadKpiBoard()
     )
-  $('select[name="bubble-days"]').change (e) ->
+  $('input[name="bubble-days"]').change (e) ->
     $.post("/websites/set_days", $(@).serialize() ).done((data) ->
         drawBubbleChart()
     )

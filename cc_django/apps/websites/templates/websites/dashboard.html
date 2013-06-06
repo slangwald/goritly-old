@@ -45,25 +45,29 @@
         </label>
         -->
         <div class="span4">
-            <label for="kpi-days">
-                Customer Age<br />
-                <select name="kpi-days" id="kpi-days">
-                    <option value="0" {% if days.kpi == '0' %} selected="selected" {% endif %}>first order date</option>
-                    <option value="" {% if days.kpi == '' %} selected="selected" {% endif %}>latest order date</option>
-                </select>
-            </label>
+                <label for="kpi-days">
+                    Customer Age<br />
+                    <!--<select name="kpi-days" id="kpi-days">
+                        <option {%if seperations. == "" %} selected="selected" {% endif %} value="0" {% if days.kpi == '0' %} selected="selected" {% endif %}>first order date</option>
+                        <option {%if seperations. == "" %} selected="selected" {% endif %} value="" {% if days.kpi == '' %} selected="selected" {% endif %}>latest order date</option>
+                    </select> -->
+                    <input type="text" name="kpi-days" id="kpi-days" placeholder="in days" value="{{days.kpi}}"/><br />
+                    <small><b>Leave blank</b> for the latest order date or <br /><b>0</b> for the first order</small>
+                </label>
         </div>
         <div class="span4">
             <label for="kpi-seperation">
                 Seperation<br />
                 <select name="kpi-seperation" id="kpi-seperation">
-                    <option value="aggregated">aggregated</option>
-                    <option value="partner">seperated by partner</option>
-                    <option value="channel">seperated by channel</option>
-                    <option value="campaign">seperated by campaign</option>
+                    <option {%if seperations.kpi == "aggregated"  %} selected="selected" {% endif %} value="aggregated">aggregated</option>
+                    <option {%if seperations.kpi == "partner"     %} selected="selected" {% endif %} value="partner">seperated by partner</option>
+                    <option {%if seperations.kpi == "channel"     %} selected="selected" {% endif %} value="channel">seperated by channel</option>
+                    <option {%if seperations.kpi == "campaign"    %} selected="selected" {% endif %} value="campaign">seperated by campaign</option>
                 </select>
             </label>
         </div>
+        <br />
+        <br />
         <br />
         <br />
         <br />
@@ -77,20 +81,24 @@
         <div class="span4">
             <label for="omni-days">
                 Customer Age<br />
-                <select name="omni-days" id="omni-days">
-                    <option value="0" {% if days.omni == '0' %} selected="selected" {% endif %}>first order date</option>
-                    <option value="" {% if days.omni == '' %} selected="selected" {% endif %}>latest order date</option>
+                <!--<select name="omni-days" id="omni-days">
+                    <option {%if seperations. == "" %} selected="selected" {% endif %} value="0" {% if days.omni == '0' %} selected="selected" {% endif %}>first order date</option>
+                    <option {%if seperations. == "" %} selected="selected" {% endif %} value="" {% if days.omni == '' %} selected="selected" {% endif %}>latest order date</option>
                 </select>
+            -->
+                <input type="text" name="omni-days" id="omni-days" placeholder="in days" value="{{days.omni}}"/><br />
+                <small><b>Leave blank</b> for the latest order date or <br /><b>0</b> for the first order</small>
+                
             </label>
         </div>
         <div class="span4">
             <label for="omni-seperation">
                 Seperation<br />
                 <select name="omni-seperation" id="omni-seperation">
-                    <option value="aggregated">aggregated</option>
-                    <option value="partner">seperated by partner</option>
-                    <option value="channel">seperated by channel</option>
-                    <option value="campaign">seperated by campaign</option>
+                    <option {%if seperations.omni == "aggregated" %} selected="selected" {% endif %} value="aggregated">aggregated</option>
+                    <option {%if seperations.omni == "partner"    %} selected="selected" {% endif %} value="partner">seperated by partner</option>
+                    <option {%if seperations.omni == "channel"    %} selected="selected" {% endif %} value="channel">seperated by channel</option>
+                    <option {%if seperations.omni == "campaign"   %} selected="selected" {% endif %} value="campaign">seperated by campaign</option>
                 </select>
             </label>
         </div>
@@ -141,19 +149,23 @@
         <div class="span4">
             <label for="bubble-days">
                 Customer Age<br />
-                <select name="bubble-days" id="bubble-days">
-                    <option value="0" {% if days.bubble == '0' %} selected="selected" {% endif %}>first order date</option>
-                    <option value="" {% if days.bubble == '' %} selected="selected" {% endif %}>latest order date</option>
+                <!--<select name="bubble-days" id="bubble-days">
+                    <option {%if seperations. == "" %} selected="selected" {% endif %} value="0" {% if days.bubble == '0' %} selected="selected" {% endif %}>first order date</option>
+                    <option {%if seperations. == "" %} selected="selected" {% endif %} value="" {% if days.bubble == '' %} selected="selected" {% endif %}>latest order date</option>
                 </select>
+            -->
+            <input type="text" name="bubble-days" id="bubble-days" placeholder="in days" value="{{days.bubble}}"/><br />
+                <small><b>Leave blank</b> for the latest order date or <br /><b>0</b> for the first order</small>
+                
             </label>
         </div>
         <div class="span4">
             <label for="bubble-seperation">
                 Seperation<br />
                 <select name="bubble-seperation" id="bubble-seperation">
-                    <option value="partner">seperated by partner</option>
-                    <option value="channel">seperated by channel</option>
-                    <option value="campaign">seperated by campaign</option>
+                    <option {%if seperations.bubble == "partner"  %} selected="selected" {% endif %} value="partner">seperated by partner</option>
+                    <option {%if seperations.bubble == "channel"  %} selected="selected" {% endif %} value="channel">seperated by channel</option>
+                    <option {%if seperations.bubble == "campaign" %} selected="selected" {% endif %} value="campaign">seperated by campaign</option>
                 </select>
             </label>
         </div>

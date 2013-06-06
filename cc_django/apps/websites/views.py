@@ -279,8 +279,9 @@ def dashboard(request):
         }
         , 'days': {
             'kpi'   : request.session['kpi-days'],  
-            'bubble': request.session['omni-days'], 
-            'omni'  : request.session['bubble-days']
+            'bubble': request.session['bubble-days'], 
+            'omni'  : request.session['omni-days']
+            
         }
         , 'timeunits': TIMERANGE_UNITS
     })

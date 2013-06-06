@@ -128,6 +128,9 @@ class CustomerCLV(Commons):
     customer    = models.ForeignKey(Customer)
     date        = models.DateField()
     days        = models.IntegerField(default=0)
+    
+    days_distance = models.IntegerField(default=None, null=True)
+    
     first_ordered_at = models.DateField()
     orders      = models.IntegerField(default=0)
     clv_total   = models.FloatField(default = 0.00)

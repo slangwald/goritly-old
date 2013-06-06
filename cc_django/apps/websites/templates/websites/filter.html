@@ -9,7 +9,7 @@
 </select>
 
 
-<label for="filter-channel">Date</label>
+<label for="filter-channel">Customer Join Date</label>
 <input name="filter-date-from" id="filter-date-from" type="hidden" value="{{filter.date.from}}"  />
 <input name="filter-date-to" id="filter-date-to" type="hidden"  value="{{filter.date.to}}" />
 <div id="date-range">
@@ -21,7 +21,7 @@
 </div>
 
 <label for="filter-partner">Partners</label>
-<select name="filter-partner" data-placeholder="... more partners" multiple="multiple" class="chzn-select">
+<select name="filter-partner" data-placeholder="select one or more partners" multiple="multiple" class="chzn-select">
 {% for partner in partners %}
 <option {% if partner.id in filter.partner %}selected="selected"{% endif %} value="{{partner.id}}">{{partner.name}}</option>
 {% endfor %}
