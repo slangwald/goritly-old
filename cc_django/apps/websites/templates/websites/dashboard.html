@@ -51,8 +51,7 @@
                         <option {%if seperations. == "" %} selected="selected" {% endif %} value="0" {% if days.kpi == '0' %} selected="selected" {% endif %}>first order date</option>
                         <option {%if seperations. == "" %} selected="selected" {% endif %} value="" {% if days.kpi == '' %} selected="selected" {% endif %}>latest order date</option>
                     </select> -->
-                    <input type="text" name="kpi-days" id="kpi-days" placeholder="in days" value="{{days.kpi}}"/><br />
-                    <small><b>Leave blank</b> for the latest order date or <br /><b>0</b> for the first order</small>
+                    <input type="text" name="kpi-days" data-toggle="tooltip" id="kpi-days" placeholder="in days" value="{{days.kpi}}" title="Leave blank for the latest order date or 0 for the first order"/>
                 </label>
         </div>
         <div class="span4">
@@ -66,8 +65,6 @@
                 </select>
             </label>
         </div>
-        <br />
-        <br />
         <br />
         <br />
         <br />
@@ -86,9 +83,7 @@
                     <option {%if seperations. == "" %} selected="selected" {% endif %} value="" {% if days.omni == '' %} selected="selected" {% endif %}>latest order date</option>
                 </select>
             -->
-                <input type="text" name="omni-days" id="omni-days" placeholder="in days" value="{{days.omni}}"/><br />
-                <small><b>Leave blank</b> for the latest order date or <br /><b>0</b> for the first order</small>
-                
+                <input type="text" name="omni-days" data-toggle="tooltip" id="omni-days" placeholder="in days" value="{{days.omni}}" title="Leave blank for the latest order date or 0 for the first order"/><br />
             </label>
         </div>
         <div class="span4">
@@ -154,9 +149,7 @@
                     <option {%if seperations. == "" %} selected="selected" {% endif %} value="" {% if days.bubble == '' %} selected="selected" {% endif %}>latest order date</option>
                 </select>
             -->
-            <input type="text" name="bubble-days" id="bubble-days" placeholder="in days" value="{{days.bubble}}"/><br />
-                <small><b>Leave blank</b> for the latest order date or <br /><b>0</b> for the first order</small>
-                
+            <input type="text" name="bubble-days" id="bubble-days" data-toggle="tooltip" placeholder="in days" value="{{days.bubble}}" title="Leave blank for the latest order date or 0 for the first order" />
             </label>
         </div>
         <div class="span4">
