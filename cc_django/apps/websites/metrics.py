@@ -82,7 +82,7 @@ class BasicMetric():
         
         if self.hydration == CustomerCLV:
             if self.timerange != '':
-                dim_filter.append('days = ' + self.timerange)
+                dim_filter.append('((days = {0} AND days_distance!=0) OR (days+days_distance > {0} AND days < {0}))'.format(self.timerange))
         
         sql = ' AND '.join(part for part in dim_filter)
         
@@ -199,7 +199,7 @@ class BasicMetric():
             """ + filter + """ 
             """ + group_by + """
         """)
-        
+        print raw_data
         return raw_data
     
     def get_data(self):
@@ -290,7 +290,9 @@ class RoiMetric(BasicMetric):
     hydration   = CustomerCLV
     
     def get_value_field(self):
-        return "SUM(`clv_" + self.model + "_added`)/SUM(cost)*100"
+        if self.timerange == '':
+            return "SUM(`clv_" + self.model + "_added`)/SUM(cost_added)*100"
+        return "SUM(`clv_" + self.model + "_total`)/SUM(cost_total)*100"
 
 
 class CustomerCountMetric(BasicMetric):
@@ -310,7 +312,11 @@ class ProfitMetric(BasicMetric):
     per_unit_divider = "/count(DISTINCT customer_id)"
     
     def get_value_field(self):
-        return "SUM(`clv_" + self.model + "_added` - cost)"
+        if self.timerange == '':
+            return "SUM(`clv_" + self.model + "_added` - cost_added)"
+        return "SUM(`clv_" + self.model + "_total` - cost_total)"
+
+    
     
 class ClvMetric(BasicMetric):
     table       = 'utils_customerclv'
@@ -319,7 +325,10 @@ class ClvMetric(BasicMetric):
     per_unit_divider = "/count(DISTINCT customer_id)"
     
     def get_value_field(self):
-        return "SUM(`clv_" + self.model + "_added`)"
+        if self.timerange == '':
+            return "SUM(`clv_" + self.model + "_added`)"
+        return "SUM(`clv_" + self.model + "_total`)"
+    
     
    
 
@@ -331,7 +340,10 @@ class RevenueMetric(BasicMetric):
     per_unit_divider = "/count(DISTINCT customer_id)"
     
     def get_value_field(self):
-        return "SUM(`revenue_" + self.model + "_added`)"
+        if self.timerange == '':
+            return "SUM(`revenue_" + self.model + "_added`)"
+        return "SUM(`revenue_" + self.model + "_total`)"
+        
     
 class CostMetric(BasicMetric):
     table       = 'utils_customerclv'
@@ -340,7 +352,9 @@ class CostMetric(BasicMetric):
     per_unit_divider = "/count(DISTINCT customer_id)"
     
     def get_value_field(self):
-        return "SUM(cost)"
+        if self.timerange == '':
+            return "SUM(cost_added)"
+        return "SUM(cost_total)"
     
     
 

@@ -54,6 +54,7 @@
         return drawBubbleChart();
       });
     });
+    $('*[data-toggle="tooltip"]').tooltip();
     $("#timerange-value").hide();
     changeTimeRange = function(e) {
       var el, val;

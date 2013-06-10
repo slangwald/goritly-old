@@ -52,7 +52,7 @@ $(document).ready ->
         drawBubbleChart()
     )
   
-
+  $('*[data-toggle="tooltip"]').tooltip()
   $("#timerange-value").hide()
   changeTimeRange = (e) ->
     el = @

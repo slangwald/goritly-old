@@ -212,12 +212,13 @@ class CustomerProcessor():
                     first_click_channel = clicks[0].channel.id
                     first_click_campaign = clicks[0].campaign.id
                     first_click_partner = clicks[0].partner.id
-                    self.add_campaign_numbers('first_click', 
-                                              first_click_partner,
-                                              first_click_channel, 
-                                              first_click_campaign, 
-                                              order.value
-                                              )
+                    self.add_campaign_numbers(
+                        'first_click', 
+                        first_click_partner,
+                        first_click_channel, 
+                        first_click_campaign, 
+                        order.value
+                    )
     
                     if(len(clicks) == 2):
                         self.add_campaign_numbers('u_shape', clicks[0].partner.id, clicks[0].channel.id, clicks[0].campaign.id, order.value * 0.5)
@@ -242,10 +243,13 @@ class CustomerProcessor():
                     
                     for i in range(0, len(clicks)):
                         self.add_campaign_numbers('decay', clicks[i].partner.id, clicks[i].channel.id, clicks[i].campaign.id, order.value * math.exp(-damping * (len(clicks) - i - 1)) / norm)
-                        campaign_cost_rows = Attributions.objects.all().filter(date=order.ordered_at.strftime('%Y-%m-%d'), 
-                                                                             channel_id=clicks[i].channel.id, 
-                                                                             campaign_id=clicks[i].campaign.id)
-                                                                            # partner_id=clicks[i].partner.id)
+                        campaign_cost_rows = Attributions.objects.all().filter(
+                            date        = order.ordered_at.strftime('%Y-%m-%d'), 
+                            channel_id  = clicks[i].channel.id, 
+                            campaign_id = clicks[i].campaign.id,
+                            partner_id  = clicks[i].partner.id
+                        )
+                        
                         if len(campaign_cost_rows):
                             for ccost in campaign_cost_rows:
                                 cpp = (float(ccost.cost)/float(ccost.orders))
@@ -311,18 +315,20 @@ class CustomerProcessor():
                         cust_clv.clv_last_click_total  = self.channel_attributions[key]['last_click']
                         cust_clv.clv_decay_total       = self.channel_attributions[key]['decay']
                         
+                        cust_clv.cost_total            = self.channel_attributions[key]['cost']
+                        
                         cust_clv.revenue_u_shape_total     = self.revenue_attributions[key]['u_shape']
                         cust_clv.revenue_linear_total      = self.revenue_attributions[key]['linear']
                         cust_clv.revenue_first_click_total = self.revenue_attributions[key]['first_click']
                         cust_clv.revenue_last_click_total  = self.revenue_attributions[key]['last_click']
                         cust_clv.revenue_decay_total       = self.revenue_attributions[key]['decay']
                         
-                        if(len(orders) > 1):
-                            try: 
-                                if orders[next_iindex]:
-                                    cust_clv.days_distance = (orders[next_iindex].ordered_at - order.ordered_at).days
-                            except IndexError:
-                                pass
+                        try: 
+                            if orders[next_iindex]:
+                                cust_clv.days_distance = (orders[next_iindex].ordered_at - order.ordered_at).days
+                        except IndexError:
+                                # the last day distance must be very high
+                                cust_clv.days_distance = 999999
                         
                         if self.order_counter in self.channel_attr_per_order:
                             cust_clv.clv_u_shape_added     = self.channel_attr_per_order[self.order_counter][key]['u_shape']
@@ -331,6 +337,8 @@ class CustomerProcessor():
                             cust_clv.clv_last_click_added  = self.channel_attr_per_order[self.order_counter][key]['last_click']
                             cust_clv.clv_decay_added       = self.channel_attr_per_order[self.order_counter][key]['decay']
                             
+                            cust_clv.cost_added            = self.channel_attr_per_order[self.order_counter][key]['cost']
+                            
                             cust_clv.revenue_u_shape_added     = self.revenue_attr_per_order[self.order_counter][key]['u_shape']
                             cust_clv.revenue_linear_added      = self.revenue_attr_per_order[self.order_counter][key]['linear']
                             cust_clv.revenue_first_click_added = self.revenue_attr_per_order[self.order_counter][key]['first_click']
@@ -338,23 +346,9 @@ class CustomerProcessor():
                             cust_clv.revenue_decay_added       = self.revenue_attr_per_order[self.order_counter][key]['decay']
                             
                         
-                        cust_clv.cost        = self.channel_attributions[key]['cost']
                         cust_clv_entries.append(cust_clv)
                         
-                        roi_cost = self.channel_attributions[key]['cost']
-                        # only if costs exists we can calc the ROI
-                        """if(roi_cost > 0.0):
-                            for model in self.channel_attributions[key]:
-                                if model == "cost":
-                                    continue
-                                roi = self.channel_attributions[key][model] / roi_cost * 100
-                                if roi > 0:
-                                    for mark in self.marks:
-                                        if roi >= mark:
-                                            self.add_roi_mark(partner, channel, campaign, model, mark, days)
-                        """
             CustomerCLV.objects.bulk_create(cust_clv_entries)
-            #self.save_roi_marks()
 
 
                     

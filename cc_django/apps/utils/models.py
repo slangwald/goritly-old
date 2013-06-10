@@ -57,7 +57,7 @@ class MarketingCost(Commons):
     clicks      = models.IntegerField(default=0)
 
 class Attributions(Commons):
-    date        = models.DateField()
+    date        = models.DateField(db_index=True)
     channel     = models.ForeignKey(Channel)
     campaign    = models.ForeignKey(Campaign)
     partner     = models.ForeignKey(Partner)
@@ -108,8 +108,8 @@ class Customer(Commons):
 class Order(Commons):
     visitor     = models.ForeignKey(Visitor, null = True)
     customer    = models.ForeignKey(Customer)
-    order_id    = models.CharField(max_length = 255)
-    ordered_at  = models.DateTimeField()
+    order_id    = models.CharField(max_length = 255, db_index=True)
+    ordered_at  = models.DateTimeField(db_index=True)
     value       = models.FloatField(default = 0.00, null = True)
     revenue     = models.FloatField(default = 0.00, null = True)
     tax         = models.FloatField(default = 0.00, null = True)
@@ -127,11 +127,11 @@ class Order(Commons):
 class CustomerCLV(Commons):
     customer    = models.ForeignKey(Customer)
     date        = models.DateField()
-    days        = models.IntegerField(default=0)
+    days        = models.IntegerField(default=0, db_index=True)
     
-    days_distance = models.IntegerField(default=None, null=True)
+    days_distance = models.IntegerField(default=None, null=True, db_index=True)
     
-    first_ordered_at = models.DateField()
+    first_ordered_at = models.DateField(db_index=True)
     orders      = models.IntegerField(default=0)
     clv_total   = models.FloatField(default = 0.00)
     clv_added   = models.FloatField(default = 0.00)
@@ -151,7 +151,8 @@ class CustomerCLV(Commons):
     clv_last_click_added  = models.FloatField(default = 0.00) 
     clv_decay_added       = models.FloatField(default = 0.00) 
 
-    cost        = models.FloatField(default = 0.00)
+    cost_added  = models.FloatField(default = 0.00)
+    cost_total  = models.FloatField(default = 0.00)
     
     revenue_u_shape_total     = models.FloatField(default = 0.00)
     revenue_linear_total      = models.FloatField(default = 0.00)
