@@ -182,7 +182,6 @@ def get_kpi_board(request):
             options    = options_right,
             seperation = request.session['kpi-seperation']
         )
-        print request.session['filter']
         lines = metric_right.get_data_kpi()
         
         for line in lines:
@@ -409,11 +408,15 @@ def set_session_defaults(request):
         request.session['mark'] = 100
 
 def get_view_metrics():
-    view_metrics = []
+    view_metrics = {'clv': [], 'order': []}
     for metric in METRICS:
         view_metric = METRICS[metric].copy()
         view_metric['id'] = metric
-        view_metrics.append(view_metric)
+        view_metrics['clv'].append(view_metric)
+    for metric in METRICS_ORDER:
+        view_metric = METRICS_ORDER[metric].copy()
+        view_metric['id'] = metric
+        view_metrics['order'].append(view_metric)
     
     return view_metrics
     
@@ -452,17 +455,18 @@ def get_channels():
     channels = map(lambda c: {'id': str(c.id), 'name': c.name}, util_models.Channel.objects.all())
     return channels
 
+def get_combined_metrics():
+    return dict(METRICS.items() + METRICS_ORDER.items())
+
 @login_required()
 def get_bar_chart_json(request):
-    
-    constructor_right = METRICS[request.session['omni-metric-right']]['class']
-    constructor_left  = METRICS[request.session['omni-metric-left' ]]['class']
-
-    options_right     = METRICS[request.session['omni-metric-right']]['options']
-    options_left      = METRICS[request.session['omni-metric-left' ]]['options']
-
-    label_right       = METRICS[request.session['omni-metric-right']]['label']
-    label_left        = METRICS[request.session['omni-metric-left' ]]['label']
+    metrics_combined  = get_combined_metrics()
+    constructor_right = metrics_combined[request.session['omni-metric-right']]['class']
+    constructor_left  = metrics_combined[request.session['omni-metric-left' ]]['class']
+    options_right     = metrics_combined[request.session['omni-metric-right']]['options']
+    options_left      = metrics_combined[request.session['omni-metric-left' ]]['options']
+    label_right       = metrics_combined[request.session['omni-metric-right']]['label']
+    label_left        = metrics_combined[request.session['omni-metric-left' ]]['label']
     
     options_right['timerange'] = request.session['omni-days']
     options_left['timerange']  = request.session['omni-days']
@@ -502,17 +506,16 @@ def get_bar_chart_json(request):
 
 @login_required()
 def get_bubble_chart_json(request):
-    constructor_bottom = METRICS[request.session['bubble-metric-right']]['class']
-    constructor_left   = METRICS[request.session['bubble-metric-left' ]]['class']
-    constructor_size   = METRICS[request.session['bubble-metric-size' ]]['class']
-    
-    options_bottom     = METRICS[request.session['bubble-metric-right']]['options']
-    options_left       = METRICS[request.session['bubble-metric-left' ]]['options']
-    options_size       = METRICS[request.session['bubble-metric-size' ]]['options']
-    
-    label_bottom       = METRICS[request.session['bubble-metric-right']]['label']
-    label_left         = METRICS[request.session['bubble-metric-left' ]]['label']
-    label_size         = METRICS[request.session['bubble-metric-size' ]]['label']
+    metrics_combined   = get_combined_metrics()
+    constructor_bottom = metrics_combined[request.session['bubble-metric-right']]['class']
+    constructor_left   = metrics_combined[request.session['bubble-metric-left' ]]['class']
+    constructor_size   = metrics_combined[request.session['bubble-metric-size' ]]['class']
+    options_bottom     = metrics_combined[request.session['bubble-metric-right']]['options']
+    options_left       = metrics_combined[request.session['bubble-metric-left' ]]['options']
+    options_size       = metrics_combined[request.session['bubble-metric-size' ]]['options']
+    label_bottom       = metrics_combined[request.session['bubble-metric-right']]['label']
+    label_left         = metrics_combined[request.session['bubble-metric-left' ]]['label']
+    label_size         = metrics_combined[request.session['bubble-metric-size' ]]['label']
     
     options_bottom['timerange'] = request.session['bubble-days']
     options_left['timerange']   = request.session['bubble-days']

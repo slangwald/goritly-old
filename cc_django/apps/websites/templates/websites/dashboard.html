@@ -69,7 +69,7 @@
         <br />
         <br />
     </div>
-     
+     <button class="btn btn-small disabled">Export Data</button> <small class="muted">(feature disabled for demo)</small> 
       <div id="kpi-board-content"></div>
   </div>
 <div class="tab-pane" id="bar-chart">
@@ -102,21 +102,35 @@
         <div class="span4">
             Left axis (bars)<br />
             <select id="omni-metric-left" name="omni-metric-left">
-              {% for metric in metrics %}
-              <option 
-                {% if metric.id == selected_metrics.left %} 
-                selected='selected'
-                {% endif %}
-                value="{{metric.id}}">
-                  {{metric.label}}
-              </option>
-              {% endfor %}
+              <optgroup label="Customer/CLV Base">
+                  {% for metric in metrics.clv %}
+                  <option 
+                    {% if metric.id == selected_metrics.left %} 
+                    selected='selected'
+                    {% endif %}
+                    value="{{metric.id}}">
+                      {{metric.label}}
+                  </option>
+                  {% endfor %}
+              </optgroup>
+              <optgroup label="Order Base">
+                  {% for metric in metrics.order %}
+                  <option 
+                    {% if metric.id == selected_metrics.left %} 
+                    selected='selected'
+                    {% endif %}
+                    value="{{metric.id}}">
+                      {{metric.label}}
+                  </option>
+                  {% endfor %}
+              </optgroup>
             </select>
         </div>
         <div class="span4">
             Right axis (line)<br />
             <select id="omni-metric-right"  name="omni-metric-right">
-              {% for metric in metrics %}
+              <optgroup label="Customer/CLV Base">
+              {% for metric in metrics.clv %}
               <option 
                 {% if metric.id == selected_metrics.right %} 
                 selected='selected'
@@ -127,6 +141,20 @@
                   
               </option>
               {% endfor %}
+              </optgroup>
+              <optgroup label="Order Base">
+                  {% for metric in metrics.order %}
+                  <option 
+                    {% if metric.id == selected_metrics.right %} 
+                    selected='selected'
+                    {% endif %}
+                    value="{{metric.id}}">
+                      {{metric.label}}
+                  </option>
+                  {% endfor %}
+              </optgroup>
+              
+              
             </select>
           </div>
           </div>
@@ -134,8 +162,10 @@
           <br />
         </form>
       </div>
+      <button class="btn btn-small disabled">Export Data</button> <small class="muted">(feature disabled for demo)</small> 
       <div id="bar-chart-content">
-      <svg style="height:400px;width:870px"></svg></div>
+        <svg style="height:400px;width:870px"></svg>
+      </div>
   </div>
   <div class="tab-pane" id="bubble-chart">
       <div class="well well-small">
@@ -167,48 +197,89 @@
         <div class="span4">
         <span>Left axis</span>
         <select id="bubble-metric-left" name="bubble-metric-left">
-          {% for metric in metrics %}
-          <option 
-            {% if metric.id == selected_bubble_metrics.left %} 
-            selected='selected'
-            {% endif %}
-            value="{{metric.id}}">
-              {{metric.label}}
-          </option>
-          {% endfor %}
+          <optgroup label="Customer/CLV Base">
+              {% for metric in metrics.clv %}
+              <option 
+                {% if metric.id == selected_bubble_metrics.left %} 
+                selected='selected'
+                {% endif %}
+                value="{{metric.id}}">
+                  
+                  {{metric.label}}
+                  
+              </option>
+              {% endfor %}
+              </optgroup>
+              <optgroup label="Order Base">
+                  {% for metric in metrics.order %}
+                  <option 
+                    {% if metric.id == selected_bubble_metrics.left %} 
+                    selected='selected'
+                    {% endif %}
+                    value="{{metric.id}}">
+                      {{metric.label}}
+                  </option>
+                  {% endfor %}
+              </optgroup>
         </select>
         </div>
         
         <div class="span4">
         <span>Bottom axis</span>
         <select id="bubble-metric-right"  name="bubble-metric-right">
-          {% for metric in metrics %}
-          <option 
-            {% if metric.id == selected_bubble_metrics.right %} 
-            selected='selected'
-            {% endif %}
-            value="{{metric.id}}">
-              
-              {{metric.label}}
-              
-          </option>
-          {% endfor %}
+          <optgroup label="Customer/CLV Base">
+              {% for metric in metrics.clv %}
+              <option 
+                {% if metric.id == selected_bubble_metrics.right %} 
+                selected='selected'
+                {% endif %}
+                value="{{metric.id}}">
+                  
+                  {{metric.label}}
+                  
+              </option>
+              {% endfor %}
+              </optgroup>
+              <optgroup label="Order Base">
+                  {% for metric in metrics.order %}
+                  <option 
+                    {% if metric.id == selected_bubble_metrics.right %} 
+                    selected='selected'
+                    {% endif %}
+                    value="{{metric.id}}">
+                      {{metric.label}}
+                  </option>
+                  {% endfor %}
+              </optgroup>
         </select>
         </div>
         <div class="span4">
         <span>Bubble Size</span>
         <select id="bubble-metric-size"  name="bubble-metric-size">
-          {% for metric in metrics %}
-          <option 
-            {% if metric.id == selected_bubble_metrics.size %} 
-            selected='selected'
-            {% endif %}
-            value="{{metric.id}}">
-              
-              {{metric.label}}
-              
-          </option>
-          {% endfor %}
+          <optgroup label="Customer/CLV Base">
+              {% for metric in metrics.clv %}
+              <option 
+                {% if metric.id == selected_bubble_metrics.size %} 
+                selected='selected'
+                {% endif %}
+                value="{{metric.id}}">
+                  
+                  {{metric.label}}
+                  
+              </option>
+              {% endfor %}
+              </optgroup>
+              <optgroup label="Order Base">
+                  {% for metric in metrics.order %}
+                  <option 
+                    {% if metric.id == selected_bubble_metrics.size %} 
+                    selected='selected'
+                    {% endif %}
+                    value="{{metric.id}}">
+                      {{metric.label}}
+                  </option>
+                  {% endfor %}
+              </optgroup>
         </select>
         </div>
         </div>
@@ -216,8 +287,10 @@
         <br />
         </form>
         </div>
+        <button class="btn btn-small disabled">Export Data</button> <small class="muted">(feature disabled for demo)</small> 
         <div id="bubble-chart-content">
-        <svg style="height:400px;width:870px"></svg></div>
+            <svg style="height:400px;width:870px"></svg>
+        </div>
   </div>
 </div>
 

@@ -199,7 +199,6 @@ class BasicMetric():
             """ + filter + """ 
             """ + group_by + """
         """)
-        print raw_data
         return raw_data
     
     def get_data(self):
@@ -355,10 +354,64 @@ class CostMetric(BasicMetric):
         if self.timerange == '':
             return "SUM(cost_added)"
         return "SUM(cost_total)"
-    
-    
 
+class OrderRoiMetric(BasicMetric):
     
+    table       = 'utils_customerclv'
+    date_column = 'date'
+    hydration   = CustomerCLV
+    
+    def get_value_field(self):
+        return "SUM(`clv_" + self.model + "_added`)/SUM(cost_added)*100"
+
+
+class OrderCountMetric(BasicMetric):
+    
+    table       = 'utils_customerclv'
+    date_column = 'date'
+    hydration   = CustomerCLV
+    
+    def get_value_field(self):
+        return "COUNT(DISTINCT order_id)"
+   
+    
+class OrderProfitMetric(BasicMetric):
+    table       = 'utils_customerclv'
+    date_column = 'date'
+    hydration   = CustomerCLV
+    per_unit_divider = "/count(DISTINCT order_id)"
+    
+    def get_value_field(self):
+        return "SUM(`clv_" + self.model + "_added` - cost_added)"
+    
+class OrderValueMetric(BasicMetric):
+    table       = 'utils_customerclv'
+    date_column = 'date'
+    hydration   = CustomerCLV
+    per_unit_divider = "/count(DISTINCT order_id)"
+    
+    def get_value_field(self):
+        return "SUM(`clv_" + self.model + "_added`)"
+    
+class OrderRevenueMetric(BasicMetric):
+    table       = 'utils_customerclv'
+    date_column = 'date'
+    hydration   = CustomerCLV
+    per_unit_divider = "/count(DISTINCT order_id)"
+    
+    def get_value_field(self):
+        return "SUM(`revenue_" + self.model + "_added`)"
+        
+    
+class OrderCostMetric(BasicMetric):
+    table       = 'utils_customerclv'
+    date_column = 'date'
+    hydration   = CustomerCLV
+    per_unit_divider = "/count(DISTINCT order_id)"
+    
+    def get_value_field(self):
+        return "SUM(cost_added)"
+
 
 METRICS = {
     'roi': {
@@ -419,6 +472,75 @@ METRICS = {
     'customer_count': {
         'label': 'No. of Customers', 
         'class': CustomerCountMetric, 
+        'options': {}
+    }
+}
+
+METRICS_ORDER = {
+    'order_roi': {
+        'label': 'Order ROI', 
+        'class': OrderRoiMetric, 
+        'options': {
+            'per_order': True
+        }
+    },
+    'profit_per_order':  {
+        'label': 'Profit (per Order)', 
+        'class': OrderProfitMetric, 
+        'options': {
+            'per_unit' : True,
+            'per_order': True
+        }
+    },
+    'order_value': {
+        'label': 'Value (per Order)', 
+        'class': OrderValueMetric, 
+        'options': {
+            'per_unit' : True,
+            'per_order': True
+        }
+    },                 
+    'cost_per_order': {
+        'label': 'Cost (per Order)', 
+        'class': OrderCostMetric, 
+        'options': {
+            'per_unit' : True,
+            'per_order': True
+        }
+    },                 
+    'revenue_per_order': {
+        'label': 'Revenue (per Order)', 
+        'class': OrderRevenueMetric, 
+        'options': {
+            'per_unit' : True,
+            'per_order': True
+        }
+    },  
+    'order_profit_total': {
+        'label': 'Profit (total)', 
+        'class': OrderProfitMetric, 
+        'options': {
+            'per_order': True
+        }
+    },        
+    'order_value': {
+        'label': 'Order Value', 
+        'class': OrderValueMetric, 
+        'options': {
+            'per_order': True
+        }
+    },     
+    'value_per_order': {
+        'label': 'Value (per order)', 
+        'class': OrderValueMetric, 
+        'options': {
+            'per_order': True,
+            'per_unit' : True
+        }
+    },     
+    'order_count': {
+        'label': 'Number of Orders', 
+        'class': OrderCountMetric, 
         'options': {}
     }
 }

@@ -298,6 +298,7 @@ class CustomerProcessor():
                         
                         cust_clv             = CustomerCLV()        
                         cust_clv.orders      = self.order_counter
+                        cust_clv.order_id    = order.order_id
                         cust_clv.clv_total   = clv
                         cust_clv.clv_added   = order.value
                         days                 = (first_ordered_at - order.ordered_at).days * -1

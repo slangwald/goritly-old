@@ -133,6 +133,7 @@ class CustomerCLV(Commons):
     
     first_ordered_at = models.DateField(db_index=True)
     orders      = models.IntegerField(default=0)
+    order_id    = models.CharField(max_length = 255, db_index=True)
     clv_total   = models.FloatField(default = 0.00)
     clv_added   = models.FloatField(default = 0.00)
     channel     = models.ForeignKey(Channel)
