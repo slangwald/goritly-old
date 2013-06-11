@@ -37,10 +37,10 @@ class BasicMetric():
         self.options    = options
         self.model      = model
         
-        if 'timerange' in self.options:
+        if 'timerange' in self.options and not 'disable_days' in self.options:
             self.timerange = self.options['timerange']
         else:
-            self.timerange = None
+            self.timerange = ''
         
         self.kpi_view = False
         if 'kpi_view' in self.options:
@@ -80,9 +80,10 @@ class BasicMetric():
         dim_filter = self.get_dimension_filter()
         dim_filter.append(self.get_filter_date())
         
-        if self.hydration == CustomerCLV:
-            if self.timerange != '':
-                dim_filter.append('((days = {0} AND days_distance!=0) OR (days+days_distance > {0} AND days < {0}))'.format(self.timerange))
+        print "hellllloooooo2123"
+        if self.timerange != '':
+            print "hellllloooooo"
+            dim_filter.append('((days = {0} AND days_distance!=0) OR (days+days_distance > {0} AND days < {0}))'.format(self.timerange))
         
         sql = ' AND '.join(part for part in dim_filter)
         
@@ -181,7 +182,11 @@ class BasicMetric():
         filter   = self.get_filter_sql()
         model    = self.model
 
-        group_by = 'GROUP BY partner_id, channel_id'
+        group_by = self.get_group_by()
+        if group_by:
+            group_by = " GROUP BY " + group_by
+        else:
+            group_by = ""
         
         per_unit = ''
         if 'per_unit' in self.options:
@@ -472,7 +477,9 @@ METRICS = {
     'customer_count': {
         'label': 'No. of Customers', 
         'class': CustomerCountMetric, 
-        'options': {}
+        'options': {
+            'disable_days': True
+        }
     }
 }
 
@@ -541,7 +548,9 @@ METRICS_ORDER = {
     'order_count': {
         'label': 'Number of Orders', 
         'class': OrderCountMetric, 
-        'options': {}
+        'options': {
+            'disable_days': True
+        }
     }
 }
 

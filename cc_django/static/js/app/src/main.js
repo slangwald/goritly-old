@@ -39,20 +39,29 @@
         return drawBubbleChart();
       });
     });
-    $('input[name="omni-days"]').change(function(e) {
-      return $.post("/websites/set_days", $(this).serialize()).done(function(data) {
-        return drawBarNew();
-      });
+    $('input[name="omni-days"]').keypress(function(e) {
+      if (e.which === 13) {
+        $.post("/websites/set_days", $(this).serialize()).done(function(data) {
+          return drawBarNew();
+        });
+        return false;
+      }
     });
-    $('input[name="kpi-days"]').change(function(e) {
-      return $.post("/websites/set_days", $(this).serialize()).done(function(data) {
-        return loadKpiBoard();
-      });
+    $('input[name="kpi-days"]').keypress(function(e) {
+      if (e.which === 13) {
+        $.post("/websites/set_days", $(this).serialize()).done(function(data) {
+          return loadKpiBoard();
+        });
+        return false;
+      }
     });
-    $('input[name="bubble-days"]').change(function(e) {
-      return $.post("/websites/set_days", $(this).serialize()).done(function(data) {
-        return drawBubbleChart();
-      });
+    $('input[name="bubble-days"]').keypress(function(e) {
+      if (e.which === 13) {
+        $.post("/websites/set_days", $(this).serialize()).done(function(data) {
+          return drawBubbleChart();
+        });
+        return false;
+      }
     });
     $('*[data-toggle="tooltip"]').tooltip();
     $("#timerange-value").hide();

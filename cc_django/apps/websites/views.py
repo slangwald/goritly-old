@@ -456,7 +456,8 @@ def get_channels():
     return channels
 
 def get_combined_metrics():
-    return dict(METRICS.items() + METRICS_ORDER.items())
+    d = dict(METRICS.items() + METRICS_ORDER.items())
+    return d
 
 @login_required()
 def get_bar_chart_json(request):

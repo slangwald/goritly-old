@@ -328,8 +328,8 @@ class CustomerProcessor():
                             if orders[next_iindex]:
                                 cust_clv.days_distance = (orders[next_iindex].ordered_at - order.ordered_at).days
                         except IndexError:
-                                # the last day distance must be very high
-                                cust_clv.days_distance = 999999
+                                # the last day distance is 0
+                                cust_clv.days_distance = 0
                         
                         if self.order_counter in self.channel_attr_per_order:
                             cust_clv.clv_u_shape_added     = self.channel_attr_per_order[self.order_counter][key]['u_shape']

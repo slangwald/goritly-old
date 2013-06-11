@@ -39,18 +39,26 @@ $(document).ready ->
     )
     
   
-  $('input[name="omni-days"]').change (e) ->
-    $.post("/websites/set_days", $(@).serialize() ).done((data) ->
-        drawBarNew()
-    )
-  $('input[name="kpi-days"]').change (e) ->
-    $.post("/websites/set_days", $(@).serialize() ).done((data) ->
-        loadKpiBoard()
-    )
-  $('input[name="bubble-days"]').change (e) ->
-    $.post("/websites/set_days", $(@).serialize() ).done((data) ->
-        drawBubbleChart()
-    )
+  $('input[name="omni-days"]').keypress (e) ->
+    if (e.which == 13)
+      $.post("/websites/set_days", $(@).serialize() ).done((data) ->
+          drawBarNew()
+      )
+      return false
+  $('input[name="kpi-days"]').keypress (e) ->
+    if (e.which == 13)
+      $.post("/websites/set_days", $(@).serialize() ).done((data) ->
+          loadKpiBoard()
+      )
+      return false
+  $('input[name="bubble-days"]').keypress (e) ->
+    if (e.which == 13)
+      $.post("/websites/set_days", $(@).serialize() ).done((data) ->
+          drawBubbleChart()
+      )
+      return false
+      
+      
   
   $('*[data-toggle="tooltip"]').tooltip()
   $("#timerange-value").hide()
