@@ -1,6 +1,6 @@
 client_data = {
   "installed": {
-    "client_id": "919076421447.apps.googleusercontent.com",
+    "client_id": "%%",
     "client_secret": "notascecret",
     "redirect_uris": [],
     "auth_uri": "https://accounts.google.com/o/oauth2/auth",
@@ -8,4 +8,4 @@ client_data = {
   }
 }
 
-SECRET_KEY  ="NhOnO-2V0nxi78JReZ2BZkN1"
+SECRET_KEY  ="%%"
