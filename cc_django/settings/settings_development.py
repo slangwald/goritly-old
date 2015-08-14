@@ -4,7 +4,7 @@ import os.path
 
 
 EMAIL_ACTION_REPEAT_TIME = 20
-EMAIL_INFO_FROM_ADDRESS = 'Andreas Dewes <andreas.dewes@gmail.com>'
+EMAIL_INFO_FROM_ADDRESS = '%% <%%>'
 EMAIL_USE_HTML = False
 IGNORE_MISSING_BETA_KEY = True
 CONFIRM_SIGNUP_BY_ADMIN = False
