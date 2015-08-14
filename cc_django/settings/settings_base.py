@@ -83,7 +83,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = '8d#p!qa#vennm_e(759g812neyfor(65q@%nx@d7$^3iofy58%'
+SECRET_KEY = '%%'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
