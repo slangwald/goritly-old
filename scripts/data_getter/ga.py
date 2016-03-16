@@ -25,7 +25,7 @@ json = Token.collection.find_one({'user_id':8})['token']
 
 token = simplejson.loads(json)
 token['client_id'] = "295121445037.apps.googleusercontent.com"
-token['client_secret'] = "DSZwegSKZ0mxdQybBavdJRy4"
+token['client_secret'] = "<CLIENT SECRET>"
 #access_token, client_id, client_secret, refresh_token,
 # token_expiry, token_uri, user_agent,
 credentials = OAuth2Credentials(access_token = token['access_token'], 
